@@ -35,14 +35,19 @@ public class ProductController {
     }
 
     @PostMapping
-    public Result<?> create( @RequestBody Product product) {
-        productService.createProduct(product);
+    public Result<?> create(@RequestBody Product product,
+                            @RequestParam List<String> imageUrls,
+                            @RequestParam(defaultValue = "0") Integer mainImageIndex) {
+        productService.createProduct(product, imageUrls, mainImageIndex);
         return Result.ok();
     }
 
+
     @PutMapping
-    public Result<?> update(@RequestBody Product product) {
-        productService.updateProduct(product);
+    public Result<?> update(@RequestBody Product product,
+                            @RequestParam List<String> imageUrls,
+                            @RequestParam(defaultValue = "0") Integer mainImageIndex) {
+        productService.updateProduct(product, imageUrls, mainImageIndex);
         return Result.ok();
     }
 
