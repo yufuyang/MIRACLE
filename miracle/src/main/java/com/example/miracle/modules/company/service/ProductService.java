@@ -54,4 +54,14 @@ public interface ProductService extends IService<Product> {
      * 批量更新商品分类
      */
     void batchUpdateCategory(List<Long> ids, Long categoryId);
+
+    /**
+     * 扣减库存
+     */
+    void deductStock(Long id, Integer quantity);
+
+    /**
+     * 增加库存
+     */
+    void increaseStock(Long id, Integer quantity);
 }

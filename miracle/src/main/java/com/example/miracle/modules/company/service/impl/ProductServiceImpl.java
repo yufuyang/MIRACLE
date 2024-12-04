@@ -7,10 +7,12 @@ import com.example.miracle.common.exception.BusinessException;
 import com.example.miracle.modules.company.entity.Product;
 import com.example.miracle.modules.company.entity.ProductCategory;
 import com.example.miracle.modules.company.entity.ProductImage;
+import com.example.miracle.modules.company.entity.ProductStockLog;
 import com.example.miracle.modules.company.mapper.ProductMapper;
 import com.example.miracle.modules.company.service.ProductCategoryService;
 import com.example.miracle.modules.company.service.ProductImageService;
 import com.example.miracle.modules.company.service.ProductService;
+import com.example.miracle.modules.company.service.ProductStockLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,8 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     private final ProductCategoryService categoryService;
 
     private final ProductImageService productImageService;
+
+    private final ProductStockLogService stockLogService;
 
 
     @Override
@@ -239,5 +243,59 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .set(Product::getCategoryId, categoryId)
                 .in(Product::getId, ids)
                 .update();
+    }
+
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deductStock(Long id, Integer quantity) {
+        // 使用乐观锁更新库存
+        boolean success = this.lambdaUpdate()
+                .eq(Product::getId, id)
+                .ge(Product::getStock, quantity)
+                .setSql("stock = stock - " + quantity)
+                .update();
+
+        if (!success) {
+            throw new BusinessException("库存不足");
+        }
+
+        // 记录库存变动日志
+        recordStockLog(id, quantity, "扣减库存");
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void increaseStock(Long id, Integer quantity) {
+        // 增加库存
+        boolean success = this.lambdaUpdate()
+                .eq(Product::getId, id)
+                .setSql("stock = stock + " + quantity)
+                .update();
+
+        if (!success) {
+            throw new BusinessException("库存更新失败");
+        }
+
+        // 记录库存变动日志
+        recordStockLog(id, quantity, "增加库存");
+    }
+
+    /**
+     * 记录库存变动日志
+     */
+    private void recordStockLog(Long productId, Integer quantity, String type) {
+        Product product = this.getById(productId);
+        if (product == null) {
+            return;
+        }
+
+        ProductStockLog stockLog = new ProductStockLog();
+        stockLog.setProductId(productId);
+        stockLog.setQuantity(quantity);
+        stockLog.setType(type);
+        stockLog.setBeforeStock(product.getStock() - quantity); // 变动前库存
+        stockLog.setAfterStock(product.getStock()); // 变动后库存
+        stockLogService.save(stockLog);
     }
 }

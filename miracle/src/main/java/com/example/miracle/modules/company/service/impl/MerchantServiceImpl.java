@@ -122,6 +122,7 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> i
     @Override
     public Page<Merchant> pageMerchant(Integer current, Integer size, Long companyId,
                                        String merchantName, String merchantCode, Integer status) {
+
         LambdaQueryWrapper<Merchant> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(companyId != null, Merchant::getCompanyId, companyId)
                 .like(StringUtils.isNotBlank(merchantName), Merchant::getMerchantName, merchantName)
