@@ -16,7 +16,7 @@ public class Product extends BaseEntity {
     /**
      * 商户ID
      */
-    private Long merchantId;
+    private Long companyId;
 
     /**
      * 商品名称

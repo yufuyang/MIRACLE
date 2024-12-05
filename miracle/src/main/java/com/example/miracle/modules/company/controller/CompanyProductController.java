@@ -1,7 +1,7 @@
 package com.example.miracle.modules.company.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.miracle.common.dto.Result;
+import com.example.miracle.common.dto.ResultDTO;
 import com.example.miracle.modules.company.entity.Product;
 import com.example.miracle.modules.company.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +12,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/company/product")
 @RequiredArgsConstructor
-public class ProductController {
+public class CompanyProductController {
 
     private final ProductService productService;
 
     @GetMapping("/page")
-    public Result<Page<Product>> page(
+    public ResultDTO<Page<Product>> page(
             @RequestParam(defaultValue = "1") Integer current,
             @RequestParam(defaultValue = "10") Integer size,
             @RequestParam Long merchantId,
@@ -25,70 +25,70 @@ public class ProductController {
             @RequestParam(required = false) String productCode,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Integer status) {
-        return Result.ok(productService.pageProduct(current, size, merchantId,
+        return ResultDTO.ok(productService.pageProduct(current, size, merchantId,
                 productName, productCode, categoryId, status));
     }
 
     @GetMapping("/{id}")
-    public Result<Product> detail(@PathVariable Long id) {
-        return Result.ok(productService.getProductDetail(id));
+    public ResultDTO<Product> detail(@PathVariable Long id) {
+        return ResultDTO.ok(productService.getProductDetail(id));
     }
 
     @PostMapping
-    public Result<?> create(@RequestBody Product product,
-                            @RequestParam List<String> imageUrls,
-                            @RequestParam(defaultValue = "0") Integer mainImageIndex) {
+    public ResultDTO<?> create(@RequestBody Product product,
+                               @RequestParam List<String> imageUrls,
+                               @RequestParam(defaultValue = "0") Integer mainImageIndex) {
         productService.createProduct(product, imageUrls, mainImageIndex);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
 
     @PutMapping
-    public Result<?> update(@RequestBody Product product,
-                            @RequestParam List<String> imageUrls,
-                            @RequestParam(defaultValue = "0") Integer mainImageIndex) {
+    public ResultDTO<?> update(@RequestBody Product product,
+                               @RequestParam List<String> imageUrls,
+                               @RequestParam(defaultValue = "0") Integer mainImageIndex) {
         productService.updateProduct(product, imageUrls, mainImageIndex);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @PutMapping("/status/{id}")
-    public Result<?> updateStatus(
+    public ResultDTO<?> updateStatus(
             @PathVariable Long id,
             @RequestParam Integer status) {
         productService.updateStatus(id, status);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @PutMapping("/stock/{id}")
-    public Result<?> updateStock(
+    public ResultDTO<?> updateStock(
             @PathVariable Long id,
             @RequestParam Integer stock) {
         productService.updateStock(id, stock);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @PutMapping("/batch/status")
-    public Result<?> batchUpdateStatus(
+    public ResultDTO<?> batchUpdateStatus(
             @RequestParam List<Long> ids,
             @RequestParam Integer status) {
         productService.batchUpdateStatus(ids, status);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     /**
      * 批量删除商品
      */
     @DeleteMapping("/batch")
-    public Result<?> batchDelete(@RequestParam List<Long> ids) {
+    public ResultDTO<?> batchDelete(@RequestParam List<Long> ids) {
         productService.batchDelete(ids);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @PutMapping("/batch/category")
-    public Result<?> batchUpdateCategory(
+    public ResultDTO<?> batchUpdateCategory(
             @RequestParam List<Long> ids,
             @RequestParam Long categoryId) {
         productService.batchUpdateCategory(ids, categoryId);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 }

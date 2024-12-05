@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@TableName("pay_method_config")
+@TableName("t_pay_method_config")
 @EqualsAndHashCode(callSuper = true)
 public class PayMethodConfig extends BaseEntity {
 
@@ -16,7 +16,7 @@ public class PayMethodConfig extends BaseEntity {
     private Long merchantId;
 
     /**
-     * 支付方式：1-微信 2-支付宝 3-银行卡 4-现金
+     * 支付类型：1-微信 2-支付宝
      */
     private Integer payType;
 
@@ -31,12 +31,12 @@ public class PayMethodConfig extends BaseEntity {
     private Integer status;
 
     /**
-     * 排序号
+     * 排序
      */
     private Integer sort;
 
     /**
-     * 支付配置信息
+     * 配置信息(JSON)
      */
     private String config;
 }

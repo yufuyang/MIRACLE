@@ -11,7 +11,7 @@ public interface ProductCategoryService extends IService<ProductCategory> {
     /**
      * 分页查询商品分类
      */
-    Page<ProductCategory> pageCategory(Integer current, Integer size, Long merchantId, String categoryName);
+    Page<ProductCategory> pageCategory(Integer current, Integer size, Long companyId, String categoryName);
 
     /**
      * 创建商品分类

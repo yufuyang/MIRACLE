@@ -19,6 +19,10 @@ public class Order extends BaseEntity {
      * 订单编号
      */
     private String orderNo;
+    /**
+     * 公司ID
+     */
+    private Long companyId;
 
     /**
      * 商户ID
@@ -86,4 +90,19 @@ public class Order extends BaseEntity {
      */
     @TableField(exist = false)
     private List<OrderLog> orderLogs;
+
+    /**
+     * 支付方式ID
+     */
+    private Long payMethodId;
+
+    /**
+     * 支付方式类型：1-微信 2-支付宝 3-现金
+     */
+    private Integer payType;
+
+    /**
+     * 支付方式名称
+     */
+    private String payMethodName;
 }

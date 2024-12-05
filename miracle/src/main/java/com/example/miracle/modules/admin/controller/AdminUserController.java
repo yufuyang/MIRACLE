@@ -2,7 +2,7 @@ package com.example.miracle.modules.admin.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.miracle.common.dto.Result;
+import com.example.miracle.common.dto.ResultDTO;
 import com.example.miracle.modules.admin.dto.AdminUserDTO;
 import com.example.miracle.modules.admin.dto.LoginDTO;
 import com.example.miracle.modules.admin.dto.UpdatePasswordDTO;
@@ -23,18 +23,18 @@ public class AdminUserController {
     private final AdminUserService adminUserService;
 
     @PostMapping("/login")
-    public Result<Map<String, String>> login(@Validated @RequestBody LoginDTO loginDTO) {
+    public ResultDTO<Map<String, String>> login(@RequestBody LoginDTO loginDTO) {
         String token = adminUserService.login(loginDTO.getUsername(), loginDTO.getPassword());
         Map<String, String> map = new HashMap<>();
         map.put("token", token);
-        return Result.ok(map);
+        return ResultDTO.ok(map);
     }
 
     @GetMapping("/list")
-    public Result<Page<AdminUser>> list(@RequestParam(defaultValue = "1") Integer current,
-                                        @RequestParam(defaultValue = "10") Integer size,
-                                        @RequestParam(required = false) String username,
-                                        @RequestParam(required = false) String realName) {
+    public ResultDTO<Page<AdminUser>> list(@RequestParam(defaultValue = "1") Integer current,
+                                           @RequestParam(defaultValue = "10") Integer size,
+                                           @RequestParam(required = false) String username,
+                                           @RequestParam(required = false) String realName) {
         Page<AdminUser> page = adminUserService.page(
                 new Page<>(current, size),
                 new LambdaQueryWrapper<AdminUser>()
@@ -42,11 +42,11 @@ public class AdminUserController {
                         .like(realName != null, AdminUser::getRealName, realName)
                         .orderByDesc(AdminUser::getCreateTime)
         );
-        return Result.ok(page);
+        return ResultDTO.ok(page);
     }
 
     @PostMapping("/create")
-    public Result<?> create(@Validated @RequestBody AdminUserDTO adminUserDTO) {
+    public ResultDTO<?> create(@RequestBody AdminUserDTO adminUserDTO) {
         AdminUser adminUser = new AdminUser();
         adminUser.setUsername(adminUserDTO.getUsername());
         adminUser.setPassword(adminUserDTO.getPassword());
@@ -55,11 +55,11 @@ public class AdminUserController {
         adminUser.setEmail(adminUserDTO.getEmail());
 
         adminUserService.createAdmin(adminUser);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @PutMapping("/update/{id}")
-    public Result<?> update(@PathVariable Long id, @Validated @RequestBody AdminUserDTO adminUserDTO) {
+    public ResultDTO<?> update(@PathVariable Long id, @Validated @RequestBody AdminUserDTO adminUserDTO) {
         AdminUser adminUser = new AdminUser();
         adminUser.setId(id);
         adminUser.setRealName(adminUserDTO.getRealName());
@@ -67,27 +67,27 @@ public class AdminUserController {
         adminUser.setEmail(adminUserDTO.getEmail());
 
         adminUserService.updateAdmin(adminUser);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @DeleteMapping("/delete/{id}")
-    public Result<?> delete(@PathVariable Long id) {
+    public ResultDTO<?> delete(@PathVariable Long id) {
         adminUserService.deleteAdmin(id);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @PutMapping("/password/{id}")
-    public Result<?> updatePassword(@PathVariable Long id, @Validated @RequestBody UpdatePasswordDTO updatePasswordDTO) {
+    public ResultDTO<?> updatePassword(@PathVariable Long id, @Validated @RequestBody UpdatePasswordDTO updatePasswordDTO) {
         adminUserService.updatePassword(id, updatePasswordDTO.getOldPassword(), updatePasswordDTO.getNewPassword());
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
     @PutMapping("/status/{id}/{status}")
-    public Result<?> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
+    public ResultDTO<?> updateStatus(@PathVariable Long id, @PathVariable Integer status) {
         AdminUser adminUser = new AdminUser();
         adminUser.setId(id);
         adminUser.setStatus(status);
         adminUserService.updateById(adminUser);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 }

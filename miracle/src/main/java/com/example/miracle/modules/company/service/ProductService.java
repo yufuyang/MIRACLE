@@ -11,7 +11,7 @@ public interface ProductService extends IService<Product> {
     /**
      * 分页查询商品
      */
-    Page<Product> pageProduct(Integer current, Integer size, Long merchantId,
+    Page<Product> pageProduct(Integer current, Integer size, Long companyId,
                               String productName, String productCode,
                               Long categoryId, Integer status);
 
@@ -64,4 +64,9 @@ public interface ProductService extends IService<Product> {
      * 增加库存
      */
     void increaseStock(Long id, Integer quantity);
+
+    /**
+     * 增加销量
+     */
+    void increaseSales(Long productId, Integer quantity);
 }

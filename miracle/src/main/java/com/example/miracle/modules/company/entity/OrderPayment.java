@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@TableName("order_payment")
+@TableName("t_order_payment")
 @EqualsAndHashCode(callSuper = true)
 public class OrderPayment extends BaseEntity {
 
@@ -24,14 +24,34 @@ public class OrderPayment extends BaseEntity {
     private String orderNo;
 
     /**
-     * 支付方式：1-微信 2-支付宝
+     * 支付金额
+     */
+    private BigDecimal payAmount;
+
+    /**
+     * 支付方式ID
+     */
+    private Long payMethodId;
+
+    /**
+     * 支付方式类型：1-微信 2-支付宝
      */
     private Integer payType;
 
     /**
-     * 支付金额
+     * 支付方式名称
      */
-    private BigDecimal payAmount;
+    private String payMethodName;
+
+    /**
+     * 支付状态：0-待支付 1-支付成功 2-支付失败
+     */
+    private Integer payStatus;
+
+    /**
+     * 支付时间
+     */
+    private LocalDateTime payTime;
 
     /**
      * 支付流水号
@@ -39,14 +59,7 @@ public class OrderPayment extends BaseEntity {
     private String tradeNo;
 
     /**
-     * 支付状态：0-未支付 1-支付中 2-支付成功 3-支付失败 4-已关闭
-     */
-    private Integer payStatus;
-
-    /**
-     * 失败原因
+     * 支付失败原因
      */
     private String failReason;
-
-    private LocalDateTime payTime;
 }

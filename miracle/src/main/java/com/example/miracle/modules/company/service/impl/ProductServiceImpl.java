@@ -14,140 +14,207 @@ import com.example.miracle.modules.company.service.ProductImageService;
 import com.example.miracle.modules.company.service.ProductService;
 import com.example.miracle.modules.company.service.ProductStockLogService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
-
-    private final ProductCategoryService categoryService;
-
-    private final ProductImageService productImageService;
-
+    private final StringRedisTemplate redisTemplate;
     private final ProductStockLogService stockLogService;
+    private final ProductCategoryService categoryService;
+    private final ProductImageService imageService;
 
-
-    @Override
-    public Page<Product> pageProduct(Integer current, Integer size, Long merchantId,
-                                     String productName, String productCode,
-                                     Long categoryId, Integer status) {
-        // 构建查询条件
-        LambdaQueryWrapper<Product> wrapper = new LambdaQueryWrapper<Product>()
-                .eq(Product::getMerchantId, merchantId)
-                .like(StringUtils.hasText(productName), Product::getProductName, productName)
-                .eq(StringUtils.hasText(productCode), Product::getProductCode, productCode)
-                .eq(categoryId != null, Product::getCategoryId, categoryId)
-                .eq(status != null, Product::getStatus, status)
-                .orderByDesc(Product::getSort)
-                .orderByDesc(Product::getCreateTime);
-
-        // 查询商品列表
-        Page<Product> page = this.page(new Page<>(current, size), wrapper);
-
-        // 填充分类名称
-        if (page.getRecords() != null && !page.getRecords().isEmpty()) {
-            // 获取所有分类
-            List<ProductCategory> categories = categoryService.listEnabledCategories(merchantId);
-            Map<Long, String> categoryMap = categories.stream()
-                    .collect(Collectors.toMap(ProductCategory::getId, ProductCategory::getCategoryName));
-
-            // 设置分类名称
-            page.getRecords().forEach(product ->
-                    product.setCategoryName(categoryMap.get(product.getCategoryId()))
-            );
-        }
-
-        return page;
-    }
+    private static final String STOCK_KEY = "product:stock:";
+    private static final String STOCK_LOCK_KEY = "product:stock:lock:";
+    private static final long STOCK_CACHE_SECONDS = 3600;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void createProduct(Product product, List<String> imageUrls, Integer mainImageIndex) {
-        // 检查商品编码是否重复
-        if (StringUtils.hasText(product.getProductCode())) {
-            if (this.lambdaQuery()
-                    .eq(Product::getMerchantId, product.getMerchantId())
-                    .eq(Product::getProductCode, product.getProductCode())
-                    .exists()) {
-                throw new BusinessException("商品编码已存在");
-            }
-        }
+        // 1. 校验分类
+        validateCategory(product.getCategoryId(), product.getCompanyId());
 
-        // 验证分类是否存在且启用
-        ProductCategory category = categoryService.getById(product.getCategoryId());
-        if (category == null) {
-            throw new BusinessException("商品分类不存在");
-        }
-        if (category.getStatus() != 1) {
-            throw new BusinessException("商品分类已禁用");
-        }
-
-        // 设置初始值
-        product.setSalesCount(0);
+        // 2. 设置默认值
         if (product.getStatus() == null) {
             product.setStatus(1);
         }
         if (product.getSort() == null) {
             product.setSort(0);
         }
-
-        if (!CollectionUtils.isEmpty(imageUrls)) {
-            product.setImage(imageUrls.get(mainImageIndex));
+        if (product.getStock() == null) {
+            product.setStock(0);
         }
 
+        // 3. 保存商品
         this.save(product);
 
+        // 4. 保存商品图片
+        if (!CollectionUtils.isEmpty(imageUrls)) {
+            imageService.saveProductImages(product.getId(), imageUrls, mainImageIndex);
+        }
 
-        // 保存商品图片
-        productImageService.saveProductImages(product.getId(), imageUrls, mainImageIndex);
+        // 5. 初始化库存缓存
+        initStockCache(product.getId(), product.getStock());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateProduct(Product product, List<String> imageUrls, Integer mainImageIndex) {
-        // 检查商品是否存在
-        Product existProduct = this.getById(product.getId());
-        if (existProduct == null) {
+    public void deductStock(Long id, Integer quantity) {
+        String lockKey = STOCK_LOCK_KEY + id;
+        if (!tryLock(lockKey, 30)) {
+            throw new BusinessException("商品库存处理中，请稍后重试");
+        }
+
+        try {
+            // 1. 检查缓存中的库存
+            Integer stock = getStockFromCache(id);
+            if (stock != null && stock < quantity) {
+                throw new BusinessException("库存不足");
+            }
+
+            // 2. 更新数据库库存
+            boolean success = this.lambdaUpdate()
+                    .eq(Product::getId, id)
+                    .ge(Product::getStock, quantity)
+                    .setSql("stock = stock - " + quantity)
+                    .update();
+
+            if (!success) {
+                // 验证是否真的库存不足
+                Product product = this.getById(id);
+                if (product.getStock() < quantity) {
+                    throw new BusinessException("库存不足");
+                }
+                throw new BusinessException("库存扣减失败，请重试");
+            }
+
+            // 3. 更新缓存
+            updateStockCache(id, -quantity);
+
+            // 4. 记录库存日志
+            recordStockLog(id, quantity, "扣减库存");
+
+            // 5. 检查库存预警
+            checkStockWarning(id);
+
+        } finally {
+            unlock(lockKey);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void increaseStock(Long id, Integer quantity) {
+        String lockKey = STOCK_LOCK_KEY + id;
+        if (!tryLock(lockKey, 30)) {
+            throw new BusinessException("商品库存处理中，请稍后重试");
+        }
+
+        try {
+            // 1. 更新数据库库存
+            this.lambdaUpdate()
+                    .eq(Product::getId, id)
+                    .setSql("stock = stock + " + quantity)
+                    .update();
+
+            // 2. 更新缓存
+            updateStockCache(id, quantity);
+
+            // 3. 记录库存日志
+            recordStockLog(id, quantity, "增加库存");
+
+        } finally {
+            unlock(lockKey);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void increaseSales(Long productId, Integer quantity) {
+        // 1. 查询商品
+        Product product = this.getById(productId);
+        if (product == null) {
             throw new BusinessException("商品不存在");
         }
 
-        // 检查商品编码是否重复
-        if (StringUtils.hasText(product.getProductCode())) {
-            if (this.lambdaQuery()
-                    .eq(Product::getMerchantId, product.getMerchantId())
-                    .eq(Product::getProductCode, product.getProductCode())
-                    .ne(Product::getId, product.getId())
-                    .exists()) {
-                throw new BusinessException("商品编码已存在");
-            }
+        // 2. 更新销量
+        boolean success = this.lambdaUpdate()
+                .eq(Product::getId, productId)
+                .setSql("sales = sales + " + quantity)
+                .update();
+
+        if (!success) {
+            throw new BusinessException("更新商品销量失败");
         }
 
-        ProductCategory category = categoryService.getById(product.getCategoryId());
+        // 3. 记录日志
+        log.info("商品[{}]销量增加{}件", productId, quantity);
+    }
+
+    private void validateCategory(Long categoryId, Long companyId) {
+        ProductCategory category = categoryService.getById(categoryId);
         if (category == null) {
             throw new BusinessException("商品分类不存在");
+        }
+        if (!category.getCompanyId().equals(companyId)) {
+            throw new BusinessException("商品分类不属于当前商户");
         }
         if (category.getStatus() != 1) {
             throw new BusinessException("商品分类已禁用");
         }
-
-        if (!CollectionUtils.isEmpty(imageUrls)) {
-            product.setImage(imageUrls.get(mainImageIndex));
-        }
-
-        this.updateById(product);
-
-        // 更新商品图片
-        productImageService.updateProductImages(product.getId(), imageUrls, mainImageIndex);
     }
+
+    private void initStockCache(Long productId, Integer stock) {
+        redisTemplate.opsForValue().set(STOCK_KEY + productId, 
+            String.valueOf(stock), STOCK_CACHE_SECONDS, TimeUnit.SECONDS);
+    }
+
+    private Integer getStockFromCache(Long productId) {
+        String stock = redisTemplate.opsForValue().get(STOCK_KEY + productId);
+        return stock != null ? Integer.parseInt(stock) : null;
+    }
+
+    private void updateStockCache(Long productId, Integer delta) {
+        redisTemplate.opsForValue().increment(STOCK_KEY + productId, delta);
+    }
+
+    private void recordStockLog(Long productId, Integer quantity, String type) {
+        ProductStockLog log = new ProductStockLog();
+        log.setProductId(productId);
+        log.setQuantity(quantity);
+        log.setType(type);
+        stockLogService.save(log);
+    }
+
+    private void checkStockWarning(Long productId) {
+        Integer stock = getStockFromCache(productId);
+        if (stock != null && stock < 10) {
+            log.warn("商品[{}]库存预警，当前库存：{}", productId, stock);
+        }
+    }
+
+    private boolean tryLock(String key, long seconds) {
+        return Boolean.TRUE.equals(redisTemplate.opsForValue()
+                .setIfAbsent(key, "1", seconds, TimeUnit.SECONDS));
+    }
+
+    private void unlock(String key) {
+        redisTemplate.delete(key);
+    }
+
+
+
+
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -162,46 +229,52 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void updateStock(Long id, Integer stock) {
-        Product product = this.getById(id);
-        if (product == null) {
-            throw new BusinessException("商品不存在");
-        }
+    public Page<Product> pageProduct(Integer current, Integer size, Long companyId,
+                                   String productName, String productCode,
+                                   Long categoryId, Integer status) {
+        return this.page(new Page<>(current, size),
+                new LambdaQueryWrapper<Product>()
+                        .eq(Product::getCompanyId, companyId)
+                        .like(StringUtils.hasText(productName), Product::getProductName, productName)
+                        .eq(StringUtils.hasText(productCode), Product::getProductCode, productCode)
+                        .eq(categoryId != null, Product::getCategoryId, categoryId)
+                        .eq(status != null, Product::getStatus, status)
+                        .orderByDesc(Product::getCreateTime));
+    }
 
-        product.setStock(stock);
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateProduct(Product product, List<String> imageUrls, Integer mainImageIndex) {
+        validateCategory(product.getCategoryId(), product.getCompanyId());
         this.updateById(product);
+        
+        if (!CollectionUtils.isEmpty(imageUrls)) {
+            imageService.updateProductImages(product.getId(), imageUrls, mainImageIndex);
+        }
+    }
+
+    @Override
+    public void updateStock(Long id, Integer stock) {
+        this.lambdaUpdate()
+                .set(Product::getStock, stock)
+                .eq(Product::getId, id)
+                .update();
+        initStockCache(id, stock);
     }
 
     @Override
     public Product getProductDetail(Long id) {
         Product product = this.getById(id);
-        if (product == null) {
-            throw new BusinessException("商品不存在");
+        if (product != null) {
+            List<ProductImage> images = imageService.getProductImages(id);
+            product.setImages(images);
         }
-
-        // 获取商品图片
-        List<ProductImage> images = productImageService.getProductImages(id);
-        product.setImages(images);
-
-        // 设置主图
-        images.stream()
-                .filter(image -> image.getIsMain() == 1)
-                .findFirst()
-                .ifPresent(image -> product.setMainImage(image.getImageUrl()));
-
         return product;
     }
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchUpdateStatus(List<Long> ids, Integer status) {
-        if (ids == null || ids.isEmpty()) {
-            throw new BusinessException("请选择商品");
-        }
-
-        // 批量更新状态
         this.lambdaUpdate()
                 .set(Product::getStatus, status)
                 .in(Product::getId, ids)
@@ -211,91 +284,18 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchDelete(List<Long> ids) {
-        if (ids == null || ids.isEmpty()) {
-            throw new BusinessException("请选择商品");
-        }
-
-        // 删除商品图片
-        for (Long id : ids) {
-            productImageService.deleteProductImages(id);
-        }
         this.removeByIds(ids);
+        // 删除商品图片
+        ids.forEach(imageService::deleteProductImages);
     }
-
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void batchUpdateCategory(List<Long> ids, Long categoryId) {
-        if (ids == null || ids.isEmpty()) {
-            throw new BusinessException("请选择商品");
-        }
-        // 验证分类是否存在且启用
-        ProductCategory category = categoryService.getById(categoryId);
-        if (category == null) {
-            throw new BusinessException("商品分类不存在");
-        }
-        if (category.getStatus() != 1) {
-            throw new BusinessException("商品分类已禁用");
-        }
-
-        // 批量更新分类
         this.lambdaUpdate()
                 .set(Product::getCategoryId, categoryId)
                 .in(Product::getId, ids)
                 .update();
     }
-
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void deductStock(Long id, Integer quantity) {
-        // 使用乐观锁更新库存
-        boolean success = this.lambdaUpdate()
-                .eq(Product::getId, id)
-                .ge(Product::getStock, quantity)
-                .setSql("stock = stock - " + quantity)
-                .update();
-
-        if (!success) {
-            throw new BusinessException("库存不足");
-        }
-
-        // 记录库存变动日志
-        recordStockLog(id, quantity, "扣减库存");
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void increaseStock(Long id, Integer quantity) {
-        // 增加库存
-        boolean success = this.lambdaUpdate()
-                .eq(Product::getId, id)
-                .setSql("stock = stock + " + quantity)
-                .update();
-
-        if (!success) {
-            throw new BusinessException("库存更新失败");
-        }
-
-        // 记录库存变动日志
-        recordStockLog(id, quantity, "增加库存");
-    }
-
-    /**
-     * 记录库存变动日志
-     */
-    private void recordStockLog(Long productId, Integer quantity, String type) {
-        Product product = this.getById(productId);
-        if (product == null) {
-            return;
-        }
-
-        ProductStockLog stockLog = new ProductStockLog();
-        stockLog.setProductId(productId);
-        stockLog.setQuantity(quantity);
-        stockLog.setType(type);
-        stockLog.setBeforeStock(product.getStock() - quantity); // 变动前库存
-        stockLog.setAfterStock(product.getStock()); // 变动后库存
-        stockLogService.save(stockLog);
-    }
 }
+

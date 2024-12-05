@@ -14,6 +14,7 @@ import com.example.miracle.modules.admin.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 
@@ -109,7 +110,9 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
 
     @Override
     public Page<Company> pageCompany(Integer current, Integer size, String companyName, String companyCode, Integer status) {
+
         LambdaQueryWrapper<Company> wrapper = new LambdaQueryWrapper<>();
+
         wrapper.like(StringUtils.isNotBlank(companyName), Company::getCompanyName, companyName)
                 .eq(StringUtils.isNotBlank(companyCode), Company::getCompanyCode, companyCode)
                 .eq(status != null, Company::getStatus, status)
@@ -139,11 +142,15 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void createCompanyAdmin(Long companyId, CompanyUser companyUser) {
-        // 验证公司是否存在
+        // 验证公司是否存在且状态正常
         Company company = this.getById(companyId);
         if (company == null) {
             throw new BusinessException("公司不存在");
+        }
+        if (company.getStatus() != 1) {
+            throw new BusinessException("只能为正常状态的公司创建管理员");
         }
 
         // 验证用户名是否存在
@@ -152,13 +159,10 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
             throw new BusinessException("用户名已存在");
         }
 
-        // 设置公司ID
+        // 设置公司ID和状态
         companyUser.setCompanyId(companyId);
-        // 加密密码
-        companyUser.setPassword(companyUser.getPassword());
-        // 设置状态
         companyUser.setStatus(1);
-
+        
         companyUserMapper.insert(companyUser);
     }
 }

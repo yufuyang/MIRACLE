@@ -13,6 +13,11 @@ public class OrderCreateDTO {
     private Long merchantId;
 
     /**
+     * 支付方式ID
+     */
+    private Long payMethodId;
+
+    /**
      * 订单商品列表
      */
     private List<OrderItemDTO> orderItems;

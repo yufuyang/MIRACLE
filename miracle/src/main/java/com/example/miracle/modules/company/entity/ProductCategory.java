@@ -13,7 +13,7 @@ public class ProductCategory extends BaseEntity {
     /**
      * 商户ID
      */
-    private Long merchantId;
+    private Long companyId;
 
     /**
      * 分类名称
@@ -29,4 +29,24 @@ public class ProductCategory extends BaseEntity {
      * 状态：0-禁用 1-启用
      */
     private Integer status;
+
+    /**
+     * 父分类ID
+     */
+    private Long parentId;
+
+    /**
+     * 层级
+     */
+    private Integer level;
+
+    /**
+     * 分类路径
+     */
+    private String path;
+
+    /**
+     * 商品数量
+     */
+    private Integer productCount;
 }

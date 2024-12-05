@@ -2,6 +2,7 @@ package com.example.miracle.modules.company.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.miracle.common.constant.CommonConstant;
 import com.example.miracle.common.exception.BusinessException;
 import com.example.miracle.common.utils.JwtUtil;
 import com.example.miracle.modules.admin.entity.Company;
@@ -50,7 +51,7 @@ public class CompanyUserServiceImpl extends ServiceImpl<CompanyUserMapper, Compa
         }
 
         // 生成token
-        String token = jwtUtil.generateToken(user.getUsername(), "COMPANY");
+        String token = jwtUtil.generateToken(user.getUsername(), user.getId(), CommonConstant.COMPANY_ROLE);
 
         // 返回登录信息
         CompanyUserDTO companyUserDTO = new CompanyUserDTO();

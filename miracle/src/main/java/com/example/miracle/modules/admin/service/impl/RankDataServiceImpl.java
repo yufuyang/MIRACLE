@@ -148,6 +148,21 @@ public class RankDataServiceImpl extends ServiceImpl<RankDataMapper, RankData> i
 
     @Override
     public List<RankDataDTO> getRankTrend(Long ruleId, Long targetId, LocalDate startDate, LocalDate endDate) {
+        // 验证时间范围
+        if (startDate.plusMonths(3).isBefore(endDate)) {
+            throw new BusinessException("查询时间范围不能超过3个月");
+        }
+        
+        // 验证规则是否存在且启用
+        RankRule rule = rankRuleService.getById(ruleId);
+        if (rule == null) {
+            throw new BusinessException("规则不存在");
+        }
+        if (rule.getStatus() != 1) {
+            throw new BusinessException("规则已禁用");
+        }
+
+        // 查询数据
         List<RankData> rankList = this.list(new LambdaQueryWrapper<RankData>()
                 .eq(RankData::getRuleId, ruleId)
                 .eq(RankData::getTargetId, targetId)
@@ -155,15 +170,7 @@ public class RankDataServiceImpl extends ServiceImpl<RankDataMapper, RankData> i
                 .le(RankData::getRankDate, endDate)
                 .orderByAsc(RankData::getRankDate));
 
-        return rankList.stream().map(data -> {
-            RankDataDTO dto = new RankDataDTO();
-            dto.setRankNo(data.getRankNo());
-            dto.setTargetId(data.getTargetId());
-            dto.setTargetName(data.getTargetName());
-            dto.setRankValue(data.getRankValue());
-            dto.setRankDate(data.getRankDate());
-            return dto;
-        }).collect(Collectors.toList());
+        return convertToDTO(rankList);
     }
 
     /**
@@ -176,5 +183,20 @@ public class RankDataServiceImpl extends ServiceImpl<RankDataMapper, RankData> i
                         .orderByDesc(RankData::getRankDate)
                         .last("LIMIT 1"))
                 .getRankDate();
+    }
+
+    /**
+     * 转换为DTO
+     */
+    private List<RankDataDTO> convertToDTO(List<RankData> rankList) {
+        return rankList.stream().map(data -> {
+            RankDataDTO dto = new RankDataDTO();
+            dto.setRankNo(data.getRankNo());
+            dto.setTargetId(data.getTargetId());
+            dto.setTargetName(data.getTargetName());
+            dto.setRankValue(data.getRankValue());
+            dto.setRankDate(data.getRankDate());
+            return dto;
+        }).collect(Collectors.toList());
     }
 }

@@ -1,5 +1,5 @@
 package com.example.miracle.common.controller;
-import com.example.miracle.common.dto.Result;
+import com.example.miracle.common.dto.ResultDTO;
 import com.example.miracle.common.dto.UploadResultDTO;
 import com.example.miracle.common.utils.FileUtil;
 import lombok.RequiredArgsConstructor;
@@ -14,18 +14,18 @@ public class FileController {
     private final FileUtil fileUtil;
 
     @PostMapping("/upload")
-    public Result<UploadResultDTO> upload(@RequestParam MultipartFile file, @RequestParam(defaultValue = "common") String folder) {
-        return Result.ok(fileUtil.uploadFileWithUrl(file, folder));
+    public ResultDTO<UploadResultDTO> upload(@RequestParam MultipartFile file, @RequestParam(defaultValue = "common") String folder) {
+        return ResultDTO.ok(fileUtil.uploadFileWithUrl(file, folder));
     }
 
     @DeleteMapping
-    public Result<?> delete(@RequestParam String filePath) {
+    public ResultDTO<?> delete(@RequestParam String filePath) {
         fileUtil.deleteFile(filePath);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 
-    @GetMapping("/url")
-    public Result<String> getUrl(@RequestParam String filePath) {
-        return Result.ok(fileUtil.getFileUrl(filePath));
+    @GetMapping("/url/{filePath}")
+    public ResultDTO<String> getUrl(@RequestParam String filePath) {
+        return ResultDTO.ok(fileUtil.getFileUrl(filePath));
     }
 }

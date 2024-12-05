@@ -10,6 +10,7 @@ import com.example.miracle.modules.admin.mapper.AdminUserMapper;
 import com.example.miracle.modules.admin.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
@@ -39,11 +40,16 @@ public class AdminUserServiceImpl extends ServiceImpl<AdminUserMapper, AdminUser
         }
 
         // 生成token
-        return jwtUtil.generateToken(username, CommonConstant.ADMIN_ROLE);
+        return jwtUtil.generateToken(username, adminUser.getId(), CommonConstant.ADMIN_ROLE);
     }
 
     @Override
     public void createAdmin(AdminUser adminUser) {
+
+        if (!StringUtils.hasLength(adminUser.getUsername()) || StringUtils.hasLength(adminUser.getPassword())) {
+            throw new BusinessException("用户名和密码不能为空");
+        }
+
         // 验证用户名是否存在
         if (this.count(new LambdaQueryWrapper<AdminUser>().eq(AdminUser::getUsername, adminUser.getUsername())) > 0) {
             throw new BusinessException("用户名已存在");
@@ -68,6 +74,19 @@ public class AdminUserServiceImpl extends ServiceImpl<AdminUserMapper, AdminUser
 
     @Override
     public void deleteAdmin(Long id) {
+        // 添加判断是否是最后一个管理员
+        long count = this.count();
+        if (count <= 1) {
+            throw new BusinessException("系统至少需要保留一个管理员");
+        }
+        
+        // 不能删除自己
+//        String currentUsername = SecurityUtils.getCurrentUsername();
+//        AdminUser adminUser = this.getById(id);
+//        if (adminUser.getUsername().equals(currentUsername)) {
+//            throw new BusinessException("不能删除当前登录账号");
+//        }
+        
         this.removeById(id);
     }
 

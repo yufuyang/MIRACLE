@@ -1,6 +1,6 @@
 package com.example.miracle.modules.company.controller;
 
-import com.example.miracle.common.dto.Result;
+import com.example.miracle.common.dto.ResultDTO;
 import com.example.miracle.modules.company.dto.OrderPayDTO;
 import com.example.miracle.modules.company.dto.PayResultDTO;
 import com.example.miracle.modules.company.entity.OrderPayment;
@@ -23,30 +23,30 @@ public class PayController {
      * 订单支付
      */
     @PostMapping
-    public Result<PayResultDTO> pay(@RequestBody OrderPayDTO dto) {
+    public ResultDTO<PayResultDTO> pay(@RequestBody OrderPayDTO dto) {
 
-        return Result.ok(payService.pay(dto));
+        return ResultDTO.ok(payService.pay(dto));
     }
 
     /**
      * 查询支付记录
      */
     @GetMapping("/record")
-    public Result<OrderPayment> getPaymentRecord(@RequestParam String orderNo) {
+    public ResultDTO<OrderPayment> getPaymentRecord(@RequestParam String orderNo) {
         OrderPayment payment = orderPaymentService.lambdaQuery()
                 .eq(OrderPayment::getOrderNo, orderNo)
                 .orderByDesc(OrderPayment::getCreateTime)
                 .last("LIMIT 1")
                 .one();
-        return Result.ok(payment);
+        return ResultDTO.ok(payment);
     }
 
     /**
      * 关闭支付
      */
     @PostMapping("/close")
-    public Result<?> closePayment(@RequestParam String orderNo) {
+    public ResultDTO<?> closePayment(@RequestParam String orderNo) {
         payService.closePayment(orderNo);
-        return Result.ok();
+        return ResultDTO.ok();
     }
 }

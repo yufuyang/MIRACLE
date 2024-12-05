@@ -58,16 +58,42 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> i
         this.save(merchant);
 
         // 创建默认管理员账号
-        MerchantUser admin = new MerchantUser();
-        admin.setMerchantId(merchant.getId());
-        admin.setUsername(merchant.getMerchantCode() + "_admin"); // 使用商户编码作为管理员账号前缀
-        admin.setPassword("123456"); // 默认密码
-        admin.setRealName(merchant.getContactPerson());
-        admin.setPhone(merchant.getContactPhone());
-        admin.setEmail(merchant.getEmail());
-        admin.setStatus(1);
+        createDefaultAdmin(merchant);
 
-        merchantUserMapper.insert(admin);
+        // 初始化支付方式配置
+        initPayMethods(merchant.getId());
+    }
+
+    /**
+     * 初始化支付方式配置
+     */
+    private void initPayMethods(Long merchantId) {
+        // 1. 微信支付配置
+        PayMethodConfig wxPay = new PayMethodConfig();
+        wxPay.setMerchantId(merchantId);
+        wxPay.setPayType(1);
+        wxPay.setPayName("微信支付");
+        wxPay.setStatus(0); // 默认禁用，需要配置后启用
+        wxPay.setSort(1);
+        payMethodConfigService.save(wxPay);
+
+        // 2. 支付宝配置
+        PayMethodConfig aliPay = new PayMethodConfig();
+        aliPay.setMerchantId(merchantId);
+        aliPay.setPayType(2);
+        aliPay.setPayName("支付宝支付");
+        aliPay.setStatus(0);
+        aliPay.setSort(2);
+        payMethodConfigService.save(aliPay);
+
+        // 3. 现金支付配置
+        PayMethodConfig cashPay = new PayMethodConfig();
+        cashPay.setMerchantId(merchantId);
+        cashPay.setPayType(3);
+        cashPay.setPayName("现金支付");
+        cashPay.setStatus(1); // 现金支付默认启用
+        cashPay.setSort(3);
+        payMethodConfigService.save(cashPay);
     }
 
     @Override

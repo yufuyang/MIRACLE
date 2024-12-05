@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 import java.math.BigDecimal;
 
 @Data
-@TableName("order_item")
+@TableName("t_order_item")
 @EqualsAndHashCode(callSuper = true)
 public class OrderItem extends BaseEntity {
 
@@ -33,6 +33,11 @@ public class OrderItem extends BaseEntity {
     private String productImage;
 
     /**
+     * 商品规格
+     */
+    private String productSpec;
+
+    /**
      * 商品单价
      */
     private BigDecimal price;
@@ -43,7 +48,32 @@ public class OrderItem extends BaseEntity {
     private Integer quantity;
 
     /**
-     * 商品总金额
+     * 商品总价
      */
     private BigDecimal totalAmount;
+
+    /**
+     * 优惠金额
+     */
+    private BigDecimal discountAmount;
+
+    /**
+     * 实付金额
+     */
+    private BigDecimal payAmount;
+
+    /**
+     * 已退数量
+     */
+    private Integer refundQuantity = 0;
+
+    /**
+     * 已退金额
+     */
+    private BigDecimal refundAmount = BigDecimal.ZERO;
+
+    /**
+     * 备注
+     */
+    private String remark;
 }

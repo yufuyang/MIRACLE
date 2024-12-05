@@ -1,6 +1,6 @@
 package com.example.miracle.modules.company.controller;
 
-import com.example.miracle.common.dto.Result;
+import com.example.miracle.common.dto.ResultDTO;
 import com.example.miracle.modules.admin.dto.RankDataDTO;
 import com.example.miracle.modules.admin.entity.RankRule;
 import com.example.miracle.modules.company.service.CompanyRankService;
@@ -22,45 +22,45 @@ public class CompanyRankController {
      * 获取排行规则列表
      */
     @GetMapping("/rules")
-    public Result<List<RankRule>> listRules(
+    public ResultDTO<List<RankRule>> listRules(
             @RequestParam(required = false) Integer ruleType,
             @RequestParam(required = false) Integer timeType) {
-        return Result.ok(companyRankService.listRules(ruleType, timeType));
+        return ResultDTO.ok(companyRankService.listRules(ruleType, timeType));
     }
 
     /**
      * 获取最新排行榜
      */
     @GetMapping("/latest/{ruleId}")
-    public Result<List<RankDataDTO>> getLatestRank(
+    public ResultDTO<List<RankDataDTO>> getLatestRank(
             @RequestAttribute Long companyId,
             @PathVariable Long ruleId,
             @RequestParam(defaultValue = "10") Integer limit) {
-        return Result.ok(companyRankService.getLatestRank(companyId, ruleId, limit));
+        return ResultDTO.ok(companyRankService.getLatestRank(companyId, ruleId, limit));
     }
 
     /**
      * 获取指定日期的排行榜
      */
     @GetMapping("/{ruleId}")
-    public Result<List<RankDataDTO>> getRankByDate(
+    public ResultDTO<List<RankDataDTO>> getRankByDate(
             @RequestAttribute Long companyId,
             @PathVariable Long ruleId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
             @RequestParam(defaultValue = "10") Integer limit) {
-        return Result.ok(companyRankService.getRankByDate(companyId, ruleId, date, limit));
+        return ResultDTO.ok(companyRankService.getRankByDate(companyId, ruleId, date, limit));
     }
 
     /**
      * 获取排名趋势
      */
     @GetMapping("/trend/{ruleId}/{targetId}")
-    public Result<List<RankDataDTO>> getRankTrend(
+    public ResultDTO<List<RankDataDTO>> getRankTrend(
             @RequestAttribute Long companyId,
             @PathVariable Long ruleId,
             @PathVariable Long targetId,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
-        return Result.ok(companyRankService.getRankTrend(companyId, ruleId, targetId, startDate, endDate));
+        return ResultDTO.ok(companyRankService.getRankTrend(companyId, ruleId, targetId, startDate, endDate));
     }
 }
