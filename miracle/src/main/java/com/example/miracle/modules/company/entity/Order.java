@@ -44,10 +44,6 @@ public class Order extends BaseEntity {
      */
     private Integer status;
 
-    /**
-     * 支付方式：1-微信 2-支付宝
-     */
-    private Integer payType;
 
     /**
      * 支付时间

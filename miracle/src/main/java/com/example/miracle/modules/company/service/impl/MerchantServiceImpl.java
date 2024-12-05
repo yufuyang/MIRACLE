@@ -10,10 +10,13 @@ import com.example.miracle.modules.admin.entity.Company;
 import com.example.miracle.modules.admin.service.CompanyService;
 import com.example.miracle.modules.company.entity.Merchant;
 import com.example.miracle.modules.company.entity.MerchantUser;
+import com.example.miracle.modules.company.entity.PayMethodConfig;
 import com.example.miracle.modules.company.mapper.MerchantMapper;
 import com.example.miracle.modules.company.mapper.MerchantUserMapper;
 import com.example.miracle.modules.company.service.MerchantService;
+import com.example.miracle.modules.company.service.PayMethodConfigService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,10 +25,13 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> implements MerchantService {
 
     private final CompanyService companyService;
     private final MerchantUserMapper merchantUserMapper;
+
+    private final PayMethodConfigService payMethodConfigService;
 
     private final FileUtil fileUtil;
 
@@ -65,14 +71,29 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> i
     }
 
     /**
+     * 创建默认管理员账号
+     */
+    private void createDefaultAdmin(Merchant merchant) {
+        MerchantUser user = new MerchantUser();
+        user.setMerchantId(merchant.getId());
+        user.setUsername(merchant.getContactPhone());
+        user.setPassword("123456"); // 默认密码
+        user.setRealName(merchant.getContactPerson());
+        user.setPhone(merchant.getContactPhone());
+        user.setStatus(1);
+        merchantUserMapper.insert(user);
+    }
+
+    /**
      * 初始化支付方式配置
      */
     private void initPayMethods(Long merchantId) {
+
         // 1. 微信支付配置
         PayMethodConfig wxPay = new PayMethodConfig();
         wxPay.setMerchantId(merchantId);
         wxPay.setPayType(1);
-        wxPay.setPayName("微信支付");
+        wxPay.setMethodName("微信支付");
         wxPay.setStatus(0); // 默认禁用，需要配置后启用
         wxPay.setSort(1);
         payMethodConfigService.save(wxPay);
@@ -81,7 +102,7 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> i
         PayMethodConfig aliPay = new PayMethodConfig();
         aliPay.setMerchantId(merchantId);
         aliPay.setPayType(2);
-        aliPay.setPayName("支付宝支付");
+        aliPay.setMethodName("支付宝支付");
         aliPay.setStatus(0);
         aliPay.setSort(2);
         payMethodConfigService.save(aliPay);
@@ -90,7 +111,7 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> i
         PayMethodConfig cashPay = new PayMethodConfig();
         cashPay.setMerchantId(merchantId);
         cashPay.setPayType(3);
-        cashPay.setPayName("现金支付");
+        cashPay.setMethodName("现金支付");
         cashPay.setStatus(1); // 现金支付默认启用
         cashPay.setSort(3);
         payMethodConfigService.save(cashPay);

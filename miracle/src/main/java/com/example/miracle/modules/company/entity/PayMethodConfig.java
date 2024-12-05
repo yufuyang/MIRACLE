@@ -39,4 +39,19 @@ public class PayMethodConfig extends BaseEntity {
      * 配置信息(JSON)
      */
     private String config;
+
+    /**
+     * 配置ID
+     */
+    private Long configId;
+
+    /**
+     * 支付配置信息
+     */
+    private String payConfig;
+
+    /**
+     * 备注说明
+     */
+    private String remark;
 }

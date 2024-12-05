@@ -62,4 +62,29 @@ public class OrderPayment extends BaseEntity {
      * 支付失败原因
      */
     private String failReason;
+
+    /**
+     * 支付配置ID
+     */
+    private Long configId;
+
+    /**
+     * 支付配置信息
+     */
+    private String config;
+
+    /**
+     * 退款金额
+     */
+    private BigDecimal refundAmount = BigDecimal.ZERO;
+
+    /**
+     * 退款时间
+     */
+    private LocalDateTime refundTime;
+
+    /**
+     * 退款状态：0-未退款 1-部分退款 2-全额退款
+     */
+    private Integer refundStatus;
 }

@@ -258,16 +258,6 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
             throw new BusinessException("订单状态不正确");
         }
 
-
-        // 3. 校验支付方式是否可用
-        List<PayMethodConfig> methods = payMethodConfigService.getEnabledMethods(order.getMerchantId());
-        boolean validMethod = methods.stream()
-                .anyMatch(method -> method.getPayType().equals(dto.getPayType()));
-
-        if (!validMethod) {
-            throw new BusinessException("支付方式不可用");
-        }
-
         // 3. 校验支付金额
         if (order.getPayAmount().compareTo(dto.getPayAmount()) != 0) {
             throw new BusinessException("支付金额不正确");
