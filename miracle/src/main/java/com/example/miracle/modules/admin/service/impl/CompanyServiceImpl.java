@@ -49,7 +49,7 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
         // 创建默认管理员账号
         CompanyUser admin = new CompanyUser();
         admin.setCompanyId(company.getId());
-        admin.setUsername(company.getCompanyCode() + "_admin"); // 使用公司编码作为管理员账号前缀
+        admin.setUsername(company.getContactPhone()); // 使用公司编码作为管理员账号前缀
         admin.setPassword("123456"); // 默认密码
         admin.setRealName(company.getLegalPerson());
         admin.setPhone(company.getContactPhone());
