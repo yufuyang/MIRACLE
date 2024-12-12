@@ -61,8 +61,4 @@ public class MerchantUserServiceImpl extends ServiceImpl<MerchantUserMapper, Mer
         return SingleResponse.buildSuccess();
     }
 
-    @Override
-    public List<MerchantUser> listByMerchantId(Long merchantId) {
-        return this.list(new LambdaQueryWrapper<MerchantUser>().eq(MerchantUser::getMerchantId, merchantId).orderByDesc(MerchantUser::getCreateTime));
-    }
 } 
