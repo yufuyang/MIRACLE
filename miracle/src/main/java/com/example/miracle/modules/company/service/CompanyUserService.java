@@ -1,24 +1,30 @@
 package com.example.miracle.modules.company.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.miracle.modules.admin.entity.CompanyUser;
-import com.example.miracle.modules.company.dto.CompanyLoginDTO;
-import com.example.miracle.modules.company.dto.CompanyUserDTO;
+import com.example.miracle.common.dto.MultiResponse;
+import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.modules.company.dto.CompanyUserLoginDTO;
+import com.example.miracle.modules.company.dto.query.CompanyUserPageQuery;
+import com.example.miracle.modules.company.dto.cmd.CompanyUserLoginCmd;
+import com.example.miracle.modules.company.entity.CompanyUser;
 
+/**
+ * 公司用户服务接口
+ */
 public interface CompanyUserService extends IService<CompanyUser> {
 
     /**
-     * 公司用户登录
+     * 用户登录
      */
-    CompanyUserDTO login(CompanyLoginDTO loginDTO);
+    SingleResponse<CompanyUserLoginDTO> login(CompanyUserLoginCmd companyUserLoginCmd);
 
     /**
-     * 修改密码
+     * 用户登出
      */
-    void updatePassword(Long userId, String oldPassword, String newPassword);
+    SingleResponse<Void> logout(String token);
 
     /**
-     * 获取当前用户信息
+     * 根据公司ID查询用户列表
      */
-    CompanyUserDTO getCurrentUser(Long userId);
+    MultiResponse<CompanyUser> listByCompanyId(CompanyUserPageQuery companyUserPageQuery);
 }

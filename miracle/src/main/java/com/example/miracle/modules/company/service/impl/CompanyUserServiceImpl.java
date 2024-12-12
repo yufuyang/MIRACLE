@@ -1,42 +1,45 @@
 package com.example.miracle.modules.company.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.miracle.common.constant.CommonConstant;
+import com.example.miracle.common.dto.MultiResponse;
+import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.common.exception.BusinessException;
 import com.example.miracle.common.utils.JwtUtil;
-import com.example.miracle.modules.admin.entity.Company;
-import com.example.miracle.modules.admin.entity.CompanyUser;
-import com.example.miracle.modules.admin.mapper.CompanyUserMapper;
-import com.example.miracle.modules.admin.service.CompanyService;
-import com.example.miracle.modules.company.dto.CompanyLoginDTO;
-import com.example.miracle.modules.company.dto.CompanyUserDTO;
+import com.example.miracle.modules.company.dto.CompanyUserLoginDTO;
+import com.example.miracle.modules.company.dto.query.CompanyUserPageQuery;
+import com.example.miracle.modules.company.dto.cmd.CompanyUserLoginCmd;
+import com.example.miracle.modules.company.entity.CompanyUser;
+import com.example.miracle.modules.company.mapper.CompanyUserMapper;
 import com.example.miracle.modules.company.service.CompanyUserService;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
 
+/**
+ * 公司用户服务实现类
+ */
 @Service
 @RequiredArgsConstructor
 public class CompanyUserServiceImpl extends ServiceImpl<CompanyUserMapper, CompanyUser> implements CompanyUserService {
 
-    private final CompanyService companyService;
     private final JwtUtil jwtUtil;
 
     @Override
-    public CompanyUserDTO login(CompanyLoginDTO loginDTO) {
+    public SingleResponse<CompanyUserLoginDTO> login(CompanyUserLoginCmd companyUserLoginCmd) {
         // 查询用户
-        CompanyUser user = this.getOne(new LambdaQueryWrapper<CompanyUser>()
-                .eq(CompanyUser::getUsername, loginDTO.getUsername()));
+        CompanyUser user = this.getOne(new LambdaQueryWrapper<CompanyUser>().eq(CompanyUser::getUsername, companyUserLoginCmd.getUsername()));
 
         if (user == null) {
-            throw new BusinessException("用户名或密码错误");
+            throw new BusinessException("用户不存在");
         }
 
         // 验证密码
-        if (!Objects.equals(loginDTO.getPassword(), user.getPassword())) {
-            throw new BusinessException("用户名或密码错误");
+        if (!Objects.equals(companyUserLoginCmd.getPassword(), user.getPassword())) {
+            throw new BusinessException("密码错误");
         }
 
         // 验证状态
@@ -44,60 +47,38 @@ public class CompanyUserServiceImpl extends ServiceImpl<CompanyUserMapper, Compa
             throw new BusinessException("账号已被禁用");
         }
 
-        // 查询公司信息
-        Company company = companyService.getById(user.getCompanyId());
-        if (company == null || company.getStatus() != 1) {
-            throw new BusinessException("公司已被禁用");
-        }
-
         // 生成token
-        String token = jwtUtil.generateToken(user.getUsername(), user.getId(), CommonConstant.COMPANY_ROLE);
+        String token = jwtUtil.generateToken(user);
 
-        // 返回登录信息
-        CompanyUserDTO companyUserDTO = new CompanyUserDTO();
-        companyUserDTO.setUserId(user.getId());
-        companyUserDTO.setUsername(user.getUsername());
-        companyUserDTO.setRealName(user.getRealName());
-        companyUserDTO.setToken(token);
-        companyUserDTO.setCompanyId(company.getId());
-        companyUserDTO.setCompanyName(company.getCompanyName());
+        // 构建返回对象
+        CompanyUserLoginDTO loginDTO = new CompanyUserLoginDTO();
+        loginDTO.setUsername(user.getUsername());
+        loginDTO.setToken(token);
 
-        return companyUserDTO;
+        return SingleResponse.of(loginDTO);
     }
 
     @Override
-    public void updatePassword(Long userId, String oldPassword, String newPassword) {
-        CompanyUser user = this.getById(userId);
-        if (user == null) {
-            throw new BusinessException("用户不存在");
-        }
-
-        // 验证旧密码
-        if (!Objects.equals(oldPassword, user.getPassword())) {
-            throw new BusinessException("原密码错误");
-        }
-
-        // 更新密码
-        user.setPassword(newPassword);
-        this.updateById(user);
+    public SingleResponse<Void> logout(String token) {
+        jwtUtil.invalidateToken(token);
+        return SingleResponse.buildSuccess();
     }
 
     @Override
-    public CompanyUserDTO getCurrentUser(Long userId) {
-        CompanyUser user = this.getById(userId);
-        if (user == null) {
-            throw new BusinessException("用户不存在");
-        }
+    public MultiResponse<CompanyUser> listByCompanyId(CompanyUserPageQuery companyUserPageQuery) {
 
-        Company company = companyService.getById(user.getCompanyId());
+        LambdaQueryWrapper<CompanyUser> wrapper = new LambdaQueryWrapper<CompanyUser>()
+                .eq(CompanyUser::getCompanyId, companyUserPageQuery.getCompanyId())
+                .like(StringUtils.isNotBlank(companyUserPageQuery.getUsername()), CompanyUser::getUsername, companyUserPageQuery.getUsername())
+                .like(StringUtils.isNotBlank(companyUserPageQuery.getRealName()), CompanyUser::getRealName, companyUserPageQuery.getRealName())
+                .eq(companyUserPageQuery.getStatus() != null, CompanyUser::getStatus, companyUserPageQuery.getStatus())
+                .orderByDesc(CompanyUser::getCreateTime);
 
-        CompanyUserDTO companyUserDTO = new CompanyUserDTO();
-        companyUserDTO.setUserId(user.getId());
-        companyUserDTO.setUsername(user.getUsername());
-        companyUserDTO.setRealName(user.getRealName());
-        companyUserDTO.setCompanyId(company.getId());
-        companyUserDTO.setCompanyName(company.getCompanyName());
 
-        return companyUserDTO;
+        // 执行分页查询
+        Page<CompanyUser> page = this.page(new Page<>(companyUserPageQuery.getPageNum(), companyUserPageQuery.getPageSize()), wrapper);
+
+        // 返回结果
+        return MultiResponse.of(page.getRecords(), (int) page.getTotal());
     }
-}
+} 
