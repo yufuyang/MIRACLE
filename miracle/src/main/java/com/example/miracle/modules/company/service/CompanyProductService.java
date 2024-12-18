@@ -2,7 +2,7 @@ package com.example.miracle.modules.company.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.miracle.common.dto.MultiResponse;
-import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.modules.company.dto.CompanyProductDTO;
 import com.example.miracle.modules.company.dto.query.CompanyProductPageQuery;
 import com.example.miracle.modules.company.entity.CompanyProduct;
 
@@ -14,5 +14,5 @@ public interface CompanyProductService extends IService<CompanyProduct> {
     /**
      * 分页查询公司产品
      */
-    MultiResponse<CompanyProduct> pageQuery(CompanyProductPageQuery companyProductPageQuery);
+    MultiResponse<CompanyProduct> pageQuery(CompanyProductPageQuery query);
 } 

@@ -21,11 +21,11 @@ public class CompanyProductServiceImpl extends ServiceImpl<CompanyProductMapper,
 
     @Override
     public MultiResponse<CompanyProduct> pageQuery(CompanyProductPageQuery companyProductPageQuery) {
+
         LambdaQueryWrapper<CompanyProduct> wrapper = new LambdaQueryWrapper<CompanyProduct>()
                 .eq(CompanyProduct::getCompanyId, companyProductPageQuery.getCompanyId())
                 .like(StringUtils.isNotBlank(companyProductPageQuery.getProductName()), CompanyProduct::getProductName, companyProductPageQuery.getProductName())
                 .like(StringUtils.isNotBlank(companyProductPageQuery.getProductCode()), CompanyProduct::getProductCode, companyProductPageQuery.getProductCode())
-                .eq(StringUtils.isNotBlank(companyProductPageQuery.getCategory()), CompanyProduct::getCategoryId, companyProductPageQuery.getCategory())
                 .eq(companyProductPageQuery.getStatus() != null, CompanyProduct::getStatus, companyProductPageQuery.getStatus())
                 .orderByDesc(CompanyProduct::getCreateTime);
 

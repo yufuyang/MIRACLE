@@ -5,11 +5,14 @@ import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.common.exception.BusinessException;
+import com.example.miracle.modules.company.dto.CompanyProductDTO;
 import com.example.miracle.modules.company.dto.query.CompanyProductPageQuery;
 import com.example.miracle.modules.company.entity.CompanyProduct;
 import com.example.miracle.modules.company.entity.CompanyProductImage;
+import com.example.miracle.modules.company.entity.CompanyProductStats;
 import com.example.miracle.modules.company.service.CompanyProductImageService;
 import com.example.miracle.modules.company.service.CompanyProductService;
+import com.example.miracle.modules.company.service.CompanyProductStatsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,7 @@ public class CompanyProductController {
     private final BaseController baseController;
     private final CompanyProductService companyProductService;
     private final CompanyProductImageService productImageService;
+    private final CompanyProductStatsService companyProductStatsService;
 
     /**
      * 新增产品
@@ -38,6 +42,15 @@ public class CompanyProductController {
         companyProduct.setCompanyId(companyId);
 
         companyProductService.save(companyProduct);
+
+        CompanyProductStats companyProductStats = new CompanyProductStats();
+        companyProductStats.setProductId(companyProduct.getId());
+        companyProductStats.setCompanyId(companyId);
+        companyProductStats.setIntentionCount(0);
+        companyProductStats.setViewCount(0);
+
+        companyProductStatsService.save(companyProductStats);
+
         return SingleResponse.of(companyProduct);
     }
 
@@ -78,6 +91,8 @@ public class CompanyProductController {
 
         // 删除产品
         companyProductService.removeById(id);
+
+        companyProductStatsService.remove(new LambdaQueryWrapper<CompanyProductStats>().eq(CompanyProductStats::getProductId, id));
         
         return SingleResponse.buildSuccess();
     }
