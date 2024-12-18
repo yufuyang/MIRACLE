@@ -28,7 +28,6 @@ public class MerchantProductIntentionServiceImpl extends ServiceImpl<MerchantPro
     public MultiResponse<MerchantProductIntention> pageQuery(MerchantProductIntentionPageQuery query) {
         LambdaQueryWrapper<MerchantProductIntention> wrapper = new LambdaQueryWrapper<MerchantProductIntention>()
                 .eq(query.getMerchantId() != null, MerchantProductIntention::getMerchantId, query.getMerchantId())
-                .eq(query.getMerchantUserId() != null, MerchantProductIntention::getMerchantUserId, query.getMerchantUserId())
                 .eq(query.getCompanyId() != null, MerchantProductIntention::getCompanyId, query.getCompanyId())
                 .eq(query.getProductId() != null, MerchantProductIntention::getProductId, query.getProductId())
                 .orderByDesc(MerchantProductIntention::getCreateTime);
