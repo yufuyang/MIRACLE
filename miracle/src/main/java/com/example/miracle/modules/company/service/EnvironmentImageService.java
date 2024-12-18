@@ -1,7 +1,7 @@
-package com.example.miracle.modules.platform.service;
+package com.example.miracle.modules.company.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.example.miracle.modules.platform.entity.EnvironmentImage;
+import com.example.miracle.modules.company.entity.EnvironmentImage;
 
 import java.util.List;
 

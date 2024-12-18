@@ -1,10 +1,10 @@
-package com.example.miracle.modules.platform.service.impl;
+package com.example.miracle.modules.company.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.miracle.modules.platform.entity.EnvironmentImage;
-import com.example.miracle.modules.platform.mapper.EnvironmentImageMapper;
-import com.example.miracle.modules.platform.service.EnvironmentImageService;
+import com.example.miracle.modules.company.entity.EnvironmentImage;
+import com.example.miracle.modules.company.mapper.EnvironmentImageMapper;
+import com.example.miracle.modules.company.service.EnvironmentImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

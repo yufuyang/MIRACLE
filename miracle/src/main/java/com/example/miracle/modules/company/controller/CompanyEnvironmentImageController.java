@@ -2,8 +2,8 @@ package com.example.miracle.modules.company.controller;
 
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.SingleResponse;
-import com.example.miracle.modules.platform.entity.EnvironmentImage;
-import com.example.miracle.modules.platform.service.EnvironmentImageService;
+import com.example.miracle.modules.company.entity.EnvironmentImage;
+import com.example.miracle.modules.company.service.EnvironmentImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,4 +1,4 @@
-package com.example.miracle.modules.platform.entity;
+package com.example.miracle.modules.company.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.miracle.common.base.BaseEntity;
