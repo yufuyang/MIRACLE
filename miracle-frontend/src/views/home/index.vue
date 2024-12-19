@@ -93,6 +93,7 @@ import SectionContainer from '@/components/SectionContainer.vue'
 const router = useRouter()
 const productRefs = ref([])
 const companyRefs = ref([])
+const companySectionRef = ref(null)
 
 // 模拟轮播图数据
 const banners = ref([
@@ -148,6 +149,26 @@ onMounted(() => {
       observer.observe(el)
     }
   })
+
+  // 为企业区域添加滚动观察器
+  const sectionObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('show')
+          sectionObserver.unobserve(entry.target)
+        }
+      })
+    },
+    {
+      threshold: 0.2
+    }
+  )
+
+  const companySection = document.querySelector('.company-section')
+  if (companySection) {
+    sectionObserver.observe(companySection)
+  }
 })
 
 // 跳转函数
@@ -398,6 +419,14 @@ const goToRegister = () => {
   position: relative;
   padding: 40px 0;
   background: #f0f2f5;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
 
   :deep(.section) {
     position: relative;
