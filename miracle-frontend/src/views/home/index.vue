@@ -338,42 +338,67 @@ const goToCompany = (id) => {
 
 .banner-carousel {
   width: 100%;
-  max-width: 1200px;
-  height: 400px;
-  margin: 0 auto;
-  padding: 0 20px;
+  max-width: 1000px;
+  height: 500px;
+  margin: 40px auto;
+  padding: 0;
+  position: relative;
 
   :deep(.slick-slide) {
-    pointer-events: none;
-
     img {
       width: 100%;
-      height: 400px;
+      height: 500px;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 20px;
+      filter: brightness(0.85);
+      transition: all 0.6s ease;
     }
   }
 
   :deep(.slick-dots) {
-    bottom: 20px;
+    bottom: 30px;
     z-index: 3;
 
     li {
+      margin: 0 8px;
+      
       button {
-        background: #fff;
-        opacity: 0.5;
+        width: 30px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: rgba(255, 255, 255, 0.6);
+        }
       }
 
       &.slick-active button {
-        opacity: 1;
+        width: 50px;
+        background: #fff;
       }
     }
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 100%);
+    border-radius: 20px;
+    z-index: 1;
+    pointer-events: none;
   }
 }
 
 .banner-item {
   position: relative;
-  height: 400px;
+  height: 500px;
+  overflow: hidden;
 
   .banner-info {
     position: absolute;
@@ -382,23 +407,57 @@ const goToCompany = (id) => {
     transform: translate(-50%, -50%);
     text-align: center;
     color: #fff;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
     z-index: 2;
     width: 80%;
-    max-width: 1200px;
+    max-width: 800px;
+    opacity: 0;
+    animation: fadeInUp 1s forwards;
 
     h2 {
-      font-size: 56px;
-      font-weight: 600;
-      margin-bottom: 8px;
+      font-size: 52px;
+      font-weight: 700;
+      margin-bottom: 16px;
       color: #fff;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      text-shadow: 0 2px 20px rgba(0,0,0,0.3);
+      transform: translateY(20px);
+      opacity: 0;
+      animation: slideUp 0.8s forwards 0.3s;
     }
 
     p {
-      font-size: 28px;
+      font-size: 24px;
       margin: 0;
-      color: #fff;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: slideUp 0.8s forwards 0.5s;
     }
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
