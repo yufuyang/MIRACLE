@@ -61,10 +61,13 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import request from '@/utils/request'
 import { message } from 'ant-design-vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
 
 const router = useRouter()
+const userStore = useUserStore()
 const loginFormRef = ref()
 const loading = ref(false)
 
@@ -91,22 +94,34 @@ const rules = {
 }
 
 // 处理登录
-const handleLogin = () => {
-  loginFormRef.value.validate().then(() => {
+const handleLogin = async () => {
+  loginFormRef.value.validate().then(async () => {
     loading.value = true
-    // 模拟登录成功
-    setTimeout(() => {
-      loading.value = false
-      message.success('登录成功')
-      // 存储token和用户信息
-      localStorage.setItem('token', 'mock-token')
-      localStorage.setItem('userInfo', JSON.stringify({
+    try {
+      // 根据角色选择不同的登录接口
+      const loginUrl = loginForm.role === 'company' 
+        ? '/company/user/login' 
+        : '/merchant/user/login'
+
+      const response = await request.post(loginUrl, {
         username: loginForm.username,
-        role: loginForm.role
-      }))
-      // 跳转到首页
-      router.push('/')
-    }, 1000)
+        password: loginForm.password
+      })
+      
+      if (response.data) {
+        const { token, userInfo } = response.data
+        // 添加角色信息到用户信息中
+        userInfo.role = loginForm.role
+        userStore.login(userInfo, token)
+        message.success('登录成功')
+        router.push('/')
+      }
+    } catch (error) {
+      console.error('Login failed:', error)
+      message.error('登录失败：' + (error.message || '未知错误'))
+    } finally {
+      loading.value = false
+    }
   }).catch(error => {
     console.log('验证失败:', error)
   })

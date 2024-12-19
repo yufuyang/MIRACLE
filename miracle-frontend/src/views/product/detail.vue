@@ -20,7 +20,7 @@
             <div class="product-images">
               <a-carousel class="main-image">
                 <div v-for="image in product.images" :key="image.id">
-                  <img :src="image.imageUrl" :alt="product.productName" />
+                  <img :src="image.imageUrl || defaultImage" :alt="product.productName" />
                 </div>
               </a-carousel>
               <div class="thumbnail-list">
@@ -31,7 +31,7 @@
                   :class="{ active: currentImage === image.id }"
                   @click="currentImage = image.id"
                 >
-                  <img :src="image.imageUrl" :alt="product.productName" />
+                  <img :src="image.imageUrl || defaultImage" :alt="product.productName" />
                 </div>
               </div>
             </div>
@@ -83,7 +83,7 @@
                 <img
                   v-for="image in product.companyImages"
                   :key="image.id"
-                  :src="image.imageUrl"
+                  :src="image.imageUrl || defaultImage"
                   :alt="product.companyName"
                 />
               </div>
@@ -122,6 +122,7 @@ import {
   HeartOutlined
 } from '@ant-design/icons-vue'
 import { getProductDetail, addIntention } from '@/api/product'
+import defaultImage from '@/assets/images/default.jpg'
 
 const router = useRouter()
 const route = useRoute()

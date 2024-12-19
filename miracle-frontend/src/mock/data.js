@@ -95,7 +95,7 @@ export const mockCompanies = [
   {
     id: 1,
     companyName: '科技创新有限公司',
-    logo: '/default-company.png',
+    logo: '',
     description: '专注于人工智能和大数据技术的创新型企业，致力于为客户提供智能化解决方案。',
     address: '北京市海淀区',
     phone: '010-12345678',
@@ -106,7 +106,7 @@ export const mockCompanies = [
   {
     id: 2,
     companyName: '环保科技股份公司',
-    logo: '/default-company.png',
+    logo: '',
     description: '致力于环保技术研发和应用，提供全方位的环保解决方案。',
     address: '上海市浦东新区',
     phone: '021-87654321',
@@ -117,7 +117,7 @@ export const mockCompanies = [
   {
     id: 3,
     companyName: '智能制造技术公司',
-    logo: '/default-company.png',
+    logo: '',
     description: '专业从事工业自动化和智能制造设备研发生产的高新技术企业。',
     address: '深圳市南山区',
     phone: '0755-98765432',
@@ -128,7 +128,7 @@ export const mockCompanies = [
   {
     id: 4,
     companyName: '新能源科技有限公司',
-    logo: '/default-company.png',
+    logo: '',
     description: '专注于新能源技术研发和应用，提供清洁能源解决方案。',
     address: '广州市天河区',
     phone: '020-45678901',
@@ -139,7 +139,7 @@ export const mockCompanies = [
   {
     id: 5,
     companyName: '医疗器械研发公司',
-    logo: '/default-company.png',
+    logo: '',
     description: '致力于医疗器械研发和生产的高科技企业，拥有多项专利技术。',
     address: '杭州市滨江区',
     phone: '0571-23456789',
@@ -150,7 +150,7 @@ export const mockCompanies = [
   {
     id: 6,
     companyName: '物联网技术有限公司',
-    logo: '/default-company.png',
+    logo: '',
     description: '专业提供物联网技术解决方案，助力企业数字化转型。',
     address: '成都市高新区',
     phone: '028-34567890',

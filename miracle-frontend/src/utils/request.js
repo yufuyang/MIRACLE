@@ -1,16 +1,15 @@
 import axios from 'axios'
 import { message } from 'ant-design-vue'
 
-// 创建axios实例
-const service = axios.create({
-  baseURL: '', // url = base url + request url
-  timeout: 5000 // 请求超时时间
+const request = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '',
+  timeout: 10000
 })
 
 // 请求拦截器
-service.interceptors.request.use(
+request.interceptors.request.use(
   config => {
-    // 在发送请求之前做些什么
+    // 从 localStorage 获取 token
     const token = localStorage.getItem('token')
     if (token) {
       config.headers['Authorization'] = `Bearer ${token}`
@@ -18,32 +17,34 @@ service.interceptors.request.use(
     return config
   },
   error => {
-    console.error('请求错误:', error)
     return Promise.reject(error)
   }
 )
 
 // 响应拦截器
-service.interceptors.response.use(
+request.interceptors.response.use(
   response => {
     const res = response.data
-    // 如果返回的状态码不是200，说明接口有问题，把错误信息显示出来
-    if (res.code !== 200) {
-      message.error(res.message || '系统错误')
-      return Promise.reject(new Error(res.message || '系统错误'))
-    } else {
-      return res.data
+    if (!res.success) {
+      message.error(res.message || '请求失败')
+      if (res.code === 401) {
+        // token 过期或无效
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+      }
+      return Promise.reject(new Error(res.message || '请求失败'))
     }
+    return res
   },
   error => {
-    console.error('响应错误:', error)
-    if (error.code === 'ECONNREFUSED') {
-      message.error('无法连接到服务器，请确保后端服务已启动')
-    } else {
-      message.error(error.message || '请求失败')
+    console.error('请求错误:', error)
+    message.error(error.response?.data?.message || error.message || '请求失败')
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token')
+      window.location.href = '/login'
     }
     return Promise.reject(error)
   }
 )
 
-export default service 
+export default request 

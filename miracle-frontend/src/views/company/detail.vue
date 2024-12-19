@@ -19,7 +19,7 @@
           <a-col :span="16">
             <div class="info-main">
               <div class="company-header">
-                <img :src="company.logo || '/default-company.png'" class="company-logo" alt="公司logo" />
+                <img :src="company.logo || defaultImage" class="company-logo" alt="公司logo" />
                 <div class="company-title">
                   <h1>{{ company.companyName }}</h1>
                   <div class="company-stats">
@@ -38,7 +38,7 @@
                   <img 
                     v-for="image in company.images" 
                     :key="image.id" 
-                    :src="image.imageUrl" 
+                    :src="image.imageUrl || defaultImage" 
                     :alt="company.companyName"
                   />
                 </div>
@@ -73,7 +73,7 @@
         <a-row :gutter="[24, 24]">
           <a-col :span="6" v-for="product in products" :key="product.id">
             <a-card hoverable class="product-card" @click="goToProduct(product.id)">
-              <img :src="product.mainImage || '/default-product.png'" alt="产品图片" />
+              <img :src="product.mainImage || defaultImage" alt="产品图片" />
               <a-card-meta :title="product.productName">
                 <template #description>
                   <div class="product-price">¥ {{ product.price }}</div>
@@ -113,6 +113,7 @@ import {
 } from '@ant-design/icons-vue'
 import { getCompanyDetail } from '@/api/company'
 import { getCompanyProducts } from '@/api/product'
+import defaultImage from '@/assets/images/default.jpg'
 
 const router = useRouter()
 const route = useRoute()
