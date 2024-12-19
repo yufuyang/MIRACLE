@@ -11,34 +11,36 @@
   </a-carousel>
 
   <!-- 产品展示区域 -->
-  <section-container
-    title="热门产品推荐"
-    view-all-text="查看全部"
-    @view-all="goToProduct"
-  >
-    <div class="product-grid">
-      <div v-for="(product, index) in hotProducts" :key="product.id"
-           class="product-item"
-           :ref="el => productRefs[index] = el"
-           @click="goToProduct(product.id)">
-        <div class="product-image">
-          <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
-        </div>
-        <div class="product-info">
-          <div class="product-tag" v-if="product.isNew">新款</div>
-          <h3>{{ product.productName }}</h3>
-          <div class="product-subtitle">{{ product.description }}</div>
-          <div class="stats">
-            <span><eye-outlined /> {{ product.viewCount }} 浏览</span>
-            <span><heart-outlined /> {{ product.intentionCount }} 意向</span>
+  <div class="product-section">
+    <section-container
+      title="热门产品推荐"
+      view-all-text="查看全部"
+      @view-all="goToProduct"
+    >
+      <div class="product-grid">
+        <div v-for="(product, index) in hotProducts" :key="product.id"
+             class="product-item"
+             :ref="el => productRefs[index] = el"
+             @click="goToProduct(product.id)">
+          <div class="product-image">
+            <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
           </div>
-          <a-button type="link" class="learn-more">
-            了解更多 >
-          </a-button>
+          <div class="product-info">
+            <div class="product-tag" v-if="product.isNew">新款</div>
+            <h3>{{ product.productName }}</h3>
+            <div class="product-subtitle">{{ product.description }}</div>
+            <div class="stats">
+              <span><eye-outlined /> {{ product.viewCount }} 浏览</span>
+              <span><heart-outlined /> {{ product.intentionCount }} 意向</span>
+            </div>
+            <a-button type="link" class="learn-more">
+              了解更多 >
+            </a-button>
+          </div>
         </div>
       </div>
-    </div>
-  </section-container>
+    </section-container>
+  </div>
 
   <!-- 优质企业展示 -->
   <div class="company-section">
@@ -261,6 +263,9 @@ const goToRegister = () => {
   transition: transform 0.3s ease;
   opacity: 0;
   transform: translateY(20px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
   &.show {
     opacity: 1;
@@ -274,7 +279,7 @@ const goToRegister = () => {
   .product-image,
   .company-image {
     width: 100%;
-    height: 200px;
+    height: 240px;
     overflow: hidden;
 
     img {
@@ -288,6 +293,9 @@ const goToRegister = () => {
   .product-info,
   .company-info {
     padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 
     .product-tag {
       display: inline-block;
@@ -303,6 +311,12 @@ const goToRegister = () => {
       margin: 0 0 10px;
       font-size: 18px;
       font-weight: 600;
+      line-height: 1.4;
+      height: 50px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .product-subtitle,
@@ -313,6 +327,8 @@ const goToRegister = () => {
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      height: 40px;
+      line-height: 1.4;
     }
 
     .stats {
@@ -321,6 +337,7 @@ const goToRegister = () => {
       color: #666;
       font-size: 14px;
       margin-bottom: 12px;
+      margin-top: auto;
     }
 
     .learn-more {
@@ -364,15 +381,29 @@ const goToRegister = () => {
   }
 }
 
+.product-section {
+  position: relative;
+  padding: 40px 0;
+  background: #fff;
+
+  :deep(.section) {
+    position: relative;
+    z-index: 2;
+    background: transparent;
+    padding-top: 0;
+  }
+}
+
 .company-section {
   position: relative;
-  padding: 80px 0;
+  padding: 40px 0;
   background: #f0f2f5;
 
   :deep(.section) {
     position: relative;
     z-index: 2;
     background: transparent;
+    padding-top: 0;
   }
 
   .company-grid {
@@ -386,6 +417,7 @@ const goToRegister = () => {
 }
 
 @media (max-width: 768px) {
+  .product-section,
   .company-section {
     padding: 40px 0;
   }
