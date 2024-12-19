@@ -11,50 +11,41 @@
   </a-carousel>
 
   <!-- 产品展示区域 -->
-  <div class="section product-section">
-    <div class="section-content">
-      <div class="section-header" ref="headerRef">
-        <h2 class="section-title">热门产品推荐</h2>
-        <a class="compare-link">比较各款机型 ></a>
-      </div>
-
-      <div class="product-grid">
-        <div v-for="(product, index) in hotProducts" :key="product.id"
-             class="product-item"
-             :ref="el => productRefs[index] = el"
-             @click="goToProduct(product.id)">
-          <div class="product-image">
-            <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
+  <section-container
+    title="热门产品推荐"
+    view-all-text="查看全部"
+    @view-all="goToProduct"
+  >
+    <div class="product-grid">
+      <div v-for="(product, index) in hotProducts" :key="product.id"
+           class="product-item"
+           :ref="el => productRefs[index] = el"
+           @click="goToProduct(product.id)">
+        <div class="product-image">
+          <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
+        </div>
+        <div class="product-info">
+          <div class="product-tag" v-if="product.isNew">新款</div>
+          <h3>{{ product.productName }}</h3>
+          <div class="product-subtitle">{{ product.description }}</div>
+          <div class="stats">
+            <span><eye-outlined /> {{ product.viewCount }} 浏览</span>
+            <span><heart-outlined /> {{ product.intentionCount }} 意向</span>
           </div>
-          <div class="product-info">
-            <div class="product-tag">新款</div>
-            <h3>{{ product.productName }}</h3>
-            <div class="product-subtitle">{{ product.description }}</div>
-            <div class="price-info">
-              <div class="monthly">
-                <span class="amount">¥{{ Math.floor(product.price/24) }}</span>/月起或
-              </div>
-              <div class="total">
-                ¥{{ product.price }} 起**
-              </div>
-            </div>
-            <a-button type="link" class="learn-more">
-              了解更多 >
-            </a-button>
-          </div>
+          <a-button type="link" class="learn-more">
+            了解更多 >
+          </a-button>
         </div>
       </div>
     </div>
-  </div>
+  </section-container>
 
   <!-- 优质企业展示 -->
-  <div class="section company-section">
-    <div class="section-content">
-      <div class="section-header" ref="companyHeaderRef">
-        <h2 class="section-title">优质企业展示</h2>
-        <a class="view-all-link">查看全部 ></a>
-      </div>
-
+  <div class="company-section">
+    <section-container
+      title="优质企业展示"
+      @view-all="goToCompany"
+    >
       <div class="company-grid">
         <div v-for="(company, index) in featuredCompanies" :key="company.id"
              class="company-item"
@@ -76,6 +67,15 @@
           </div>
         </div>
       </div>
+    </section-container>
+  </div>
+
+  <!-- 合作邀请区域 -->
+  <div class="cooperation-section">
+    <div class="cooperation-content">
+      <h2>欢迎加入 MIRACLE</h2>
+      <p>立即注册，开启智能制造新征程</p>
+      <a-button type="primary" size="large" @click="goToRegister">免费注册</a-button>
     </div>
   </div>
 </template>
@@ -83,13 +83,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { RightOutlined, ShopOutlined, EyeOutlined } from '@ant-design/icons-vue'
+import { ShopOutlined, EyeOutlined, HeartOutlined } from '@ant-design/icons-vue'
 import { mockProducts, mockCompanies } from '@/mock/data'
 import defaultImage from '@/assets/images/default.jpg'
+import SectionContainer from '@/components/SectionContainer.vue'
 
 const router = useRouter()
-const headerRef = ref(null)
-const companyHeaderRef = ref(null)
 const productRefs = ref([])
 const companyRefs = ref([])
 
@@ -113,8 +112,8 @@ const banners = ref([
 ])
 
 // 使用模拟数据
-const hotProducts = ref(mockProducts.slice(0, 4))
-const featuredCompanies = ref(mockCompanies.slice(0, 4))
+const hotProducts = ref(mockProducts.slice(0, 6))
+const featuredCompanies = ref(mockCompanies.slice(0, 6))
 
 // 创建观察器
 const createObserver = (delay = 0) => {
@@ -132,11 +131,6 @@ const createObserver = (delay = 0) => {
 }
 
 onMounted(() => {
-  // 为标题添加观察器
-  const headerObserver = createObserver()
-  if (headerRef.value) headerObserver.observe(headerRef.value)
-  if (companyHeaderRef.value) headerObserver.observe(companyHeaderRef.value)
-
   // 为产品添加观察器
   productRefs.value.forEach((el, index) => {
     if (el) {
@@ -156,186 +150,28 @@ onMounted(() => {
 
 // 跳转函数
 const goToProduct = (id) => {
-  router.push(`/product/${id}`)
+  if (id) {
+    router.push(`/product/${id}`)
+  } else {
+    router.push('/product')
+  }
 }
 
 const goToCompany = (id) => {
-  router.push(`/company/${id}`)
+  if (id) {
+    router.push(`/company/${id}`)
+  } else {
+    router.push('/company')
+  }
+}
+
+// 跳转到注册页
+const goToRegister = () => {
+  router.push('/register')
 }
 </script>
 
 <style scoped lang="less">
-.section {
-  padding: 80px 0;
-  background: #fff;
-  color: #333;
-  overflow: hidden;
-
-  .section-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-  }
-
-  .section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 40px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.8s cubic-bezier(0.33, 1, 0.68, 1);
-
-    &.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .section-title {
-      font-size: 40px;
-      font-weight: 600;
-      margin: 0;
-    }
-
-    .compare-link, .view-all-link {
-      color: #0066cc;
-      font-size: 17px;
-      cursor: pointer;
-      transition: opacity 0.3s;
-
-      &:hover {
-        opacity: 0.7;
-      }
-    }
-  }
-}
-
-.product-grid, .company-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 30px;
-  margin-top: 30px;
-}
-
-.product-item, .company-item {
-  text-align: center;
-  cursor: pointer;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s cubic-bezier(0.33, 1, 0.68, 1);
-
-  &.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  &:hover {
-    transform: translateY(-5px);
-  }
-
-  .product-image, .company-image {
-    width: 100%;
-    height: 300px;
-    margin-bottom: 20px;
-    border-radius: 18px;
-    overflow: hidden;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.6s ease;
-    }
-  }
-
-  .product-info, .company-info {
-    padding: 0 20px;
-
-    .product-tag {
-      display: inline-block;
-      color: #bf4800;
-      font-size: 12px;
-      margin-bottom: 8px;
-    }
-
-    h3 {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 8px;
-      color: #1d1d1f;
-    }
-
-    .product-subtitle, .company-subtitle {
-      font-size: 14px;
-      color: #86868b;
-      margin-bottom: 12px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .price-info {
-      margin-bottom: 12px;
-
-      .monthly {
-        font-size: 14px;
-        color: #86868b;
-        margin-bottom: 4px;
-
-        .amount {
-          font-size: 17px;
-          color: #1d1d1f;
-          font-weight: 600;
-        }
-      }
-
-      .total {
-        font-size: 14px;
-        color: #86868b;
-      }
-    }
-
-    .stats {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      font-size: 14px;
-      color: #86868b;
-      margin-bottom: 12px;
-    }
-
-    .learn-more {
-      color: #0066cc;
-      font-size: 17px;
-      padding: 0;
-      height: auto;
-      border: none;
-      background: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .section {
-    padding: 40px 0;
-
-    .section-header {
-      .section-title {
-        font-size: 32px;
-      }
-    }
-  }
-
-  .product-grid, .company-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
 .banner-carousel {
   width: 100%;
   max-width: 1000px;
@@ -380,25 +216,11 @@ const goToCompany = (id) => {
       }
     }
   }
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.3) 100%);
-    border-radius: 20px;
-    z-index: 1;
-    pointer-events: none;
-  }
 }
 
 .banner-item {
   position: relative;
   height: 500px;
-  overflow: hidden;
 
   .banner-info {
     position: absolute;
@@ -408,56 +230,228 @@ const goToCompany = (id) => {
     text-align: center;
     color: #fff;
     z-index: 2;
-    width: 80%;
-    max-width: 800px;
-    opacity: 0;
-    animation: fadeInUp 1s forwards;
 
     h2 {
-      font-size: 52px;
-      font-weight: 700;
+      font-size: 48px;
+      font-weight: 600;
       margin-bottom: 16px;
       color: #fff;
-      letter-spacing: -0.02em;
-      line-height: 1.2;
-      text-shadow: 0 2px 20px rgba(0,0,0,0.3);
-      transform: translateY(20px);
-      opacity: 0;
-      animation: slideUp 0.8s forwards 0.3s;
     }
 
     p {
       font-size: 24px;
       margin: 0;
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 400;
-      letter-spacing: 0.02em;
-      transform: translateY(20px);
-      opacity: 0;
-      animation: slideUp 0.8s forwards 0.5s;
     }
   }
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -40%);
-  }
-  to {
+.product-grid,
+.company-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.product-item,
+.company-item {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(20px);
+
+  &.show {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: translateY(0);
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  .product-image,
+  .company-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s ease;
+    }
+  }
+
+  .product-info,
+  .company-info {
+    padding: 20px;
+
+    .product-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #ff6b00;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    h3 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .product-subtitle,
+    .company-subtitle {
+      color: #666;
+      margin-bottom: 15px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .learn-more {
+      color: #0066cc;
+      font-size: 17px;
+      padding: 0;
+      height: auto;
+      border: none;
+      background: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
   }
 }
 
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+@media (max-width: 768px) {
+  .banner-carousel {
+    height: 300px;
+    margin: 20px auto;
+
+    :deep(.slick-slide) img {
+      height: 300px;
+    }
+
+    .banner-info {
+      h2 {
+        font-size: 32px;
+      }
+
+      p {
+        font-size: 18px;
+      }
+    }
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+
+  .product-grid,
+  .company-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.company-section {
+  position: relative;
+  padding: 80px 0;
+  background: #f0f2f5;
+
+  :deep(.section) {
+    position: relative;
+    z-index: 2;
+    background: transparent;
+  }
+
+  .company-grid {
+    position: relative;
+    z-index: 2;
+  }
+
+  .company-item {
+    background: #fff;
+  }
+}
+
+@media (max-width: 768px) {
+  .company-section {
+    padding: 40px 0;
+  }
+}
+
+.cooperation-section {
+  padding: 80px 0;
+  background: #fff;
+  text-align: center;
+  color: #333;
+
+  .cooperation-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+
+    h2 {
+      font-size: 36px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    p {
+      font-size: 18px;
+      margin-bottom: 32px;
+      color: #666;
+    }
+
+    .ant-btn {
+      height: 48px;
+      padding: 0 40px;
+      font-size: 16px;
+      border-radius: 24px;
+      background: #1890ff;
+      color: #fff;
+      border: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+
+      &:hover {
+        background: #40a9ff;
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .cooperation-section {
+    padding: 40px 0;
+
+    .cooperation-content {
+      h2 {
+        font-size: 28px;
+      }
+
+      p {
+        font-size: 16px;
+      }
+
+      .ant-btn {
+        height: 44px;
+        padding: 0 32px;
+        font-size: 15px;
+      }
+    }
   }
 }
 </style>

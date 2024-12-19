@@ -48,6 +48,11 @@ const router = createRouter({
           name: 'workspace',
           component: () => import('@/views/workspace/index.vue'),
           meta: { requiresAuth: true }
+        },
+        {
+          path: 'example',
+          name: 'example',
+          component: () => import('@/views/example/index.vue')
         }
       ]
     }

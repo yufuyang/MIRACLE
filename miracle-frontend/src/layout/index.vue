@@ -93,24 +93,6 @@ onMounted(() => {
     userInfo.value = JSON.parse(storedUserInfo)
   }
 })
-
-const menuItems = [
-  {
-    key: 'home',
-    title: '首页',
-    path: '/'
-  },
-  {
-    key: 'product',
-    title: '产品',
-    path: '/product'
-  },
-  {
-    key: 'company',
-    title: '企业',
-    path: '/company'
-  }
-]
 </script>
 
 <style scoped lang="less">
