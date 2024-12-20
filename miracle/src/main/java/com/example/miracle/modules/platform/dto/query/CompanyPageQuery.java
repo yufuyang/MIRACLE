@@ -1,6 +1,6 @@
 package com.example.miracle.modules.platform.dto.query;
 
-import com.example.miracle.common.dto.query.PageQuery;
+import com.example.miracle.common.dto.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 

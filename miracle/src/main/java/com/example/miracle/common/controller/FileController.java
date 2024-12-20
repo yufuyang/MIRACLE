@@ -19,10 +19,10 @@ public class FileController {
 
     private final MinioClient minioClient;
 
-    @Value("${minio.bucket}")
+    @Value("${spring.minio.bucket-name}")
     private String bucket;
 
-    @Value("${minio.endpoint}")
+    @Value("${spring.minio.url}")
     private String endpoint;
 
     /**

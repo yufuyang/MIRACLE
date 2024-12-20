@@ -1,6 +1,7 @@
 package com.example.miracle.modules.merchant.dto.query;
 
-import com.example.miracle.common.dto.query.PageQuery;
+
+import com.example.miracle.common.dto.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
