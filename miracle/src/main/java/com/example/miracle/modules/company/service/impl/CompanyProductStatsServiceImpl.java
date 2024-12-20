@@ -8,14 +8,15 @@ import com.example.miracle.modules.company.dto.query.CompanyProductStatsQuery;
 import com.example.miracle.modules.company.entity.CompanyProductStats;
 import com.example.miracle.modules.company.mapper.CompanyProductStatsMapper;
 import com.example.miracle.modules.company.service.CompanyProductStatsService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 产品统计服务实现类
  */
 @Service
-@RequiredArgsConstructor
 public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductStatsMapper, CompanyProductStats> implements CompanyProductStatsService {
 
     @Override
@@ -27,7 +28,6 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
 
         // 添加排序
         if (query.getOrderField() != null) {
-
             switch (query.getOrderField()) {
                 case "viewCount":
                     wrapper.orderBy(true, query.getAsc(), CompanyProductStats::getViewCount);
@@ -49,5 +49,10 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
         );
 
         return MultiResponse.of(page.getRecords(), (int) page.getTotal());
+    }
+
+    @Override
+    public List<Map<String, Object>> selectTopCompanies(int limit) {
+        return this.baseMapper.selectTopCompanies(limit);
     }
 }
