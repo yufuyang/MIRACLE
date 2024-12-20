@@ -2,8 +2,8 @@ package com.example.miracle.modules.website.controller;
 
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.modules.company.dto.ActivityDTO;
-import com.example.miracle.modules.platform.dto.CompanyDTO;
-import com.example.miracle.modules.company.dto.ProductDTO;
+import com.example.miracle.modules.website.dto.CompanyDTO;
+import com.example.miracle.modules.website.dto.ProductDTO;
 import com.example.miracle.modules.website.service.WebsiteHomeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
