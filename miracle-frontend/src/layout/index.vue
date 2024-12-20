@@ -14,6 +14,9 @@
           <a-menu-item key="company">
             <router-link to="/company">企业</router-link>
           </a-menu-item>
+          <a-menu-item key="activity">
+            <router-link to="/activity">活动</router-link>
+          </a-menu-item>
           <a-menu-item key="workspace" v-if="userInfo">
             <router-link to="/workspace">工作台</router-link>
           </a-menu-item>
@@ -66,6 +69,7 @@ const selectedKeys = computed(() => {
   const path = route.path
   if (path.startsWith('/product')) return ['product']
   if (path.startsWith('/company')) return ['company']
+  if (path.startsWith('/activity')) return ['activity']
   if (path.startsWith('/workspace')) return ['workspace']
   return ['home']
 })

@@ -61,7 +61,7 @@
             <div class="company-subtitle">{{ company.description }}</div>
             <div class="stats">
               <span><shop-outlined /> {{ company.productCount }} 产品</span>
-              <span><eye-outlined /> {{ company.viewCount }} 浏览</span>
+              <span><heart-outlined /> {{ company.intentionCount }} 意向</span>
             </div>
             <a-button type="link" class="learn-more">
               了解更多 >

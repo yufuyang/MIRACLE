@@ -1,62 +1,63 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Layout from '@/layout/index.vue'
 
+const routes = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/login/index.vue')
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: () => import('@/views/register/index.vue')
+  },
+  {
+    path: '/',
+    component: Layout,
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: () => import('@/views/home/index.vue')
+      },
+      {
+        path: 'product',
+        name: 'Product',
+        component: () => import('@/views/product/index.vue')
+      },
+      {
+        path: 'product/:id',
+        name: 'ProductDetail',
+        component: () => import('@/views/product/detail.vue')
+      },
+      {
+        path: 'company',
+        name: 'Company',
+        component: () => import('@/views/company/list.vue')
+      },
+      {
+        path: 'company/:id',
+        name: 'CompanyDetail',
+        component: () => import('@/views/company/detail.vue')
+      },
+      {
+        path: 'activity',
+        name: 'Activity',
+        component: () => import('@/views/activity/index.vue')
+      },
+      {
+        path: 'activity/:id',
+        name: 'ActivityDetail',
+        component: () => import('@/views/activity/detail.vue')
+      }
+    ]
+  }
+]
+
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/login/index.vue')
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: () => import('@/views/register/index.vue')
-    },
-    {
-      path: '/',
-      component: Layout,
-      children: [
-        {
-          path: '',
-          name: 'home',
-          component: () => import('@/views/home/index.vue')
-        },
-        {
-          path: 'product',
-          name: 'product',
-          component: () => import('@/views/product/index.vue')
-        },
-        {
-          path: 'product/:id',
-          name: 'productDetail',
-          component: () => import('@/views/product/detail.vue')
-        },
-        {
-          path: 'company',
-          name: 'company',
-          component: () => import('@/views/company/list.vue')
-        },
-        {
-          path: 'company/:id',
-          name: 'companyDetail',
-          component: () => import('@/views/company/detail.vue')
-        },
-        {
-          path: 'workspace',
-          name: 'workspace',
-          component: () => import('@/views/workspace/index.vue'),
-          meta: { requiresAuth: true }
-        },
-        {
-          path: 'example',
-          name: 'example',
-          component: () => import('@/views/example/index.vue')
-        }
-      ]
-    }
-  ],
+  history: createWebHistory(),
+  routes,
   scrollBehavior(to, from, savedPosition) {
     // 始终滚动到顶部
     return { top: 0 }

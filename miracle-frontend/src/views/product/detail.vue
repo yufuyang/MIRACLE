@@ -1,17 +1,6 @@
 <template>
   <div class="product-detail">
     <div class="container">
-      <!-- 面包屑导航 -->
-      <a-breadcrumb class="breadcrumb">
-        <a-breadcrumb-item>
-          <router-link to="/">首页</router-link>
-        </a-breadcrumb-item>
-        <a-breadcrumb-item>
-          <router-link to="/product">产品</router-link>
-        </a-breadcrumb-item>
-        <a-breadcrumb-item>{{ product.productName }}</a-breadcrumb-item>
-      </a-breadcrumb>
-
       <!-- 产品信息 -->
       <div class="product-info">
         <a-row :gutter="24">
@@ -73,7 +62,19 @@
       <div class="product-content">
         <a-tabs v-model:activeKey="activeTab">
           <a-tab-pane key="detail" tab="产品详情">
-            <div class="detail-content" v-html="product.description"></div>
+            <div class="detail-content">
+              <div class="detail-text" v-html="product.description"></div>
+            </div>
+          </a-tab-pane>
+          <a-tab-pane key="steps" tab="产品步骤">
+            <div class="steps-content">
+              <a-steps :current="0" direction="vertical">
+                <a-step title="准备工作" description="检查设备电源和连接是否正常" />
+                <a-step title="安装配置" description="按照说明书进行安装和基础配置" />
+                <a-step title="调试运行" description="进行设备调试和测试运行" />
+                <a-step title="正式使用" description="开始正式使用设备进行生产" />
+              </a-steps>
+            </div>
           </a-tab-pane>
           <a-tab-pane key="company" tab="企业信息">
             <div class="company-detail">
@@ -216,10 +217,6 @@ onMounted(() => {
     margin: 0 auto;
     padding: 24px;
 
-    .breadcrumb {
-      margin-bottom: 24px;
-    }
-
     .product-info {
       background: #fff;
       padding: 24px;
@@ -307,6 +304,28 @@ onMounted(() => {
 
       .detail-content {
         padding: 24px 0;
+      }
+
+      .steps-content {
+        padding: 40px 0;
+        max-width: 800px;
+        margin: 0 auto;
+
+        :deep(.ant-steps-vertical) {
+          .ant-steps-item {
+            margin-bottom: 24px;
+            
+            .ant-steps-item-title {
+              font-size: 18px;
+              font-weight: 500;
+            }
+            
+            .ant-steps-item-description {
+              font-size: 14px;
+              color: #666;
+            }
+          }
+        }
       }
 
       .company-detail {

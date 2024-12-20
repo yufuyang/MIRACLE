@@ -24,6 +24,23 @@
       </a-form>
     </div>
 
+    <!-- 排序区域 -->
+    <div class="sort-section">
+      <a-radio-group v-model:value="searchForm.orderField" @change="onSearch">
+        <a-radio-button value="">默认排序</a-radio-button>
+        <a-radio-button value="productCount">
+          产品数
+          <up-outlined v-if="searchForm.orderField === 'productCount' && searchForm.asc" />
+          <down-outlined v-if="searchForm.orderField === 'productCount' && !searchForm.asc" />
+        </a-radio-button>
+        <a-radio-button value="intentionCount">
+          意向数
+          <up-outlined v-if="searchForm.orderField === 'intentionCount' && searchForm.asc" />
+          <down-outlined v-if="searchForm.orderField === 'intentionCount' && !searchForm.asc" />
+        </a-radio-button>
+      </a-radio-group>
+    </div>
+
     <!-- 企业列表 -->
     <div class="company-grid">
       <a-row :gutter="[16, 16]">
@@ -41,6 +58,10 @@
                 <div class="company-info">
                   <p>{{ company.address }}</p>
                   <p class="description">{{ company.description }}</p>
+                  <div class="stats">
+                    <span><shop-outlined /> {{ company.productCount }} 产品</span>
+                    <span><heart-outlined /> {{ company.intentionCount }} 意向</span>
+                  </div>
                 </div>
               </template>
             </a-card-meta>
@@ -67,6 +88,7 @@
 <script setup>
 import { ref, onMounted, reactive, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { UpOutlined, DownOutlined, ShopOutlined, HeartOutlined } from '@ant-design/icons-vue'
 import { mockCompanies } from '@/mock/data'
 
 const router = useRouter()
@@ -77,7 +99,9 @@ const searchForm = reactive({
   pageNum: 1,
   pageSize: 12,
   companyName: '',
-  region: ''
+  region: '',
+  orderField: '',
+  asc: true
 })
 
 // 根据搜索条件筛选企业
@@ -96,6 +120,21 @@ const filteredCompanies = computed(() => {
     result = result.filter(item => 
       item.address.includes(searchForm.region)
     )
+  }
+  
+  // 排序
+  if (searchForm.orderField) {
+    result.sort((a, b) => {
+      const factor = searchForm.asc ? 1 : -1
+      switch (searchForm.orderField) {
+        case 'productCount':
+          return (a.productCount - b.productCount) * factor
+        case 'intentionCount':
+          return (a.intentionCount - b.intentionCount) * factor
+        default:
+          return 0
+      }
+    })
   }
   
   return result
@@ -162,6 +201,10 @@ onMounted(() => {
     border-radius: 4px;
   }
 
+  .sort-section {
+    margin-bottom: 24px;
+  }
+
   .company-grid {
     background: #fff;
     padding: 24px;
@@ -179,6 +222,20 @@ onMounted(() => {
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
+        margin-bottom: 12px;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: space-between;
+        color: #666;
+        font-size: 14px;
+
+        span {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
       }
     }
   }

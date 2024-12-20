@@ -11,14 +11,10 @@
           />
         </a-form-item>
         <a-form-item label="分类">
-          <a-tree-select
-            v-model:value="searchForm.categoryId"
-            style="width: 200px"
-            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            :tree-data="categories"
-            placeholder="请选择分类"
-            tree-default-expand-all
-            allow-clear
+          <a-input
+            v-model:value="searchForm.category"
+            placeholder="请输入分类"
+            allowClear
           />
         </a-form-item>
         <a-form-item label="价格区间">
@@ -74,10 +70,12 @@
             <a-card-meta :title="item.productName">
               <template #description>
                 <div class="product-info">
-                  <span class="price">¥ {{ item.price }}</span>
+                  <h3>{{ item.productName }}</h3>
+                  <div class="product-subtitle">{{ item.description }}</div>
+                  <div class="price">¥ {{ item.price }}</div>
                   <div class="stats">
-                    <span><eye-outlined /> {{ item.viewCount }}</span>
-                    <span><heart-outlined /> {{ item.intentionCount }}</span>
+                    <span><eye-outlined /> {{ item.viewCount }} 浏览量</span>
+                    <span><heart-outlined /> {{ item.intentionCount }} 意向数</span>
                   </div>
                 </div>
               </template>
@@ -116,7 +114,7 @@ const searchForm = reactive({
   pageNum: 1,
   pageSize: 12,
   productName: '',
-  categoryId: undefined,
+  category: '',
   minPrice: undefined,
   maxPrice: undefined,
   orderField: '',
@@ -126,6 +124,11 @@ const searchForm = reactive({
 // 数据
 const total = ref(mockProducts.length)
 const categories = ref(mockCategories)
+
+// 分类搜索过滤函数
+const filterOption = (input, option) => {
+  return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+}
 
 // 根据搜索条件和排序筛选产品
 const filteredProducts = computed(() => {
@@ -139,8 +142,10 @@ const filteredProducts = computed(() => {
   }
   
   // 按分类筛选
-  if (searchForm.categoryId) {
-    result = result.filter(item => item.categoryId === searchForm.categoryId)
+  if (searchForm.category) {
+    result = result.filter(item => 
+      item.category.toLowerCase().includes(searchForm.category.toLowerCase())
+    )
   }
   
   // 按价格区间筛选
@@ -171,7 +176,7 @@ const filteredProducts = computed(() => {
   return result
 })
 
-// 分页后的产品列表
+// 分页的产品列表
 const productList = computed(() => {
   const start = (searchForm.pageNum - 1) * searchForm.pageSize
   const end = start + searchForm.pageSize
@@ -187,7 +192,7 @@ const onSearch = () => {
 // 重置
 const onReset = () => {
   searchForm.productName = ''
-  searchForm.categoryId = undefined
+  searchForm.category = ''
   searchForm.minPrice = undefined
   searchForm.maxPrice = undefined
   searchForm.orderField = ''
@@ -246,21 +251,38 @@ onMounted(() => {
       }
 
       .product-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 8px;
+        padding: 16px;
+
+        h3 {
+          margin: 0 0 8px;
+          font-size: 16px;
+          font-weight: 500;
+        }
+
+        .product-subtitle {
+          color: #666;
+          font-size: 14px;
+          margin-bottom: 8px;
+        }
 
         .price {
-          color: #f5222d;
-          font-size: 16px;
-          font-weight: bold;
+          color: #ff4d4f;
+          font-size: 18px;
+          font-weight: 500;
+          margin-bottom: 8px;
         }
 
         .stats {
           display: flex;
-          gap: 8px;
-          color: #999;
+          justify-content: space-between;
+          color: #666;
+          font-size: 14px;
+
+          span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+          }
         }
       }
     }
@@ -269,6 +291,23 @@ onMounted(() => {
   .pagination {
     margin-top: 24px;
     text-align: center;
+  }
+
+  :deep(.category-dropdown) {
+    max-height: 400px;
+    overflow-y: auto;
+
+    .ant-select-item {
+      padding: 8px 12px;
+      
+      &:hover {
+        background-color: #f5f5f5;
+      }
+      
+      &.ant-select-item-option-selected {
+        background-color: #e6f7ff;
+      }
+    }
   }
 }
 </style> 
