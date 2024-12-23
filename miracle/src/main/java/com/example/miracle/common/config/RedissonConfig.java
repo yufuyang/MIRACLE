@@ -25,7 +25,7 @@ public class RedissonConfig {
     @Value("${spring.redis.password:}")
     private String password;
 
-    @Value("${spring.redis.database:8}")
+    @Value("${spring.redis.database:0}")
     private Integer database;
 
     @Bean

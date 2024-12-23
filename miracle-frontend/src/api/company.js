@@ -41,4 +41,89 @@ export function getActivityDetail(id) {
     url: `/company/activity/${id}`,
     method: 'get'
   })
+}
+
+// 获取企业统计数据
+export function getCompanyStats() {
+  return request({
+    url: '/website/company/stats',
+    method: 'get'
+  })
+}
+
+// 获取公司产品列表
+export function getCompanyProducts(params) {
+  return request({
+    url: '/company/product/page',
+    method: 'post',
+    data: params
+  })
+}
+
+// 添加公司产品
+export function addCompanyProduct(data) {
+  return request({
+    url: '/company/product',
+    method: 'post',
+    data
+  })
+}
+
+// 更新公司产品
+export function updateCompanyProduct(data) {
+  return request({
+    url: '/company/product',
+    method: 'put',
+    data
+  })
+}
+
+// 删除公司产品
+export function deleteCompanyProduct(id) {
+  return request({
+    url: `/company/product/${id}`,
+    method: 'delete'
+  })
+}
+
+// 切换产品状态
+export function toggleProductStatus(id) {
+  return request({
+    url: `/company/product/${id}/status`,
+    method: 'put'
+  })
+}
+
+// 获取产品分类列表
+export function getProductCategories() {
+  return request({
+    url: '/company/product/category/list',
+    method: 'get'
+  })
+}
+
+// 添加产品分类
+export function addCategory(data) {
+  return request({
+    url: '/company/product/category',
+    method: 'post',
+    data
+  })
+}
+
+// 更新产品分类
+export function updateCategory(data) {
+  return request({
+    url: '/company/product/category',
+    method: 'put',
+    data
+  })
+}
+
+// 删除产品分类
+export function deleteCategory(id) {
+  return request({
+    url: `/company/product/category/${id}`,
+    method: 'delete'
+  })
 } 

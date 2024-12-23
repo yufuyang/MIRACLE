@@ -28,4 +28,13 @@ public class WebsiteMerchantController {
         return SingleResponse.of(merchant);
     }
 
+    /**
+     * 获取商户详情
+     */
+    @GetMapping("/{id}")
+    public SingleResponse<Merchant> getById(@PathVariable Long id) {
+        return SingleResponse.of(merchantService.getById(id));
+    }
+
+
 } 

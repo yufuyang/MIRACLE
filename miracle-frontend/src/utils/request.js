@@ -1,25 +1,24 @@
 import axios from 'axios'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
+import router from '@/router'
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: '/miracle', // 添加/miracle前缀
-  timeout: 15000
+  baseURL: '/miracle',
+  timeout: 10000
 })
 
 // 请求拦截器
 service.interceptors.request.use(
   config => {
-    // 从localStorage获取token
     const token = localStorage.getItem('token')
     if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`
+      config.headers['Authorization'] = token
     }
     return config
   },
   error => {
-    console.error('Request error:', error)
+    console.error('请求错误:', error)
     return Promise.reject(error)
   }
 )
@@ -28,25 +27,40 @@ service.interceptors.request.use(
 service.interceptors.response.use(
   response => {
     const res = response.data
-    
-    // 如果响应成功但业务状态码不是200，显示错误信息
-    if (res.code && res.code !== 200) {
-      message.error(res.message || '请求失败')
-      return Promise.reject(new Error(res.message || '请求失败'))
+    if (res.code === 401) {
+      message.error('登录已过期，请重新登录')
+      localStorage.removeItem('token')
+      localStorage.removeItem('userInfo')
+      router.push('/login')
+      return Promise.reject(new Error('登录已过期'))
     }
-    
     return res
   },
   error => {
-    console.error('Response error:', error)
-    // 处理401未授权的情况
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('userInfo')
-      const router = useRouter()
-      router.push('/login')
+    console.error('响应错误:', error)
+    if (error.response) {
+      switch (error.response.status) {
+        case 401:
+          message.error('登录已过期，请重新登录')
+          localStorage.removeItem('token')
+          localStorage.removeItem('userInfo')
+          router.push('/login')
+          break
+        case 403:
+          message.error('没有权限访问')
+          break
+        case 404:
+          message.error('请求的资源不存在')
+          break
+        case 500:
+          message.error('服务器错误')
+          break
+        default:
+          message.error(error.response.data.message || '请求失败')
+      }
+    } else {
+      message.error('网络错误，请检查网络连接')
     }
-    message.error(error.response?.data?.message || '请求失败')
     return Promise.reject(error)
   }
 )

@@ -25,41 +25,20 @@
         </a-row>
       </div>
 
-      <!-- 数据统计 -->
-      <div class="stats-section">
-        <a-row :gutter="16">
-          <a-col :span="8" v-for="stat in stats" :key="stat.key">
-            <a-card>
-              <a-statistic
-                :title="stat.title"
-                :value="stat.value"
-                :precision="stat.precision"
-              >
-                <template #suffix>
-                  <span class="stat-trend" :class="{ up: stat.trend > 0, down: stat.trend < 0 }">
-                    {{ stat.trend > 0 ? '+' : '' }}{{ stat.trend }}%
-                  </span>
-                </template>
-              </a-statistic>
-            </a-card>
-          </a-col>
-        </a-row>
-      </div>
-
-      <!-- 最近活动 -->
-      <div class="recent-activities">
-        <a-card title="最近活动">
-          <a-timeline>
-            <a-timeline-item v-for="activity in activities" :key="activity.id">
-              <template #dot>
-                <component :is="activity.icon" style="font-size: 16px" />
-              </template>
-              <div class="activity-content">
-                <div class="activity-title">{{ activity.title }}</div>
-                <div class="activity-time">{{ activity.time }}</div>
-              </div>
-            </a-timeline-item>
-          </a-timeline>
+      <!-- 企业数据概览 -->
+      <div v-if="userInfo.role === 'company'" class="company-overview">
+        <a-card title="企业数据概览">
+          <a-row :gutter="16">
+            <a-col :span="8">
+              <a-statistic title="产品总数" :value="companyData.productCount" />
+            </a-col>
+            <a-col :span="8">
+              <a-statistic title="活动总数" :value="companyData.activityCount" />
+            </a-col>
+            <a-col :span="8">
+              <a-statistic title="意向咨询" :value="companyData.intentionCount" />
+            </a-col>
+          </a-row>
         </a-card>
       </div>
     </div>
@@ -67,8 +46,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { getCompanyStats } from '@/api/company'
 import {
   ShopOutlined,
   AppstoreOutlined,
@@ -81,11 +61,16 @@ import {
 
 const router = useRouter()
 const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || '{}'))
+const companyData = ref({
+  productCount: 0,
+  activityCount: 0,
+  intentionCount: 0
+})
 
 // 欢迎文本
 const welcomeText = computed(() => {
   const role = userInfo.value.role
-  return role === 'company' ? '开始管理您的产品和订单' : '浏览最新的产品和商机'
+  return role === 'company' ? '管理您的企业数据' : '浏览最新的产品和商机'
 })
 
 // 快捷操作
@@ -95,19 +80,19 @@ const quickActions = computed(() => {
       {
         key: 'products',
         title: '产品管理',
-        description: '管理您的产品信息',
+        description: '管理产品信息',
         icon: AppstoreOutlined
       },
       {
-        key: 'orders',
-        title: '订单管理',
-        description: '查看和处理订单',
+        key: 'activities',
+        title: '活动管理',
+        description: '管理企业活动',
         icon: FileTextOutlined
       },
       {
-        key: 'messages',
-        title: '消息中心',
-        description: '查看商户意向',
+        key: 'inquiries',
+        title: '意向管理',
+        description: '查看商户咨询',
         icon: MessageOutlined
       },
       {
@@ -147,73 +132,23 @@ const quickActions = computed(() => {
   }
 })
 
-// 统计数据
-const stats = ref([
-  {
-    key: 'views',
-    title: '浏览量',
-    value: 1234,
-    precision: 0,
-    trend: 12.5
-  },
-  {
-    key: 'intentions',
-    title: '意向数',
-    value: 56,
-    precision: 0,
-    trend: 8.2
-  },
-  {
-    key: 'messages',
-    title: '未读消息',
-    value: 3,
-    precision: 0,
-    trend: -5.0
-  }
-])
-
-// 最近活动
-const activities = ref([
-  {
-    id: 1,
-    title: '新增产品意向：高性能工业机器人',
-    time: '10分钟前',
-    icon: HeartOutlined
-  },
-  {
-    id: 2,
-    title: '更新产品信息：智能包装生产线',
-    time: '2小时前',
-    icon: AppstoreOutlined
-  },
-  {
-    id: 3,
-    title: '收到新消息：关于产品规格的咨询',
-    time: '昨天 14:23',
-    icon: MessageOutlined
-  }
-])
-
 // 处理快捷操作点击
 const handleQuickAction = (key) => {
   switch (key) {
     case 'products':
       router.push('/product/manage')
       break
-    case 'orders':
-      router.push('/order/manage')
+    case 'activities':
+      router.push('/activity/manage')
       break
-    case 'messages':
-      router.push('/message')
+    case 'inquiries':
+      router.push('/inquiry')
       break
     case 'profile':
       router.push('/profile')
       break
     case 'favorites':
       router.push('/favorite')
-      break
-    case 'intentions':
-      router.push('/intention')
       break
     case 'browse':
       router.push('/browse')
@@ -222,6 +157,24 @@ const handleQuickAction = (key) => {
       console.log('未知的操作:', key)
   }
 }
+
+// 获取企业数据
+const fetchCompanyData = async () => {
+  if (userInfo.value.role === 'company') {
+    try {
+      const response = await getCompanyStats()
+      if (response.data) {
+        companyData.value = response.data
+      }
+    } catch (error) {
+      console.error('获取企业数据失败:', error)
+    }
+  }
+}
+
+onMounted(() => {
+  fetchCompanyData()
+})
 </script>
 
 <style scoped lang="less">
@@ -268,35 +221,8 @@ const handleQuickAction = (key) => {
       }
     }
 
-    .stats-section {
+    .company-overview {
       margin-bottom: 24px;
-
-      .stat-trend {
-        font-size: 12px;
-        margin-left: 8px;
-
-        &.up {
-          color: #52c41a;
-        }
-
-        &.down {
-          color: #f5222d;
-        }
-      }
-    }
-
-    .recent-activities {
-      .activity-content {
-        .activity-title {
-          color: rgba(0, 0, 0, 0.85);
-        }
-
-        .activity-time {
-          font-size: 12px;
-          color: #999;
-          margin-top: 4px;
-        }
-      }
     }
   }
 }

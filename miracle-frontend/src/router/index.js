@@ -61,6 +61,90 @@ const routes = [
           requiresAuth: true,
           title: '工作台'
         }
+      },
+      {
+        path: 'company/product',
+        name: 'CompanyProduct',
+        component: () => import('@/layout/empty.vue'),
+        meta: {
+          requiresAuth: true
+        },
+        children: [
+          {
+            path: 'list',
+            name: 'CompanyProductList',
+            component: () => import('@/views/company/product/list.vue'),
+            meta: {
+              requiresAuth: true,
+              title: '产品列表'
+            }
+          },
+          {
+            path: 'category',
+            name: 'CompanyProductCategory',
+            component: () => import('@/views/company/product/category.vue'),
+            meta: {
+              requiresAuth: true,
+              title: '产品分类'
+            }
+          }
+        ]
+      },
+      {
+        path: 'company/activity',
+        name: 'CompanyActivity',
+        component: () => import('@/layout/empty.vue'),
+        meta: {
+          requiresAuth: true
+        },
+        children: [
+          {
+            path: 'list',
+            name: 'CompanyActivityList',
+            component: () => import('@/views/company/activity/list.vue'),
+            meta: {
+              requiresAuth: true,
+              title: '活动列表'
+            }
+          },
+          {
+            path: 'stats',
+            name: 'CompanyActivityStats',
+            component: () => import('@/views/company/activity/stats.vue'),
+            meta: {
+              requiresAuth: true,
+              title: '活动统计'
+            }
+          }
+        ]
+      },
+      {
+        path: 'company/inquiry',
+        name: 'CompanyInquiry',
+        component: () => import('@/layout/empty.vue'),
+        meta: {
+          requiresAuth: true
+        },
+        children: [
+          {
+            path: 'list',
+            name: 'CompanyInquiryList',
+            component: () => import('@/views/company/inquiry/list.vue'),
+            meta: {
+              requiresAuth: true,
+              title: '意向列表'
+            }
+          },
+          {
+            path: 'stats',
+            name: 'CompanyInquiryStats',
+            component: () => import('@/views/company/inquiry/stats.vue'),
+            meta: {
+              requiresAuth: true,
+              title: '意向统计'
+            }
+          }
+        ]
       }
     ]
   }
