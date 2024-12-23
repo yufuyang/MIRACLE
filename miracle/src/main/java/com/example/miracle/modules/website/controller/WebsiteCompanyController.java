@@ -34,4 +34,15 @@ public class WebsiteCompanyController {
     public MultiResponse<Company> pageQuery(@RequestBody CompanyPageQuery query) {
         return companyService.pageQuery(query);
     }
+
+
+    /**
+     * 新增公司
+     */
+    @PostMapping("/register")
+    public SingleResponse<Company> save(@RequestBody Company company) {
+        companyService.save(company);
+        return SingleResponse.of(company);
+    }
+
 } 

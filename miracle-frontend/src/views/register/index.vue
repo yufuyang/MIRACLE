@@ -293,22 +293,29 @@ const handleRegister = () => {
       const registerApi = registerForm.role === 'company' ? companyRegister : merchantRegister
       
       // 构建注册数据
-      const registerData = {
+      let registerData = {
         username: registerForm.username,
         password: registerForm.password,
         contactName: registerForm.contactName,
         contactPhone: registerForm.contactPhone,
         province: registerForm.province,
         city: registerForm.city,
-        detailAddress: registerForm.detailAddress
+        address: registerForm.detailAddress,
+        status: 1
       }
 
       // 根据角色添加不同的字段
       if (registerForm.role === 'company') {
-        registerData.companyName = registerForm.companyName
-        registerData.licenseNo = registerForm.licenseNo
+        registerData = {
+          ...registerData,
+          companyName: registerForm.companyName,
+          licenseNo: registerForm.licenseNo
+        }
       } else {
-        registerData.merchantName = registerForm.merchantName
+        registerData = {
+          ...registerData,
+          merchantName: registerForm.merchantName
+        }
       }
 
       const response = await registerApi(registerData)

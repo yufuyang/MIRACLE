@@ -21,7 +21,7 @@ export function merchantLogin(data) {
 // 企业用户注册
 export function companyRegister(data) {
   return request({
-    url: '/company/user/register',
+    url: '/website/company/register',
     method: 'post',
     data
   })
@@ -30,7 +30,7 @@ export function companyRegister(data) {
 // 商户用户注册
 export function merchantRegister(data) {
   return request({
-    url: '/merchant/user/register',
+    url: '/website/merchant/register',
     method: 'post',
     data
   })

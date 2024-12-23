@@ -33,11 +33,11 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // 公司端拦截器
         registry.addInterceptor(companyAuthInterceptor)
                 .addPathPatterns("/company/**")
-                .excludePathPatterns("/company/login");
+                .excludePathPatterns("/company/user/login");
 
         // 商户端拦截器
         registry.addInterceptor(merchantAuthInterceptor)
                 .addPathPatterns("/merchant/**")
-                .excludePathPatterns("/merchant/login");
+                .excludePathPatterns("/merchant/user/login");
     }
 }

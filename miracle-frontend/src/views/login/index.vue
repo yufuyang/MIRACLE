@@ -106,9 +106,13 @@ const handleLogin = async () => {
       })
       
       if (response.data) {
-        const { token, userInfo } = response.data
-        // 添加角色信息到用户信息中
-        userInfo.role = loginForm.role
+        // 构造用户信息对象
+        const userInfo = {
+          username: response.data.username,
+          role: loginForm.role
+        }
+        // 使用返回的 token
+        const token = response.data.token
         userStore.login(userInfo, token)
         message.success('登录成功')
         router.push('/')

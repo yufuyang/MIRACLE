@@ -196,8 +196,31 @@ const activities = ref([
 
 // 处理快捷操作点击
 const handleQuickAction = (key) => {
-  // TODO: 实现具体的跳转逻辑
-  console.log('Quick action clicked:', key)
+  switch (key) {
+    case 'products':
+      router.push('/product/manage')
+      break
+    case 'orders':
+      router.push('/order/manage')
+      break
+    case 'messages':
+      router.push('/message')
+      break
+    case 'profile':
+      router.push('/profile')
+      break
+    case 'favorites':
+      router.push('/favorite')
+      break
+    case 'intentions':
+      router.push('/intention')
+      break
+    case 'browse':
+      router.push('/browse')
+      break
+    default:
+      console.log('未知的操作:', key)
+  }
 }
 </script>
 

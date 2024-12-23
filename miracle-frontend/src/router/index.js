@@ -52,6 +52,15 @@ const routes = [
         name: 'ActivityDetail',
         component: () => import('@/views/activity/detail.vue'),
         meta: { title: '活动详情' }
+      },
+      {
+        path: 'workspace',
+        name: 'Workspace',
+        component: () => import('@/views/workspace/index.vue'),
+        meta: { 
+          requiresAuth: true,
+          title: '工作台'
+        }
       }
     ]
   }

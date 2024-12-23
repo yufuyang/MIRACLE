@@ -121,7 +121,7 @@
     </section>
 
     <!-- 加入我们 -->
-    <section class="join-section">
+    <section class="join-section" v-if="!isLoggedIn">
       <div class="join-content">
         <h2>欢迎加入 MIRACLE</h2>
         <p>立即注册，开启智能制造新征程</p>
@@ -132,13 +132,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { EnvironmentOutlined, PictureOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
 import { getBanners, getHotProducts, getFeaturedCompanies } from '@/api/home'
 
 const router = useRouter()
+
+// 判断是否已登录
+const isLoggedIn = computed(() => {
+  return !!localStorage.getItem('token')
+})
 
 // 数据
 const banners = ref([])
