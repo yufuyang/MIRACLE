@@ -61,27 +61,60 @@
 
     <!-- 产品列表 -->
     <div class="product-grid">
-      <a-row :gutter="16">
-        <a-col :span="6" v-for="item in productList" :key="item.id">
-          <a-card hoverable class="product-card" @click="goToDetail(item.id)">
-            <template #cover>
-              <img :alt="item.productName" :src="item.imageUrl || defaultImage" />
-            </template>
-            <a-card-meta :title="item.productName">
-              <template #description>
-                <div class="product-info">
-                  <h3>{{ item.productName }}</h3>
-                  <div class="product-subtitle">{{ item.description }}</div>
-                  <div class="price">¥ {{ item.price }}</div>
-                  <div class="stats">
-                    <span><eye-outlined /> {{ item.viewCount }} 浏览量</span>
-                    <span><heart-outlined /> {{ item.intentionCount }} 意向数</span>
-                  </div>
-                </div>
+      <a-row :gutter="[24, 24]">
+        <template v-if="products.length > 0">
+          <a-col :span="6" v-for="product in products" :key="product.id">
+            <a-card hoverable class="product-card" @click="goToDetail(product.id)">
+              <template #cover>
+                <img :alt="product.name" :src="product.imageUrl || defaultImage" />
               </template>
-            </a-card-meta>
-          </a-card>
-        </a-col>
+              <a-card-meta :title="product.name">
+                <template #description>
+                  <div class="product-info">
+                    <div class="product-desc">{{ product.description }}</div>
+                    <div class="product-meta">
+                      <div class="company-name">
+                        <team-outlined /> {{ product.companyName }}
+                      </div>
+                      <div class="product-category">
+                        <tag-outlined /> {{ product.category }}
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </a-card-meta>
+            </a-card>
+          </a-col>
+        </template>
+        <template v-else>
+          <a-col :span="6" v-for="i in 12" :key="i">
+            <a-card class="product-card empty-card">
+              <template #cover>
+                <a-skeleton-image :active="true" />
+              </template>
+              <a-card-meta>
+                <template #title>
+                  <a-skeleton :active="true" :paragraph="false" />
+                </template>
+                <template #description>
+                  <div class="product-info">
+                    <div class="product-desc">
+                      <a-skeleton :active="true" :paragraph="{ rows: 2 }" :title="false" />
+                    </div>
+                    <div class="product-meta">
+                      <div class="company-name">
+                        <a-skeleton :active="true" :paragraph="false" />
+                      </div>
+                      <div class="product-category">
+                        <a-skeleton :active="true" :paragraph="false" />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </a-card-meta>
+            </a-card>
+          </a-col>
+        </template>
       </a-row>
     </div>
 
@@ -100,11 +133,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined } from '@ant-design/icons-vue'
+import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined, TeamOutlined, TagOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
-import { mockProducts, mockCategories } from '@/mock/data'
+import { getProductList, getProductCategories } from '@/api/product'
 
 const router = useRouter()
 const route = useRoute()
@@ -122,71 +155,44 @@ const searchForm = reactive({
 })
 
 // 数据
-const total = ref(mockProducts.length)
-const categories = ref(mockCategories)
+const loading = ref(false)
+const total = ref(0)
+const products = ref([])
+const categories = ref([])
+
+// 加载产品列表
+const loadProducts = async () => {
+  loading.value = true
+  try {
+    const res = await getProductList(searchForm)
+    products.value = res.data.records || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取产品列表失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+// 加载分类
+const loadCategories = async () => {
+  try {
+    const res = await getProductCategories()
+    categories.value = res.data || []
+  } catch (error) {
+    console.error('获取分类失败:', error)
+  }
+}
 
 // 分类搜索过滤函数
 const filterOption = (input, option) => {
   return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
 }
 
-// 根据搜索条件和排序筛选产品
-const filteredProducts = computed(() => {
-  let result = [...mockProducts]
-  
-  // 按名称筛选
-  if (searchForm.productName) {
-    result = result.filter(item => 
-      item.productName.toLowerCase().includes(searchForm.productName.toLowerCase())
-    )
-  }
-  
-  // 按分类筛选
-  if (searchForm.category) {
-    result = result.filter(item => 
-      item.category.toLowerCase().includes(searchForm.category.toLowerCase())
-    )
-  }
-  
-  // 按价格区间筛选
-  if (searchForm.minPrice !== undefined) {
-    result = result.filter(item => item.price >= searchForm.minPrice)
-  }
-  if (searchForm.maxPrice !== undefined) {
-    result = result.filter(item => item.price <= searchForm.maxPrice)
-  }
-  
-  // 排序
-  if (searchForm.orderField) {
-    result.sort((a, b) => {
-      const factor = searchForm.asc ? 1 : -1
-      switch (searchForm.orderField) {
-        case 'price':
-          return (a.price - b.price) * factor
-        case 'viewCount':
-          return (a.viewCount - b.viewCount) * factor
-        case 'intentionCount':
-          return (a.intentionCount - b.intentionCount) * factor
-        default:
-          return 0
-      }
-    })
-  }
-  
-  return result
-})
-
-// 分页的产品列表
-const productList = computed(() => {
-  const start = (searchForm.pageNum - 1) * searchForm.pageSize
-  const end = start + searchForm.pageSize
-  return filteredProducts.value.slice(start, end)
-})
-
 // 搜索
 const onSearch = () => {
   searchForm.pageNum = 1
-  total.value = filteredProducts.value.length
+  loadProducts()
 }
 
 // 重置
@@ -200,10 +206,22 @@ const onReset = () => {
   onSearch()
 }
 
+// 排序
+const handleSort = (field) => {
+  if (searchForm.orderField === field) {
+    searchForm.asc = !searchForm.asc
+  } else {
+    searchForm.orderField = field
+    searchForm.asc = true
+  }
+  loadProducts()
+}
+
 // 分页变化
 const onPageChange = (page, pageSize) => {
   searchForm.pageNum = page
   searchForm.pageSize = pageSize
+  loadProducts()
 }
 
 // 跳转到详情页
@@ -213,12 +231,8 @@ const goToDetail = (id) => {
 
 // 初始化
 onMounted(() => {
-  // 从 URL 查询参数中获取搜索关键词
-  const keyword = route.query.keyword
-  if (keyword) {
-    searchForm.productName = keyword
-    onSearch()
-  }
+  loadCategories()
+  loadProducts()
 })
 </script>
 
@@ -233,55 +247,66 @@ onMounted(() => {
     padding: 24px;
     background: #fff;
     border-radius: 4px;
-  }
-
-  .sort-section {
-    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .product-grid {
     .product-card {
-      margin-bottom: 16px;
+      height: 100%;
+      transition: all 0.3s;
 
-      :deep(.ant-card-cover) {
-        img {
+      &:hover:not(.empty-card) {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      &.empty-card {
+        cursor: default;
+        
+        :deep(.ant-skeleton-image) {
+          width: 100%;
           height: 200px;
-          object-fit: cover;
+          background: #f5f5f5;
+        }
+
+        :deep(.ant-skeleton) {
+          .ant-skeleton-title {
+            margin: 0;
+          }
         }
       }
 
+      img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+
       .product-info {
-        padding: 16px;
+        margin-top: 12px;
 
-        h3 {
-          margin: 0 0 8px;
-          font-size: 16px;
-          font-weight: 500;
-        }
-
-        .product-subtitle {
+        .product-desc {
           color: #666;
           font-size: 14px;
-          margin-bottom: 8px;
+          margin-bottom: 12px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
 
-        .price {
-          color: #ff4d4f;
-          font-size: 18px;
-          font-weight: 500;
-          margin-bottom: 8px;
-        }
-
-        .stats {
-          display: flex;
-          justify-content: space-between;
-          color: #666;
+        .product-meta {
+          color: #999;
           font-size: 14px;
 
-          span {
+          > div {
             display: flex;
             align-items: center;
-            gap: 4px;
+            margin-bottom: 8px;
+
+            .anticon {
+              margin-right: 8px;
+            }
           }
         }
       }
@@ -289,25 +314,14 @@ onMounted(() => {
   }
 
   .pagination {
-    margin-top: 24px;
+    margin-top: 40px;
     text-align: center;
   }
+}
 
-  :deep(.category-dropdown) {
-    max-height: 400px;
-    overflow-y: auto;
-
-    .ant-select-item {
-      padding: 8px 12px;
-      
-      &:hover {
-        background-color: #f5f5f5;
-      }
-      
-      &.ant-select-item-option-selected {
-        background-color: #e6f7ff;
-      }
-    }
+@media (max-width: 768px) {
+  .product-list {
+    padding: 16px;
   }
 }
 </style> 

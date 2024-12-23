@@ -43,30 +43,66 @@
 
     <!-- 企业列表 -->
     <div class="company-grid">
-      <a-row :gutter="[16, 16]">
-        <a-col :span="6" v-for="company in companies" :key="company.id">
-          <a-card hoverable @click="goToCompany(company.id)">
-            <template #cover>
-              <img
-                :alt="company.companyName"
-                :src="company.logo || '/default-company.png'"
-                style="height: 200px; object-fit: cover;"
-              />
-            </template>
-            <a-card-meta :title="company.companyName">
-              <template #description>
-                <div class="company-info">
-                  <p>{{ company.address }}</p>
-                  <p class="description">{{ company.description }}</p>
-                  <div class="stats">
-                    <span><shop-outlined /> {{ company.productCount }} 产品</span>
-                    <span><heart-outlined /> {{ company.intentionCount }} 意向</span>
-                  </div>
-                </div>
+      <a-row :gutter="[24, 24]">
+        <template v-if="companies.length > 0">
+          <a-col :span="6" v-for="company in companies" :key="company.id">
+            <a-card hoverable class="company-card" @click="goToDetail(company.id)">
+              <template #cover>
+                <img :alt="company.name" :src="company.logoUrl || defaultImage" />
               </template>
-            </a-card-meta>
-          </a-card>
-        </a-col>
+              <a-card-meta :title="company.name">
+                <template #description>
+                  <div class="company-info">
+                    <div class="company-desc">{{ company.description }}</div>
+                    <div class="company-meta">
+                      <div class="company-location">
+                        <environment-outlined /> {{ company.location }}
+                      </div>
+                      <div class="company-industry">
+                        <apartment-outlined /> {{ company.industry }}
+                      </div>
+                      <div class="company-size">
+                        <team-outlined /> {{ company.size }}
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </a-card-meta>
+            </a-card>
+          </a-col>
+        </template>
+        <template v-else>
+          <a-col :span="6" v-for="i in 12" :key="i">
+            <a-card class="company-card empty-card">
+              <template #cover>
+                <a-skeleton-image :active="true" />
+              </template>
+              <a-card-meta>
+                <template #title>
+                  <a-skeleton :active="true" :paragraph="false" />
+                </template>
+                <template #description>
+                  <div class="company-info">
+                    <div class="company-desc">
+                      <a-skeleton :active="true" :paragraph="{ rows: 2 }" :title="false" />
+                    </div>
+                    <div class="company-meta">
+                      <div class="company-location">
+                        <a-skeleton :active="true" :paragraph="false" />
+                      </div>
+                      <div class="company-industry">
+                        <a-skeleton :active="true" :paragraph="false" />
+                      </div>
+                      <div class="company-size">
+                        <a-skeleton :active="true" :paragraph="false" />
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </a-card-meta>
+            </a-card>
+          </a-col>
+        </template>
       </a-row>
     </div>
 
@@ -86,13 +122,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { UpOutlined, DownOutlined, ShopOutlined, HeartOutlined } from '@ant-design/icons-vue'
-import { mockCompanies } from '@/mock/data'
+import { ref, onMounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined, EnvironmentOutlined, ApartmentOutlined, TeamOutlined } from '@ant-design/icons-vue'
+import defaultImage from '@/assets/images/default.jpg'
+import { getCompanyList } from '@/api/company'
 
 const router = useRouter()
-const route = useRoute()
 
 // 搜索表单
 const searchForm = reactive({
@@ -104,87 +140,66 @@ const searchForm = reactive({
   asc: true
 })
 
-// 根据搜索条件筛选企业
-const filteredCompanies = computed(() => {
-  let result = [...mockCompanies]
-  
-  // 按名称筛选
-  if (searchForm.companyName) {
-    result = result.filter(item => 
-      item.companyName.toLowerCase().includes(searchForm.companyName.toLowerCase())
-    )
-  }
-  
-  // 按地区筛选
-  if (searchForm.region) {
-    result = result.filter(item => 
-      item.address.includes(searchForm.region)
-    )
-  }
-  
-  // 排序
-  if (searchForm.orderField) {
-    result.sort((a, b) => {
-      const factor = searchForm.asc ? 1 : -1
-      switch (searchForm.orderField) {
-        case 'productCount':
-          return (a.productCount - b.productCount) * factor
-        case 'intentionCount':
-          return (a.intentionCount - b.intentionCount) * factor
-        default:
-          return 0
-      }
-    })
-  }
-  
-  return result
-})
+// 数据
+const loading = ref(false)
+const total = ref(0)
+const companies = ref([])
 
-// 分页后的企业列表
-const companies = computed(() => {
-  const start = (searchForm.pageNum - 1) * searchForm.pageSize
-  const end = start + searchForm.pageSize
-  return filteredCompanies.value.slice(start, end)
-})
-
-// 总数
-const total = computed(() => filteredCompanies.value.length)
+// 加载企业列表
+const loadCompanies = async () => {
+  loading.value = true
+  try {
+    const res = await getCompanyList(searchForm)
+    companies.value = res.data.records || []
+    total.value = res.data.total || 0
+  } catch (error) {
+    console.error('获取企业列表失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 // 搜索
 const onSearch = () => {
   searchForm.pageNum = 1
+  loadCompanies()
 }
 
 // 重置
 const onReset = () => {
   searchForm.companyName = ''
   searchForm.region = ''
+  searchForm.orderField = ''
+  searchForm.asc = true
   onSearch()
+}
+
+// 排序
+const handleSort = (field) => {
+  if (searchForm.orderField === field) {
+    searchForm.asc = !searchForm.asc
+  } else {
+    searchForm.orderField = field
+    searchForm.asc = true
+  }
+  loadCompanies()
 }
 
 // 分页变化
 const onPageChange = (page, pageSize) => {
   searchForm.pageNum = page
-}
-
-// 每页条数变化
-const onShowSizeChange = (current, size) => {
-  searchForm.pageSize = size
-  searchForm.pageNum = 1
+  searchForm.pageSize = pageSize
+  loadCompanies()
 }
 
 // 跳转到详情页
-const goToCompany = (companyId) => {
-  router.push(`/company/${companyId}`)
+const goToDetail = (id) => {
+  router.push(`/company/${id}`)
 }
 
 // 初始化
 onMounted(() => {
-  // 从 URL 查询参数中获取搜索关键词
-  const keyword = route.query.keyword
-  if (keyword) {
-    searchForm.companyName = keyword
-  }
+  loadCompanies()
 })
 </script>
 
@@ -199,6 +214,7 @@ onMounted(() => {
     padding: 24px;
     background: #fff;
     border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .sort-section {
@@ -206,45 +222,77 @@ onMounted(() => {
   }
 
   .company-grid {
-    background: #fff;
-    padding: 24px;
-    border-radius: 4px;
-    margin-bottom: 24px;
+    .company-card {
+      height: 100%;
+      transition: all 0.3s;
 
-    .company-info {
-      p {
-        margin-bottom: 8px;
+      &:hover:not(.empty-card) {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
-      .description {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        margin-bottom: 12px;
+      &.empty-card {
+        cursor: default;
+        
+        :deep(.ant-skeleton-image) {
+          width: 100%;
+          height: 200px;
+          background: #f5f5f5;
+        }
+
+        :deep(.ant-skeleton) {
+          .ant-skeleton-title {
+            margin: 0;
+          }
+        }
       }
 
-      .stats {
-        display: flex;
-        justify-content: space-between;
-        color: #666;
-        font-size: 14px;
+      img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
 
-        span {
-          display: flex;
-          align-items: center;
-          gap: 4px;
+      .company-info {
+        margin-top: 12px;
+
+        .company-desc {
+          color: #666;
+          font-size: 14px;
+          margin-bottom: 12px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .company-meta {
+          color: #999;
+          font-size: 14px;
+
+          > div {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+
+            .anticon {
+              margin-right: 8px;
+            }
+          }
         }
       }
     }
   }
 
   .pagination {
+    margin-top: 40px;
     text-align: center;
-    background: #fff;
+  }
+}
+
+@media (max-width: 768px) {
+  .company-list {
     padding: 16px;
-    border-radius: 4px;
   }
 }
 </style> 

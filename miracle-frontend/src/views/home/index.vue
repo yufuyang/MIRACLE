@@ -1,518 +1,435 @@
 <template>
-  <!-- 活动轮播图 -->
-  <a-carousel class="banner-carousel" autoplay>
-    <div class="banner-item" v-for="(banner, index) in banners" :key="index">
-      <img :src="banner.imageUrl || defaultImage" :alt="banner.title" />
-      <div class="banner-info">
-        <h2>{{ banner.title }}</h2>
-        <p>{{ banner.description }}</p>
-      </div>
+  <div class="home">
+    <!-- 轮播图 -->
+    <div class="banner-section">
+      <a-carousel autoplay>
+        <div class="banner-item" v-for="i in 4" :key="i">
+          <div class="banner-placeholder">
+            <picture-outlined />
+            <span>轮播图 {{ i }}</span>
+          </div>
+        </div>
+      </a-carousel>
     </div>
-  </a-carousel>
 
-  <!-- 产品展示区域 -->
-  <div class="product-section">
-    <section-container
-      title="热门产品推荐"
-      view-all-text="查看全部"
-      @view-all="goToProduct"
-    >
+    <!-- 热门产品 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">热门产品</h2>
+        <a class="more-link" @click="goToProduct()">查看全部 ></a>
+      </div>
       <div class="product-grid">
-        <div v-for="(product, index) in hotProducts" :key="product.id"
-             class="product-item"
-             :ref="el => productRefs[index] = el"
-             @click="goToProduct(product.id)">
-          <div class="product-image">
-            <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
-          </div>
-          <div class="product-info">
-            <div class="product-tag" v-if="product.isNew">新款</div>
-            <h3>{{ product.productName }}</h3>
-            <div class="product-subtitle">{{ product.description }}</div>
-            <div class="stats">
-              <span><eye-outlined /> {{ product.viewCount }} 浏览</span>
-              <span><heart-outlined /> {{ product.intentionCount }} 意向</span>
-            </div>
-            <a-button type="link" class="learn-more">
-              了解更多 >
-            </a-button>
-          </div>
-        </div>
+        <a-row :gutter="[24, 24]">
+          <template v-if="hotProducts.length > 0">
+            <a-col :span="6" v-for="product in hotProducts" :key="product.id">
+              <a-card hoverable class="product-card" @click="goToProduct(product.id)">
+                <template #cover>
+                  <img :alt="product.name" :src="product.imageUrl || defaultImage" />
+                </template>
+                <a-card-meta :title="product.name">
+                  <template #description>
+                    <div class="product-info">
+                      <div class="product-desc">{{ product.description }}</div>
+                      <div class="product-company">{{ product.companyName }}</div>
+                    </div>
+                  </template>
+                </a-card-meta>
+              </a-card>
+            </a-col>
+          </template>
+          <template v-else>
+            <a-col :span="6" v-for="i in 8" :key="i">
+              <a-card class="product-card empty-card">
+                <template #cover>
+                  <a-skeleton-image :active="true" />
+                </template>
+                <a-card-meta>
+                  <template #title>
+                    <a-skeleton :active="true" :paragraph="false" />
+                  </template>
+                  <template #description>
+                    <div class="product-info">
+                      <div class="product-desc">
+                        <a-skeleton :active="true" :paragraph="{ rows: 2 }" :title="false" />
+                      </div>
+                      <div class="product-company">
+                        <a-skeleton :active="true" :paragraph="false" />
+                      </div>
+                    </div>
+                  </template>
+                </a-card-meta>
+              </a-card>
+            </a-col>
+          </template>
+        </a-row>
       </div>
-    </section-container>
-  </div>
+    </section>
 
-  <!-- 优质企业展示 -->
-  <div class="company-section">
-    <section-container
-      title="优质企业展示"
-      @view-all="goToCompany"
-    >
+    <!-- 优质企业 -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">优质企业</h2>
+        <a class="more-link" @click="goToCompany()">查看全部 ></a>
+      </div>
       <div class="company-grid">
-        <div v-for="(company, index) in featuredCompanies" :key="company.id"
-             class="company-item"
-             :ref="el => companyRefs[index] = el"
-             @click="goToCompany(company.id)">
-          <div class="company-image">
-            <img :src="company.logo || defaultImage" :alt="company.companyName" />
-          </div>
-          <div class="company-info">
-            <h3>{{ company.companyName }}</h3>
-            <div class="company-subtitle">{{ company.description }}</div>
-            <div class="stats">
-              <span><shop-outlined /> {{ company.productCount }} 产品</span>
-              <span><heart-outlined /> {{ company.intentionCount }} 意向</span>
-            </div>
-            <a-button type="link" class="learn-more">
-              了解更多 >
-            </a-button>
-          </div>
-        </div>
+        <a-row :gutter="[24, 24]">
+          <template v-if="featuredCompanies.length > 0">
+            <a-col :span="6" v-for="company in featuredCompanies" :key="company.id">
+              <a-card hoverable class="company-card" @click="goToCompany(company.id)">
+                <template #cover>
+                  <img :alt="company.name" :src="company.logoUrl || defaultImage" />
+                </template>
+                <a-card-meta :title="company.name">
+                  <template #description>
+                    <div class="company-info">
+                      <div class="company-desc">{{ company.description }}</div>
+                      <div class="company-location">
+                        <environment-outlined /> {{ company.location }}
+                      </div>
+                    </div>
+                  </template>
+                </a-card-meta>
+              </a-card>
+            </a-col>
+          </template>
+          <template v-else>
+            <a-col :span="6" v-for="i in 8" :key="i">
+              <a-card class="company-card empty-card">
+                <template #cover>
+                  <a-skeleton-image :active="true" />
+                </template>
+                <a-card-meta>
+                  <template #title>
+                    <a-skeleton :active="true" :paragraph="false" />
+                  </template>
+                  <template #description>
+                    <div class="company-info">
+                      <div class="company-desc">
+                        <a-skeleton :active="true" :paragraph="{ rows: 2 }" :title="false" />
+                      </div>
+                      <div class="company-location">
+                        <a-skeleton :active="true" :paragraph="false" />
+                      </div>
+                    </div>
+                  </template>
+                </a-card-meta>
+              </a-card>
+            </a-col>
+          </template>
+        </a-row>
       </div>
-    </section-container>
-  </div>
+    </section>
 
-  <!-- 合作邀请区域 -->
-  <div class="cooperation-section">
-    <div class="cooperation-content">
-      <h2>欢迎加入 MIRACLE</h2>
-      <p>立即注册，开启智能制造新征程</p>
-      <a-button type="primary" size="large" @click="goToRegister">免费注册</a-button>
-    </div>
+    <!-- 加入我们 -->
+    <section class="join-section">
+      <div class="join-content">
+        <h2>欢迎加入 MIRACLE</h2>
+        <p>立即注册，开启智能制造新征程</p>
+        <a-button type="primary" size="large" @click="goToRegister">免费注册</a-button>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { ShopOutlined, EyeOutlined, HeartOutlined } from '@ant-design/icons-vue'
-import { mockProducts, mockCompanies } from '@/mock/data'
+import { EnvironmentOutlined, PictureOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
-import SectionContainer from '@/components/SectionContainer.vue'
+import { getBanners, getHotProducts, getFeaturedCompanies } from '@/api/home'
 
 const router = useRouter()
-const productRefs = ref([])
-const companyRefs = ref([])
-const companySectionRef = ref(null)
 
-// 模拟轮播图数据
-const banners = ref([
-  {
-    title: '工业智造，引领未来',
-    description: '探索智能制造新境界',
-    imageUrl: defaultImage
-  },
-  {
-    title: '品质铸就品牌',
-    description: '专业服务，值得信赖',
-    imageUrl: defaultImage
-  },
-  {
-    title: '创新驱动发展',
-    description: '技术引领，持续创新',
-    imageUrl: defaultImage
+// 数据
+const banners = ref([])
+const hotProducts = ref([])
+const featuredCompanies = ref([])
+
+// 加载首页数据
+const loadHomeData = async () => {
+  try {
+    // 并行加载所有数据
+    const [
+      bannersRes,
+      productsRes,
+      companiesRes
+    ] = await Promise.all([
+      getBanners(),
+      getHotProducts(),
+      getFeaturedCompanies()
+    ])
+
+    banners.value = bannersRes.data || []
+    hotProducts.value = productsRes.data || []
+    featuredCompanies.value = companiesRes.data || []
+  } catch (error) {
+    console.error('获取首页数据失败:', error)
   }
-])
-
-// 使用模拟数据
-const hotProducts = ref(mockProducts.slice(0, 6))
-const featuredCompanies = ref(mockCompanies.slice(0, 6))
-
-// 创建观察器
-const createObserver = (delay = 0) => {
-  return new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        setTimeout(() => {
-          entry.target.classList.add('show')
-        }, delay)
-      }
-    })
-  }, {
-    threshold: 0.1
-  })
 }
-
-onMounted(() => {
-  // 为产品添加观察器
-  productRefs.value.forEach((el, index) => {
-    if (el) {
-      const observer = createObserver(index * 200)
-      observer.observe(el)
-    }
-  })
-
-  // 为企业添加观察器
-  companyRefs.value.forEach((el, index) => {
-    if (el) {
-      const observer = createObserver(index * 200)
-      observer.observe(el)
-    }
-  })
-
-  // 为企业区域添加滚动观察器
-  const sectionObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('show')
-          sectionObserver.unobserve(entry.target)
-        }
-      })
-    },
-    {
-      threshold: 0.2
-    }
-  )
-
-  const companySection = document.querySelector('.company-section')
-  if (companySection) {
-    sectionObserver.observe(companySection)
-  }
-})
 
 // 跳转函数
 const goToProduct = (id) => {
-  if (id) {
-    router.push(`/product/${id}`)
-  } else {
-    router.push('/product')
-  }
+  router.push(`/product/${id}`)
 }
 
 const goToCompany = (id) => {
-  if (id) {
-    router.push(`/company/${id}`)
-  } else {
-    router.push('/company')
-  }
+  router.push(`/company/${id}`)
 }
 
-// 跳转到注册页
 const goToRegister = () => {
   router.push('/register')
 }
+
+// 初始化
+onMounted(() => {
+  loadHomeData()
+})
 </script>
 
 <style scoped lang="less">
-.banner-carousel {
-  width: 100%;
-  max-width: 1000px;
-  height: 500px;
-  margin: 40px auto;
-  padding: 0;
-  position: relative;
+.home {
+  .banner-section {
+    margin-bottom: 40px;
+    background: #fff;
+    padding: 24px;
 
-  :deep(.slick-slide) {
-    img {
-      width: 100%;
-      height: 500px;
-      object-fit: cover;
-      border-radius: 20px;
-      filter: brightness(0.85);
-      transition: all 0.6s ease;
-    }
-  }
-
-  :deep(.slick-dots) {
-    bottom: 30px;
-    z-index: 3;
-
-    li {
-      margin: 0 8px;
+    :deep(.ant-carousel) {
+      max-width: 1200px;
+      margin: 0 auto;
       
-      button {
-        width: 30px;
-        height: 4px;
-        background: rgba(255, 255, 255, 0.4);
-        border-radius: 2px;
-        transition: all 0.3s ease;
+      .banner-item {
+        height: 300px;
+        overflow: hidden;
+        position: relative;
+        border-radius: 8px;
+        
+        .banner-placeholder {
+          width: 100%;
+          height: 100%;
+          background: #f0f2f5;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          color: #bfbfbf;
+          font-size: 16px;
 
-        &:hover {
-          background: rgba(255, 255, 255, 0.6);
+          .anticon {
+            font-size: 48px;
+            margin-bottom: 16px;
+          }
+        }
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .banner-skeleton {
+          width: 100%;
+          height: 100%;
+          background: #f5f5f5;
+          border-radius: 8px;
+          overflow: hidden;
+
+          .full-skeleton {
+            width: 100%;
+            height: 100%;
+            
+            :deep(.ant-skeleton-image) {
+              width: 100%;
+              height: 100%;
+              border-radius: 8px;
+              margin: 0;
+              background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
+              background-size: 400% 100%;
+              animation: ant-skeleton-loading 1.4s ease infinite;
+            }
+          }
         }
       }
 
-      &.slick-active button {
-        width: 50px;
-        background: #fff;
+      .slick-dots {
+        li {
+          button {
+            background: #d9d9d9;
+          }
+
+          &.slick-active {
+            button {
+              background: #1890ff;
+            }
+          }
+        }
       }
     }
   }
-}
 
-.banner-item {
-  position: relative;
-  height: 500px;
+  .section {
+    max-width: 1200px;
+    margin: 0 auto 48px;
+    padding: 0 24px;
+    background: #fff;
 
-  .banner-info {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    color: #fff;
-    z-index: 2;
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-top: 24px;
 
-    h2 {
-      font-size: 48px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #fff;
+      .section-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+        color: #1f1f1f;
+      }
+
+      .more-link {
+        color: #1890ff;
+        cursor: pointer;
+
+        &:hover {
+          color: #40a9ff;
+        }
+      }
+    }
+  }
+
+  .product-card,
+  .company-card {
+    height: 100%;
+    transition: all 0.3s;
+
+    &:not(.empty-card) {
+      cursor: pointer;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
     }
 
-    p {
-      font-size: 24px;
-      margin: 0;
+    &.empty-card {
+      cursor: default;
+      
+      :deep(.ant-skeleton-image) {
+        width: 100%;
+        height: 200px;
+        background: #f5f5f5;
+      }
+
+      :deep(.ant-skeleton) {
+        .ant-skeleton-title {
+          margin: 0;
+        }
+      }
     }
-  }
-}
-
-.product-grid,
-.company-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
-}
-
-.product-item,
-.company-item {
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
-  opacity: 0;
-  transform: translateY(20px);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-
-  &.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  &:hover {
-    transform: translateY(-5px);
-  }
-
-  .product-image,
-  .company-image {
-    width: 100%;
-    height: 240px;
-    overflow: hidden;
 
     img {
       width: 100%;
-      height: 100%;
+      height: 200px;
       object-fit: cover;
-      transition: transform 0.6s ease;
-    }
-  }
-
-  .product-info,
-  .company-info {
-    padding: 20px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-
-    .product-tag {
-      display: inline-block;
-      padding: 2px 8px;
-      background: #ff6b00;
-      color: #fff;
-      border-radius: 4px;
-      font-size: 12px;
-      margin-bottom: 8px;
     }
 
-    h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      font-weight: 600;
-      line-height: 1.4;
-      height: 50px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+    .product-info,
+    .company-info {
+      margin-top: 12px;
 
-    .product-subtitle,
-    .company-subtitle {
-      color: #666;
-      margin-bottom: 15px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      height: 40px;
-      line-height: 1.4;
-    }
+      .product-desc,
+      .company-desc {
+        color: #666;
+        font-size: 14px;
+        margin-bottom: 12px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
 
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      color: #666;
-      font-size: 14px;
-      margin-bottom: 12px;
-      margin-top: auto;
-    }
+      .product-company,
+      .company-location {
+        color: #999;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
 
-    .learn-more {
-      color: #0066cc;
-      font-size: 17px;
-      padding: 0;
-      height: auto;
-      border: none;
-      background: none;
-
-      &:hover {
-        text-decoration: underline;
+        .anticon {
+          margin-right: 8px;
+        }
       }
     }
   }
-}
 
-@media (max-width: 768px) {
-  .banner-carousel {
-    height: 300px;
-    margin: 20px auto;
+  .join-section {
+    background: #fff;
+    padding: 80px 24px;
+    text-align: center;
+    margin-top: 48px;
 
-    :deep(.slick-slide) img {
-      height: 300px;
-    }
+    .join-content {
+      max-width: 600px;
+      margin: 0 auto;
 
-    .banner-info {
       h2 {
         font-size: 32px;
-      }
-
-      p {
-        font-size: 18px;
-      }
-    }
-  }
-
-  .product-grid,
-  .company-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.product-section {
-  position: relative;
-  padding: 40px 0;
-  background: #fff;
-
-  :deep(.section) {
-    position: relative;
-    z-index: 2;
-    background: transparent;
-    padding-top: 0;
-  }
-}
-
-.company-section {
-  position: relative;
-  padding: 40px 0;
-  background: #f0f2f5;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.show {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  :deep(.section) {
-    position: relative;
-    z-index: 2;
-    background: transparent;
-    padding-top: 0;
-  }
-
-  .company-grid {
-    position: relative;
-    z-index: 2;
-  }
-
-  .company-item {
-    background: #fff;
-  }
-}
-
-@media (max-width: 768px) {
-  .product-section,
-  .company-section {
-    padding: 40px 0;
-  }
-}
-
-.cooperation-section {
-  padding: 80px 0;
-  background: #fff;
-  text-align: center;
-  color: #333;
-
-  .cooperation-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-
-    h2 {
-      font-size: 36px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #333;
-    }
-
-    p {
-      font-size: 18px;
-      margin-bottom: 32px;
-      color: #666;
-    }
-
-    .ant-btn {
-      height: 48px;
-      padding: 0 40px;
-      font-size: 16px;
-      border-radius: 24px;
-      background: #1890ff;
-      color: #fff;
-      border: none;
-      font-weight: 600;
-      box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
-
-      &:hover {
-        background: #40a9ff;
-      }
-    }
-  }
-}
-
-@media (max-width: 768px) {
-  .cooperation-section {
-    padding: 40px 0;
-
-    .cooperation-content {
-      h2 {
-        font-size: 28px;
+        margin-bottom: 16px;
+        color: #1f1f1f;
       }
 
       p {
         font-size: 16px;
+        margin-bottom: 32px;
+        color: #666;
       }
 
       .ant-btn {
-        height: 44px;
-        padding: 0 32px;
-        font-size: 15px;
+        height: 48px;
+        padding: 0 40px;
+        font-size: 16px;
+        border-radius: 24px;
       }
     }
+  }
+}
+
+@media (max-width: 768px) {
+  .home {
+    .banner-section {
+      :deep(.ant-carousel) {
+        .banner-item {
+          height: 200px;
+        }
+      }
+    }
+
+    .section {
+      padding: 0 16px;
+    }
+
+    .join-section {
+      padding: 48px 16px;
+
+      .join-content {
+        h2 {
+          font-size: 24px;
+        }
+
+        p {
+          font-size: 14px;
+        }
+      }
+    }
+  }
+}
+
+@keyframes ant-skeleton-loading {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
   }
 }
 </style>

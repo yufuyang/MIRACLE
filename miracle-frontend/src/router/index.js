@@ -44,12 +44,14 @@ const routes = [
       {
         path: 'activity',
         name: 'Activity',
-        component: () => import('@/views/activity/index.vue')
+        component: () => import('@/views/activity/index.vue'),
+        meta: { title: '活动' }
       },
       {
         path: 'activity/:id',
         name: 'ActivityDetail',
-        component: () => import('@/views/activity/detail.vue')
+        component: () => import('@/views/activity/detail.vue'),
+        meta: { title: '活动详情' }
       }
     ]
   }

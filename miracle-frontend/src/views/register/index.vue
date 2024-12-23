@@ -124,20 +124,30 @@
               style="width: 50%"
               size="large"
               placeholder="请选择省份"
+              @change="handleProvinceChange"
             >
-              <a-select-option value="浙江省">浙江省</a-select-option>
-              <a-select-option value="江苏省">江苏省</a-select-option>
-              <a-select-option value="广东省">广东省</a-select-option>
+              <a-select-option 
+                v-for="province in provinces" 
+                :key="province.code" 
+                :value="province.name"
+              >
+                {{ province.name }}
+              </a-select-option>
             </a-select>
             <a-select
               v-model:value="registerForm.city"
               style="width: 50%"
               size="large"
               placeholder="请选择城市"
+              :disabled="!registerForm.province"
             >
-              <a-select-option value="杭州市">杭州市</a-select-option>
-              <a-select-option value="宁波市">宁波市</a-select-option>
-              <a-select-option value="温州市">温州市</a-select-option>
+              <a-select-option 
+                v-for="city in cities" 
+                :key="city.code" 
+                :value="city.name"
+              >
+                {{ city.name }}
+              </a-select-option>
             </a-select>
           </a-input-group>
         </a-form-item>
@@ -173,9 +183,11 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
+import { companyRegister, merchantRegister } from '@/api/user'
+import regionsData from '@/assets/data/regions.json'
 import {
   UserOutlined,
   LockOutlined,
@@ -260,16 +272,57 @@ const rules = {
   ]
 }
 
+// 省市数据
+const provinces = ref(regionsData.provinces)
+const cities = computed(() => {
+  const selectedProvince = provinces.value.find(p => p.name === registerForm.province)
+  return selectedProvince ? selectedProvince.cities : []
+})
+
+// 处理省份选择变化
+const handleProvinceChange = () => {
+  registerForm.city = undefined
+}
+
 // 处理注册
 const handleRegister = () => {
-  registerFormRef.value.validate().then(() => {
+  registerFormRef.value.validate().then(async () => {
     loading.value = true
-    // 模拟注册成功
-    setTimeout(() => {
+    try {
+      // 根据角色选择不同的注册接口
+      const registerApi = registerForm.role === 'company' ? companyRegister : merchantRegister
+      
+      // 构建注册数据
+      const registerData = {
+        username: registerForm.username,
+        password: registerForm.password,
+        contactName: registerForm.contactName,
+        contactPhone: registerForm.contactPhone,
+        province: registerForm.province,
+        city: registerForm.city,
+        detailAddress: registerForm.detailAddress
+      }
+
+      // 根据角色添加不同的字段
+      if (registerForm.role === 'company') {
+        registerData.companyName = registerForm.companyName
+        registerData.licenseNo = registerForm.licenseNo
+      } else {
+        registerData.merchantName = registerForm.merchantName
+      }
+
+      const response = await registerApi(registerData)
+      
+      if (response.data) {
+        message.success('注册成功')
+        router.push('/login')
+      }
+    } catch (error) {
+      console.error('Register failed:', error)
+      message.error(error.response?.data?.message || '注册失败')
+    } finally {
       loading.value = false
-      message.success('注册成功')
-      router.push('/login')
-    }, 1000)
+    }
   }).catch(error => {
     console.log('验证失败:', error)
   })

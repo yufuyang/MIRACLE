@@ -3,34 +3,42 @@ import request from '@/utils/request'
 // 获取公司列表
 export function getCompanyList(params) {
   return request({
-    url: '/api/platform/company/page',
+    url: '/website/company/page',
     method: 'post',
-    data: {
-      pageNum: params.page,
-      pageSize: params.size,
-      companyName: params.companyName,
-      region: params.region
-    }
+    data: params
   })
 }
 
 // 获取公司详情
 export function getCompanyDetail(id) {
   return request({
-    url: `/api/platform/company/${id}`,
+    url: `/website/company/${id}`,
     method: 'get'
   })
 }
 
-// 获取企业产品列表
-export function getCompanyProducts(params) {
+// 更新公司信息
+export function updateCompany(data) {
   return request({
-    url: '/api/company/product/page',
-    method: 'post',
-    data: {
-      pageNum: params.page,
-      pageSize: params.size,
-      companyId: params.companyId
-    }
+    url: '/company/base',
+    method: 'put',
+    data
+  })
+}
+
+// 获取公司活动列表
+export function getCompanyActivities(params) {
+  return request({
+    url: '/company/activity',
+    method: 'get',
+    params
+  })
+}
+
+// 获取活动详情
+export function getActivityDetail(id) {
+  return request({
+    url: `/company/activity/${id}`,
+    method: 'get'
   })
 } 

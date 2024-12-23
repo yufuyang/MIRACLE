@@ -1,8 +1,10 @@
-package com.example.miracle.modules.platform.controller;
+package com.example.miracle.modules.website.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.common.exception.BusinessException;
 import com.example.miracle.modules.company.dto.ActivityDTO;
 import com.example.miracle.modules.company.dto.query.ActivityPageQry;
 import com.example.miracle.modules.company.entity.Activity;
@@ -13,58 +15,30 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 /**
- * 平台端活动管理控制器
+ * 活动控制器
  */
 @RestController
-@RequestMapping("/platform/activity")
+@RequestMapping("/website/activity")
 @RequiredArgsConstructor
-public class ActivityController {
+public class WebsiteActivityController {
 
     private final ActivityService activityService;
     private final ActivityStatsService activityStatsService;
 
     /**
-     * 创建平台活动
-     */
-    @PostMapping
-    public SingleResponse<Long> createActivity(@RequestBody ActivityDTO dto) {
-        Activity activity = new Activity();
-        BeanUtils.copyProperties(dto, activity);
-        // 设置为平台活动(companyId为0)
-        activity.setCompanyId(0L);
-        activityService.save(activity);
-
-        // 创建活动统计记录
-        ActivityStats stats = new ActivityStats();
-        stats.setActivityId(activity.getId());
-        stats.setViewCount(0);
-        stats.setRegisterCount(0);
-        activityStatsService.save(stats);
-
-        return SingleResponse.of(activity.getId());
-    }
-
-    /**
-     * 删除活动
-     */
-    @DeleteMapping("/{id}")
-    public SingleResponse deleteActivity(@PathVariable Long id) {
-
-        activityService.removeById(id);
-
-        activityStatsService.remove(new LambdaQueryWrapper<ActivityStats>().eq(ActivityStats::getActivityId, id));
-
-        return SingleResponse.buildSuccess();
-    }
-
-    /**
      * 获取活动列表
      */
-    @PostMapping("/list")
-    public MultiResponse<ActivityDTO> listActivities(@RequestBody ActivityPageQry qry) {
+    @PostMapping("/page")
+    public MultiResponse<ActivityDTO> listActivities(@RequestBody ActivityPageQry activityPageQry) {
 
-        return activityService.listActivities(qry);
+        return activityService.listActivities(activityPageQry);
     }
 
     /**

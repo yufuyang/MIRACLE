@@ -33,7 +33,7 @@
             :disabled="activity.status === '已结束'"
             @click="handleRegister"
           >
-            {{ getButtonText(activity.status) }}
+            {{ getButtonText() }}
           </a-button>
           <a-button size="large" @click="handleShare">
             <share-alt-outlined /> 分享活动
@@ -87,80 +87,54 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { 
-  TeamOutlined, 
-  CalendarOutlined, 
-  EnvironmentOutlined,
-  UserOutlined,
-  ShareAltOutlined
-} from '@ant-design/icons-vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { TeamOutlined, CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons-vue'
 import { message } from 'ant-design-vue'
 import defaultImage from '@/assets/images/default.jpg'
+import { getActivityDetail, registerActivity } from '@/api/activity'
 
-const route = useRoute()
 const router = useRouter()
+const route = useRoute()
 
-// 模拟活动详情数据
+// 数据
+const loading = ref(false)
 const activity = ref({
-  id: 1,
-  title: '2024智能制造创新峰会',
-  description: '探讨智能制造最新趋势，分享行业创新实践。本次峰会将邀请行业领军企业和专家，共同探讨智能制造发展趋势、技术创新、解决��案等热点话题。通过主题演讲、圆桌论坛、案例分享等多种形式，深入交流智能制造实践经验。',
-  companyName: '科技创新有限公司',
-  startTime: '2024-03-15 09:00-17:00',
-  location: '上海市浦东新区张江高科技园区',
-  status: '即将开始',
+  title: '',
+  description: '',
+  companyName: '',
+  startTime: '',
+  location: '',
+  status: '',
   imageUrl: defaultImage,
-  registeredCount: 180,
-  maxCount: 300,
-  targetAudience: '制造业企业负责人、技术总监、项目经理等相关人员',
-  schedules: [
-    {
-      time: '09:00-09:30',
-      title: '签到入场',
-      description: '领取会议资料'
-    },
-    {
-      time: '09:30-10:30',
-      title: '开幕式及主题演讲',
-      description: '智能制造发展趋势与机遇'
-    },
-    {
-      time: '10:45-12:00',
-      title: '技术创新专场',
-      description: '人工智能在制造业的应用实践'
-    },
-    {
-      time: '14:00-15:30',
-      title: '案例分享',
-      description: '智能工厂建设经验分享'
-    },
-    {
-      time: '15:45-16:45',
-      title: '圆桌论坛',
-      description: '智能制造解决方案探讨'
-    }
-  ],
-  notices: [
-    {
-      title: '报名方式',
-      content: '线上报名，审核通过后将收到确认邮件'
-    },
-    {
-      title: '参会要求',
-      content: '请务必携带身份证件，提前15分钟到达会场'
-    },
-    {
-      title: '其他说明',
-      content: '会议提供午餐，请提前告知是否有特殊饮食要求'
-    }
-  ]
+  registeredCount: 0,
+  maxCount: 0,
+  targetAudience: '',
+  schedules: [],
+  notices: []
 })
 
+// 加载活动详情
+const loadActivityDetail = async (id) => {
+  loading.value = true
+  try {
+    const res = await getActivityDetail(id)
+    if (res.data) {
+      activity.value = {
+        ...res.data,
+        imageUrl: res.data.imageUrl || defaultImage
+      }
+    }
+  } catch (error) {
+    console.error('获取活动详情失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
 // 获取按钮文字
-const getButtonText = (status) => {
-  switch (status) {
+const getButtonText = () => {
+  switch (activity.value.status) {
     case '即将开始':
       return '预约提醒'
     case '报名中':
@@ -173,24 +147,25 @@ const getButtonText = (status) => {
 }
 
 // 处理报名
-const handleRegister = () => {
-  if (activity.value.status === '即将开始') {
-    message.success('预约提醒设置成功')
-  } else if (activity.value.status === '报名中') {
+const handleRegister = async () => {
+  try {
+    await registerActivity({
+      activityId: activity.value.id
+    })
     message.success('报名成功')
+    loadActivityDetail(activity.value.id)
+  } catch (error) {
+    console.error('报名失败:', error)
+    message.error(error.response?.data?.message || '报名失败')
   }
-}
-
-// 处理分享
-const handleShare = () => {
-  message.success('分享链接已复制')
 }
 
 // 初始化
 onMounted(() => {
   const id = route.params.id
-  // 这里应该根据id获取活动详情
-  console.log('活动ID:', id)
+  if (id) {
+    loadActivityDetail(id)
+  }
 })
 </script>
 

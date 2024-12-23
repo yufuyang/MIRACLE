@@ -15,4 +15,5 @@ public interface ActivityService extends IService<Activity> {
      * @return 活动列表
      */
     MultiResponse<ActivityDTO> listActivities(ActivityPageQry activityPageQry);
+
 } 

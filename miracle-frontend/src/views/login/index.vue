@@ -62,9 +62,9 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import request from '@/utils/request'
 import { message } from 'ant-design-vue'
 import { UserOutlined, LockOutlined } from '@ant-design/icons-vue'
+import { companyLogin, merchantLogin } from '@/api/user'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -99,11 +99,8 @@ const handleLogin = async () => {
     loading.value = true
     try {
       // 根据角色选择不同的登录接口
-      const loginUrl = loginForm.role === 'company' 
-        ? '/company/user/login' 
-        : '/merchant/user/login'
-
-      const response = await request.post(loginUrl, {
+      const loginApi = loginForm.role === 'company' ? companyLogin : merchantLogin
+      const response = await loginApi({
         username: loginForm.username,
         password: loginForm.password
       })
@@ -118,7 +115,7 @@ const handleLogin = async () => {
       }
     } catch (error) {
       console.error('Login failed:', error)
-      message.error('登录失败：' + (error.message || '未知错误'))
+      message.error(error.response?.data?.message || '登录失败')
     } finally {
       loading.value = false
     }

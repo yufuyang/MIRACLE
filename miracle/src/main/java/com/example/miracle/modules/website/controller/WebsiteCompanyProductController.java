@@ -26,7 +26,7 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class WebsiteCompanyProductController {
 
-    private final BaseController baseController;
+
     private final CompanyProductService companyProductService;
 
     private final CompanyProductStatsService companyProductStatsService;
@@ -53,8 +53,7 @@ public class WebsiteCompanyProductController {
      */
     @PostMapping("/page")
     public MultiResponse<CompanyProduct> pageQuery(@RequestBody CompanyProductPageQuery companyProductPageQuery) {
-        Long companyId = baseController.getCompanyId();
-        companyProductPageQuery.setCompanyId(companyId);
+
 
         return companyProductService.pageQuery(companyProductPageQuery);
     }

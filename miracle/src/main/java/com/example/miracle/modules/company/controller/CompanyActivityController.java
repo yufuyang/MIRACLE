@@ -81,7 +81,7 @@ public class CompanyActivityController {
     /**
      * 获取活动列表
      */
-    @GetMapping
+    @PostMapping("/list")
     public MultiResponse<ActivityDTO> listActivities(@RequestBody ActivityPageQry activityPageQry) {
 
         Long companyId = baseController.getCompanyId();

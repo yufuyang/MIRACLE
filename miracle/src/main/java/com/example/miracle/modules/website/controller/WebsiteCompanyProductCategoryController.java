@@ -27,7 +27,7 @@ import java.util.Objects;
 @RequestMapping("/website/product/category")
 @RequiredArgsConstructor
 public class WebsiteCompanyProductCategoryController {
-    private final BaseController baseController;
+
     private final CompanyProductCategoryService categoryService;
 
     /**
@@ -45,8 +45,6 @@ public class WebsiteCompanyProductCategoryController {
     @PostMapping("/list")
     public MultiResponse<CompanyProductCategory> list(@RequestBody CompanyProductCategoryQuery query) {
 
-        Long companyId = baseController.getCompanyId();
-        query.setCompanyId(companyId);
 
         return categoryService.list(query);
     }
@@ -56,11 +54,8 @@ public class WebsiteCompanyProductCategoryController {
     /**
      * 获取分类树形结构
      */
-    @GetMapping("/tree")
-    public MultiResponse<CompanyProductCategoryTreeDTO> tree() {
-
-        Long companyId = baseController.getCompanyId();
-
+    @GetMapping("/tree/{companyId}")
+    public MultiResponse<CompanyProductCategoryTreeDTO> tree(@PathVariable Long companyId) {
         return categoryService.tree(companyId);
     }
 

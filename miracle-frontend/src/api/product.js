@@ -1,27 +1,72 @@
 import request from '@/utils/request'
 
-// 分页查询产品列表
-export function getProductList(params) {
+// 获取产品分类列表
+export function getProductCategories(companyId) {
   return request({
-    url: '/api/company/product/page',
+    url: '/website/product/category/list',
     method: 'post',
-    data: params
+    data: {
+      companyId
+    }
   })
 }
 
-// 获取产品分类
-export function getProductCategories() {
+// 获取产品分类树
+export function getProductCategoryTree() {
   return request({
-    url: '/api/company/product/category/list',
+    url: '/website/product/category/tree',
     method: 'get'
+  })
+}
+
+// 获取产品列表
+export function getProductList(params) {
+  return request({
+    url: '/website/product/page',
+    method: 'post',
+    data: params
   })
 }
 
 // 获取产品详情
 export function getProductDetail(id) {
   return request({
-    url: `/api/company/product/${id}`,
+    url: `/website/product/${id}`,
     method: 'get'
+  })
+}
+
+// 获取产品图片列表
+export function getProductImages(productId) {
+  return request({
+    url: `/website/company/product/image/list/${productId}`,
+    method: 'get'
+  })
+}
+
+// 企业端 - 新增产品
+export function createProduct(data) {
+  return request({
+    url: '/company/product',
+    method: 'post',
+    data
+  })
+}
+
+// 企业端 - 更新产品
+export function updateProduct(data) {
+  return request({
+    url: '/company/product',
+    method: 'put',
+    data
+  })
+}
+
+// 企业端 - 删除产品
+export function deleteProduct(id) {
+  return request({
+    url: `/company/product/${id}`,
+    method: 'delete'
   })
 }
 
