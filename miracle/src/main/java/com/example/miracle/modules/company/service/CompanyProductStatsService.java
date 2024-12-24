@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.modules.company.dto.query.CompanyProductStatsQuery;
 import com.example.miracle.modules.company.entity.CompanyProductStats;
+import com.example.miracle.modules.website.dto.ProductDTO;
 
 import java.util.List;
 import java.util.Map;
@@ -25,4 +26,12 @@ public interface CompanyProductStatsService extends IService<CompanyProductStats
      * @return 企业统计数据列表
      */
     List<Map<String, Object>> selectTopCompanies(int limit);
+
+    /**
+     * 查询热门产品
+     *
+     * @param limit 数量限制
+     * @return 热门产品列表
+     */
+    List<ProductDTO> selectHotProducts(int limit);
 }

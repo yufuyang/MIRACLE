@@ -199,7 +199,7 @@ export function updateProductStep(data) {
   })
 }
 
-// 删除产品步骤
+// 删除��品步骤
 export function deleteProductStep(id) {
   return request({
     url: `/company/product/step/${id}`,
@@ -213,5 +213,13 @@ export function updateStepsSort(data) {
     url: '/company/product/step/sort',
     method: 'put',
     data
+  })
+}
+
+// 获取热门商品
+export function getHotProducts() {
+  return request({
+    url: '/website/home/hot-products',
+    method: 'get'
   })
 } 

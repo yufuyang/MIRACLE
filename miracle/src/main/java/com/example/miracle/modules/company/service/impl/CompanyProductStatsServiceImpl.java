@@ -8,6 +8,7 @@ import com.example.miracle.modules.company.dto.query.CompanyProductStatsQuery;
 import com.example.miracle.modules.company.entity.CompanyProductStats;
 import com.example.miracle.modules.company.mapper.CompanyProductStatsMapper;
 import com.example.miracle.modules.company.service.CompanyProductStatsService;
+import com.example.miracle.modules.website.dto.ProductDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -54,5 +55,10 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
     @Override
     public List<Map<String, Object>> selectTopCompanies(int limit) {
         return this.baseMapper.selectTopCompanies(limit);
+    }
+
+    @Override
+    public List<ProductDTO> selectHotProducts(int limit) {
+        return this.baseMapper.selectHotProducts(limit);
     }
 }

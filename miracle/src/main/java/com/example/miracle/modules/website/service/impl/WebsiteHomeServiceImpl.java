@@ -82,34 +82,8 @@ public class WebsiteHomeServiceImpl implements WebsiteHomeService {
 
     @Override
     public MultiResponse<ProductDTO> getHotProducts() {
-        // 先获取热门产品统计数据(直接取前6个)
-        List<CompanyProductStats> productStats = companyProductStatsService.list(new LambdaQueryWrapper<CompanyProductStats>().orderByDesc(CompanyProductStats::getIntentionCount).orderByDesc(CompanyProductStats::getViewCount).last("LIMIT 6"));
-
-        if (CollectionUtils.isEmpty(productStats)) {
-            return MultiResponse.buildSuccess();
-        }
-
-        // 获取产品详情
-        List<Long> productIds = productStats.stream().map(CompanyProductStats::getProductId).collect(Collectors.toList());
-
-        Map<Long, CompanyProduct> productMap = companyProductService.list(new LambdaQueryWrapper<CompanyProduct>().in(CompanyProduct::getId, productIds)).stream().collect(Collectors.toMap(CompanyProduct::getId, product -> product));
-
-        // 转换为DTO并保持排序
-        List<ProductDTO> dtoList = productStats.stream()
-            .map(stats -> {
-                CompanyProduct product = productMap.get(stats.getProductId());
-                if (product == null) {
-                    return null;
-                }
-
-                ProductDTO dto = new ProductDTO();
-                BeanUtils.copyProperties(product, dto);
-                dto.setViewCount(stats.getViewCount());
-                dto.setIntentionCount(stats.getIntentionCount());
-
-                return dto;
-            }).collect(Collectors.toList());
-
+        // 使用联合查询获取热门产品（已上架的前6个）
+        List<ProductDTO> dtoList = companyProductStatsService.selectHotProducts(6);
         return MultiResponse.of(dtoList);
     }
 
