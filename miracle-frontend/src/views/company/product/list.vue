@@ -97,17 +97,17 @@
     >
       <a-form
         ref="formRef"
-        :model="formData"
+        :model="formData.value"
         :rules="formRules"
-        label-col="{ span: 6 }"
-        wrapper-col="{ span: 16 }"
+        :label-col="{span: 6}"
+        :wrapper-col="{span: 16}"
       >
         <a-form-item label="产品名称" name="name">
-          <a-input v-model:value="formData.name" placeholder="请输入产品名称" />
+          <a-input v-model:value="formData.value.name" placeholder="请输入产品名称" />
         </a-form-item>
         <a-form-item label="产品分类" name="categoryId">
           <a-select
-            v-model:value="formData.categoryId"
+            v-model:value="formData.value.categoryId"
             placeholder="请选择产品分类"
             style="width: 100%"
           >
@@ -132,7 +132,7 @@
         </a-form-item>
         <a-form-item label="产品描述" name="description">
           <a-textarea
-            v-model:value="formData.description"
+            v-model:value="formData.value.description"
             placeholder="请输入产品描述"
             :rows="4"
           />
@@ -263,10 +263,12 @@ const modalLoading = ref(false)
 const modalTitle = ref('')
 const formRef = ref(null)
 const formData = ref({
-  name: '',
-  categoryId: undefined,
-  image: '',
-  description: ''
+  value: {
+    name: '',
+    categoryId: undefined,
+    image: '',
+    description: ''
+  }
 })
 const fileList = ref([])
 
@@ -282,10 +284,12 @@ const handleAdd = () => {
   modalTitle.value = '添加产品'
   modalVisible.value = true
   formData.value = {
-    name: '',
-    categoryId: undefined,
-    image: '',
-    description: ''
+    value: {
+      name: '',
+      categoryId: undefined,
+      image: '',
+      description: ''
+    }
   }
   fileList.value = []
 }
@@ -294,7 +298,9 @@ const handleAdd = () => {
 const handleEdit = (record) => {
   modalTitle.value = '编辑产品'
   modalVisible.value = true
-  formData.value = { ...record }
+  formData.value = {
+    value: { ...record }
+  }
   fileList.value = record.image ? [{ url: record.image }] : []
 }
 
@@ -354,7 +360,7 @@ const customUpload = async ({ file, onSuccess, onError }) => {
     formData.append('file', file)
     const res = await uploadImage(formData)
     if (res.code === 200) {
-      formData.value.image = res.data
+      formData.value.value.image = res.data
       fileList.value = [
         {
           uid: '-1',
@@ -382,7 +388,7 @@ const handleModalOk = async () => {
     modalLoading.value = true
     
     // 确保图片已上传
-    if (!formData.value.image && !fileList.value.length) {
+    if (!formData.value.value.image && !fileList.value.length) {
       message.error('请上传产品图片')
       modalLoading.value = false
       return
@@ -390,14 +396,14 @@ const handleModalOk = async () => {
 
     // 如果有新上传的图片，使用新图片的URL
     if (fileList.value.length > 0) {
-      formData.value.image = fileList.value[0].url
+      formData.value.value.image = fileList.value[0].url
     }
     
-    if (formData.value.id) {
-      await updateCompanyProduct(formData.value)
+    if (formData.value.value.id) {
+      await updateCompanyProduct(formData.value.value)
       message.success('更新成功')
     } else {
-      await addCompanyProduct(formData.value)
+      await addCompanyProduct(formData.value.value)
       message.success('添加成功')
     }
     

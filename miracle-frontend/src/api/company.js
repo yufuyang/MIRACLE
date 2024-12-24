@@ -98,7 +98,8 @@ export function toggleProductStatus(id) {
 export function getProductCategories() {
   return request({
     url: '/company/product/category/list',
-    method: 'get'
+    method: 'post',
+    data: {}
   })
 }
 

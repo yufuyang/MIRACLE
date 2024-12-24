@@ -18,10 +18,26 @@
         :loading="loading"
         :pagination="false"
         row-key="id"
+        :scroll="{ x: 800 }"
       >
         <template #bodyCell="{ column, record }">
           <template v-if="column.key === 'action'">
             <a-space>
+              <a-button 
+                type="link" 
+                size="small"
+                @click="handleMoveUp(record)"
+              >
+                <template #icon><arrow-up-outlined /></template>
+              </a-button>
+              <a-button 
+                type="link" 
+                size="small"
+                @click="handleMoveDown(record)"
+              >
+                <template #icon><arrow-down-outlined /></template>
+              </a-button>
+              <a-divider type="vertical" />
               <a @click="handleEdit(record)">编辑</a>
               <a-divider type="vertical" />
               <a-popconfirm
@@ -45,34 +61,26 @@
     >
       <a-form
         ref="formRef"
-        :model="formData"
+        :model="formData.value"
         :rules="formRules"
-        label-col="{ span: 6 }"
-        wrapper-col="{ span: 16 }"
+        :label-col="{span: 6}"
+        :wrapper-col="{span: 16}"
       >
-        <a-form-item label="分类名称" name="name">
-          <a-input v-model:value="formData.name" placeholder="请输入分类名称" />
+        <a-form-item label="分类名称" name="categoryName">
+          <a-input v-model:value="formData.value.categoryName" placeholder="请输入分类名称" />
         </a-form-item>
         <a-form-item label="上级分类" name="parentId">
           <a-tree-select
-            v-model:value="formData.parentId"
+            v-model:value="formData.value.parentId"
             :tree-data="categoryTree"
             :field-names="{
               children: 'children',
-              label: 'name',
+              label: 'categoryName',
               value: 'id'
             }"
             placeholder="请选择上级分类"
             allow-clear
             tree-default-expand-all
-          />
-        </a-form-item>
-        <a-form-item label="排序" name="sort">
-          <a-input-number
-            v-model:value="formData.sort"
-            :min="0"
-            :max="999"
-            style="width: 100%"
           />
         </a-form-item>
       </a-form>
@@ -83,26 +91,22 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
-import { PlusOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons-vue'
 import { getProductCategories, addCategory, updateCategory, deleteCategory } from '@/api/company'
 
 // 表格列定义
 const columns = [
   {
     title: '分类名称',
-    dataIndex: 'name',
-    key: 'name'
-  },
-  {
-    title: '排序',
-    dataIndex: 'sort',
-    key: 'sort',
-    width: 100
+    dataIndex: 'categoryName',
+    key: 'categoryName',
+    width: '70%'
   },
   {
     title: '操作',
     key: 'action',
-    width: 200,
+    width: '30%',
+    align: 'center',
     fixed: 'right'
   }
 ]
@@ -118,9 +122,10 @@ const fetchCategories = async () => {
   try {
     const res = await getProductCategories()
     if (res.code === 200) {
-      categories.value = res.data || []
+      // 按sort字段排序
+      categories.value = (res.data || []).sort((a, b) => a.sort - b.sort)
       // 构建树形数据
-      categoryTree.value = buildCategoryTree(res.data)
+      categoryTree.value = buildCategoryTree(categories.value)
     }
   } catch (error) {
     console.error('获取分类列表失败:', error)
@@ -162,14 +167,24 @@ const modalLoading = ref(false)
 const modalTitle = ref('')
 const formRef = ref(null)
 const formData = ref({
-  name: '',
-  parentId: undefined,
-  sort: 0
+  value: {
+    categoryName: '',
+    parentId: undefined,
+    sort: 0
+  }
 })
 
 // 表单校验规则
 const formRules = {
-  name: [{ required: true, message: '请输入分类名称' }]
+  categoryName: [{ required: true, message: '请输入分类名称' }]
+}
+
+// 添加获取最大排序值的方法
+const getMaxSort = () => {
+  if (!categories.value || categories.value.length === 0) {
+    return 0
+  }
+  return Math.max(...categories.value.map(item => item.sort || 0)) + 1
 }
 
 // 添加分类
@@ -177,9 +192,11 @@ const handleAdd = () => {
   modalTitle.value = '添加分类'
   modalVisible.value = true
   formData.value = {
-    name: '',
-    parentId: undefined,
-    sort: 0
+    value: {
+      categoryName: '',
+      parentId: undefined,
+      sort: getMaxSort()
+    }
   }
 }
 
@@ -187,7 +204,9 @@ const handleAdd = () => {
 const handleEdit = (record) => {
   modalTitle.value = '编辑分类'
   modalVisible.value = true
-  formData.value = { ...record }
+  formData.value = {
+    value: { ...record }
+  }
 }
 
 // 删除分类
@@ -208,11 +227,11 @@ const handleModalOk = async () => {
     await formRef.value.validate()
     modalLoading.value = true
     
-    if (formData.value.id) {
-      await updateCategory(formData.value)
+    if (formData.value.value.id) {
+      await updateCategory(formData.value.value)
       message.success('更新成功')
     } else {
-      await addCategory(formData.value)
+      await addCategory(formData.value.value)
       message.success('添加成功')
     }
     
@@ -226,6 +245,53 @@ const handleModalOk = async () => {
   }
 }
 
+// 添加排序相关方法
+const handleMoveUp = async (record) => {
+  const currentIndex = categories.value.findIndex(item => item.id === record.id)
+  if (currentIndex <= 0) {
+    message.warning('已经是第一个了')
+    return
+  }
+  
+  const prevItem = categories.value[currentIndex - 1]
+  const currentSort = record.sort
+  const prevSort = prevItem.sort
+  
+  try {
+    // 交换排序值
+    await updateCategory({ ...record, sort: prevSort })
+    await updateCategory({ ...prevItem, sort: currentSort })
+    message.success('移动成功')
+    fetchCategories()
+  } catch (error) {
+    console.error('移动失败:', error)
+    message.error('移动失败')
+  }
+}
+
+const handleMoveDown = async (record) => {
+  const currentIndex = categories.value.findIndex(item => item.id === record.id)
+  if (currentIndex >= categories.value.length - 1) {
+    message.warning('已经是最后一个了')
+    return
+  }
+  
+  const nextItem = categories.value[currentIndex + 1]
+  const currentSort = record.sort
+  const nextSort = nextItem.sort
+  
+  try {
+    // 交换排序值
+    await updateCategory({ ...record, sort: nextSort })
+    await updateCategory({ ...nextItem, sort: currentSort })
+    message.success('移动成功')
+    fetchCategories()
+  } catch (error) {
+    console.error('移动失败:', error)
+    message.error('移动失败')
+  }
+}
+
 onMounted(() => {
   fetchCategories()
 })
@@ -233,6 +299,10 @@ onMounted(() => {
 
 <style scoped lang="less">
 .product-category {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100%;
+
   .page-header {
     display: flex;
     justify-content: space-between;
@@ -241,11 +311,22 @@ onMounted(() => {
 
     h2 {
       margin: 0;
+      font-size: 20px;
+      font-weight: 500;
     }
   }
 
   .danger {
     color: #ff4d4f;
+  }
+
+  :deep(.ant-table-thead > tr > th) {
+    background: #fafafa;
+    font-weight: 500;
+  }
+
+  :deep(.ant-card) {
+    border-radius: 4px;
   }
 }
 </style> 

@@ -46,8 +46,8 @@
     </a-layout-header>
 
     <a-layout>
-      <!-- 左侧菜单栏 - 仅企业用户可见 -->
-      <a-layout-sider v-if="isCompanyUser" width="200" style="background: #fff">
+      <!-- 左侧菜单栏 - 仅在工作台相关页面显示 -->
+      <a-layout-sider v-if="isCompanyUser && route.meta.showSidebar" width="200" style="background: #fff">
         <a-menu
           v-model:selectedKeys="sideMenuKeys"
           v-model:openKeys="openKeys"
@@ -67,10 +67,10 @@
             </template>
             <template #title>产品管理</template>
             <a-menu-item key="product-list">
-              <router-link to="/company/product/list">产品列表</router-link>
+              <router-link to="/workspace/product/list">产品列表</router-link>
             </a-menu-item>
             <a-menu-item key="product-category">
-              <router-link to="/company/product/category">产品分类</router-link>
+              <router-link to="/workspace/product/category">产品分类</router-link>
             </a-menu-item>
           </a-sub-menu>
 
@@ -80,10 +80,10 @@
             </template>
             <template #title>活动管理</template>
             <a-menu-item key="activity-list">
-              <router-link to="/company/activity/list">活动列表</router-link>
+              <router-link to="/workspace/activity/list">活动列表</router-link>
             </a-menu-item>
             <a-menu-item key="activity-stats">
-              <router-link to="/company/activity/stats">活动统计</router-link>
+              <router-link to="/workspace/activity/stats">活动统计</router-link>
             </a-menu-item>
           </a-sub-menu>
 
@@ -93,10 +93,10 @@
             </template>
             <template #title>意向管理</template>
             <a-menu-item key="inquiry-list">
-              <router-link to="/company/inquiry/list">意向列表</router-link>
+              <router-link to="/workspace/inquiry/list">意向列表</router-link>
             </a-menu-item>
             <a-menu-item key="inquiry-stats">
-              <router-link to="/company/inquiry/stats">意向统计</router-link>
+              <router-link to="/workspace/inquiry/stats">意向统计</router-link>
             </a-menu-item>
           </a-sub-menu>
 
@@ -106,13 +106,13 @@
             </template>
             <template #title>数据统计</template>
             <a-menu-item key="stats-overview">
-              <router-link to="/stats/overview">总览</router-link>
+              <router-link to="/workspace/stats/overview">总览</router-link>
             </a-menu-item>
             <a-menu-item key="stats-product">
-              <router-link to="/stats/product">产品统计</router-link>
+              <router-link to="/workspace/stats/product">产品统计</router-link>
             </a-menu-item>
             <a-menu-item key="stats-activity">
-              <router-link to="/stats/activity">活动统计</router-link>
+              <router-link to="/workspace/stats/activity">活动统计</router-link>
             </a-menu-item>
           </a-sub-menu>
 
@@ -120,7 +120,7 @@
             <template #icon>
               <user-outlined />
             </template>
-            <router-link to="/profile">企业资料</router-link>
+            <router-link to="/workspace/profile">企业资料</router-link>
           </a-menu-item>
         </a-menu>
       </a-layout-sider>
