@@ -96,7 +96,7 @@
               <router-link to="/workspace/inquiry/list">意向列表</router-link>
             </a-menu-item>
             <a-menu-item key="inquiry-stats">
-              <router-link to="/workspace/inquiry/stats">意���统计</router-link>
+              <router-link to="/workspace/inquiry/stats">意向统计</router-link>
             </a-menu-item>
           </a-sub-menu>
 
@@ -258,14 +258,30 @@ const selectedKeys = computed(() => {
   return [mainPath]
 })
 
-// 左侧菜单选中的菜单项
+// 修改左侧菜单选中的菜单项逻辑
 const sideMenuKeys = computed(() => {
   const path = route.path
   const parts = path.split('/')
-  if (parts.length >= 4 && parts[1] === 'company') {
-    return [`${parts[2]}-${parts[3]}`]
+  if (parts.length >= 3 && parts[1] === 'workspace') {
+    // 如果是工作台下的子页面，返回对应的菜单key
+    if (parts[2] === 'product') {
+      return [`product-${parts[3] || 'list'}`]
+    }
+    if (parts[2] === 'activity') {
+      return [`activity-${parts[3] || 'list'}`]
+    }
+    if (parts[2] === 'inquiry') {
+      return [`inquiry-${parts[3] || 'list'}`]
+    }
+    if (parts[2] === 'stats') {
+      return [`stats-${parts[3] || 'overview'}`]
+    }
+    if (parts[2] === 'profile') {
+      return ['profile']
+    }
+    return ['workspace']
   }
-  return [parts[1] || 'workspace']
+  return []
 })
 
 // 展开的子菜单
