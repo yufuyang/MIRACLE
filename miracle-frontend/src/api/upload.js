@@ -15,7 +15,7 @@ export function uploadFile(data) {
 // 上传图片
 export function uploadImage(data) {
   return request({
-    url: '/file/upload/image',
+    url: '/file/upload',
     method: 'post',
     headers: {
       'Content-Type': 'multipart/form-data'

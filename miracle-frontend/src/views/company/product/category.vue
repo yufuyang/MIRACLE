@@ -11,33 +11,24 @@
     </div>
 
     <a-card>
-      <!-- 分类列表 -->
+      <!-- 分类列表 - 使用树形表格 -->
       <a-table
         :columns="columns"
-        :data-source="categories"
+        :data-source="categoryTree"
         :loading="loading"
         :pagination="false"
         row-key="id"
         :scroll="{ x: 800 }"
       >
         <template #bodyCell="{ column, record }">
+          <template v-if="column.key === 'categoryName'">
+            <span>{{ record.categoryName }}</span>
+            <span v-if="record.children && record.children.length > 0" class="sub-count">
+              ({{ record.children.length }})
+            </span>
+          </template>
           <template v-if="column.key === 'action'">
             <a-space>
-              <a-button 
-                type="link" 
-                size="small"
-                @click="handleMoveUp(record)"
-              >
-                <template #icon><arrow-up-outlined /></template>
-              </a-button>
-              <a-button 
-                type="link" 
-                size="small"
-                @click="handleMoveDown(record)"
-              >
-                <template #icon><arrow-down-outlined /></template>
-              </a-button>
-              <a-divider type="vertical" />
               <a @click="handleEdit(record)">编辑</a>
               <a-divider type="vertical" />
               <a-popconfirm
@@ -91,7 +82,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
-import { PlusOutlined, ArrowUpOutlined, ArrowDownOutlined } from '@ant-design/icons-vue'
+import { PlusOutlined } from '@ant-design/icons-vue'
 import { getProductCategories, addCategory, updateCategory, deleteCategory } from '@/api/company'
 
 // 表格列定义
@@ -106,8 +97,7 @@ const columns = [
     title: '操作',
     key: 'action',
     width: '30%',
-    align: 'center',
-    fixed: 'right'
+    align: 'center'
   }
 ]
 
@@ -122,8 +112,7 @@ const fetchCategories = async () => {
   try {
     const res = await getProductCategories()
     if (res.code === 200) {
-      // 按sort字段排序
-      categories.value = (res.data || []).sort((a, b) => a.sort - b.sort)
+      categories.value = res.data || []
       // 构建树形数据
       categoryTree.value = buildCategoryTree(categories.value)
     }
@@ -169,22 +158,13 @@ const formRef = ref(null)
 const formData = ref({
   value: {
     categoryName: '',
-    parentId: undefined,
-    sort: 0
+    parentId: undefined
   }
 })
 
 // 表单校验规则
 const formRules = {
   categoryName: [{ required: true, message: '请输入分类名称' }]
-}
-
-// 添加获取最大排序值的方法
-const getMaxSort = () => {
-  if (!categories.value || categories.value.length === 0) {
-    return 0
-  }
-  return Math.max(...categories.value.map(item => item.sort || 0)) + 1
 }
 
 // 添加分类
@@ -194,8 +174,7 @@ const handleAdd = () => {
   formData.value = {
     value: {
       categoryName: '',
-      parentId: undefined,
-      sort: getMaxSort()
+      parentId: undefined
     }
   }
 }
@@ -211,6 +190,12 @@ const handleEdit = (record) => {
 
 // 删除分类
 const handleDelete = async (record) => {
+  // 检查是否有子分类
+  if (record.children && record.children.length > 0) {
+    message.error('请先删除子分类')
+    return
+  }
+  
   try {
     await deleteCategory(record.id)
     message.success('删除成功')
@@ -245,53 +230,6 @@ const handleModalOk = async () => {
   }
 }
 
-// 添加排序相关方法
-const handleMoveUp = async (record) => {
-  const currentIndex = categories.value.findIndex(item => item.id === record.id)
-  if (currentIndex <= 0) {
-    message.warning('已经是第一个了')
-    return
-  }
-  
-  const prevItem = categories.value[currentIndex - 1]
-  const currentSort = record.sort
-  const prevSort = prevItem.sort
-  
-  try {
-    // 交换排序值
-    await updateCategory({ ...record, sort: prevSort })
-    await updateCategory({ ...prevItem, sort: currentSort })
-    message.success('移动成功')
-    fetchCategories()
-  } catch (error) {
-    console.error('移动失败:', error)
-    message.error('移动失败')
-  }
-}
-
-const handleMoveDown = async (record) => {
-  const currentIndex = categories.value.findIndex(item => item.id === record.id)
-  if (currentIndex >= categories.value.length - 1) {
-    message.warning('已经是最后一个了')
-    return
-  }
-  
-  const nextItem = categories.value[currentIndex + 1]
-  const currentSort = record.sort
-  const nextSort = nextItem.sort
-  
-  try {
-    // 交换排序值
-    await updateCategory({ ...record, sort: nextSort })
-    await updateCategory({ ...nextItem, sort: currentSort })
-    message.success('移动成功')
-    fetchCategories()
-  } catch (error) {
-    console.error('移动失败:', error)
-    message.error('移动失败')
-  }
-}
-
 onMounted(() => {
   fetchCategories()
 })
@@ -320,6 +258,12 @@ onMounted(() => {
     color: #ff4d4f;
   }
 
+  .sub-count {
+    margin-left: 8px;
+    color: rgba(0, 0, 0, 0.45);
+    font-size: 12px;
+  }
+
   :deep(.ant-table-thead > tr > th) {
     background: #fafafa;
     font-weight: 500;
@@ -327,6 +271,10 @@ onMounted(() => {
 
   :deep(.ant-card) {
     border-radius: 4px;
+  }
+
+  :deep(.ant-table-row-level-1) {
+    background-color: #fafafa;
   }
 }
 </style> 

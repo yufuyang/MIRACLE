@@ -15,4 +15,14 @@ public interface CompanyProductService extends IService<CompanyProduct> {
      * 分页查询公司产品
      */
     MultiResponse<CompanyProduct> pageQuery(CompanyProductPageQuery query);
+
+    /**
+     * 保存产品（包括主图和统计信息）
+     */
+    CompanyProduct saveProduct(CompanyProduct companyProduct);
+
+    /**
+     * 更新产品（包括主图）
+     */
+    CompanyProduct updateProduct(CompanyProduct companyProduct);
 } 

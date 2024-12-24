@@ -115,6 +115,22 @@ const routes = [
         path: 'profile',
         name: 'Profile',
         component: () => import('@/views/profile/index.vue')
+      },
+      {
+        path: '/workspace/product/list',
+        name: 'ProductList',
+        component: () => import('@/views/company/product/list.vue'),
+        meta: {
+          title: '产品列表'
+        }
+      },
+      {
+        path: '/workspace/product/detail/:id',
+        name: 'ProductDetail',
+        component: () => import('@/views/company/product/detail.vue'),
+        meta: {
+          title: '产品详情'
+        }
       }
     ]
   },

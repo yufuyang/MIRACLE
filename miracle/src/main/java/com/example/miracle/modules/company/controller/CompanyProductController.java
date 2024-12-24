@@ -1,6 +1,7 @@
 package com.example.miracle.modules.company.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
@@ -37,21 +38,9 @@ public class CompanyProductController {
      */
     @PostMapping
     public SingleResponse<CompanyProduct> save(@RequestBody CompanyProduct companyProduct) {
-
         Long companyId = baseController.getCompanyId();
         companyProduct.setCompanyId(companyId);
-
-        companyProductService.save(companyProduct);
-
-        CompanyProductStats companyProductStats = new CompanyProductStats();
-        companyProductStats.setProductId(companyProduct.getId());
-        companyProductStats.setCompanyId(companyId);
-        companyProductStats.setIntentionCount(0);
-        companyProductStats.setViewCount(0);
-
-        companyProductStatsService.save(companyProductStats);
-
-        return SingleResponse.of(companyProduct);
+        return SingleResponse.of(companyProductService.saveProduct(companyProduct));
     }
 
     /**
@@ -59,13 +48,10 @@ public class CompanyProductController {
      */
     @PutMapping
     public SingleResponse<CompanyProduct> update(@RequestBody CompanyProduct companyProduct) {
-
         // 校验权限
         authCheck(companyProduct.getId());
 
-        companyProductService.updateById(companyProduct);
-
-        return SingleResponse.of(companyProduct);
+        return SingleResponse.of(companyProductService.updateProduct(companyProduct));
     }
 
     /**

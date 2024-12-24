@@ -51,7 +51,9 @@ export function getCompanyStats() {
   })
 }
 
-// 获取公司产品列表
+/**
+ * 获取产品列表
+ */
 export function getCompanyProducts(params) {
   return request({
     url: '/company/product/page',
@@ -126,5 +128,47 @@ export function deleteCategory(id) {
   return request({
     url: `/company/product/category/${id}`,
     method: 'delete'
+  })
+}
+
+// 获取产品图片列表
+export function getProductImages(productId) {
+  return request({
+    url: `/company/product/image/${productId}`,
+    method: 'get'
+  })
+}
+
+// 添加产品图片
+export function addProductImage(data) {
+  return request({
+    url: '/company/product/image',
+    method: 'post',
+    data
+  })
+}
+
+// 删除产品图片
+export function deleteProductImage(id) {
+  return request({
+    url: `/company/product/image/${id}`,
+    method: 'delete'
+  })
+}
+
+// 设置主图
+export function setMainImage(id) {
+  return request({
+    url: `/company/product/image/${id}/main`,
+    method: 'put'
+  })
+}
+
+// 更新图片排序
+export function updateImageSort(data) {
+  return request({
+    url: '/company/product/image/sort',
+    method: 'put',
+    data
   })
 } 
