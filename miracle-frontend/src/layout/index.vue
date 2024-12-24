@@ -96,7 +96,7 @@
               <router-link to="/workspace/inquiry/list">意向列表</router-link>
             </a-menu-item>
             <a-menu-item key="inquiry-stats">
-              <router-link to="/workspace/inquiry/stats">意向统计</router-link>
+              <router-link to="/workspace/inquiry/stats">意���统计</router-link>
             </a-menu-item>
           </a-sub-menu>
 
@@ -156,28 +156,68 @@ const userInfo = ref(null)
 // 顶部导航选中的菜单项
 const menuItems = [
   {
-    key: '/',
-    label: '首页'
+    key: 'product',
+    icon: () => h(ShopOutlined),
+    label: '产品管理',
+    children: [
+      {
+        key: '/workspace/product/list',
+        label: '产品列表'
+      },
+      {
+        key: '/workspace/product/category',
+        label: '产品分类'
+      }
+    ]
   },
   {
-    key: '/product',
-    label: '产品'
+    key: 'activity',
+    icon: () => h(GiftOutlined),
+    label: '活动管理',
+    children: [
+      {
+        key: '/workspace/activity/list',
+        label: '活动列表'
+      },
+      {
+        key: '/workspace/activity/stats',
+        label: '活动统计'
+      }
+    ]
   },
   {
-    key: '/company',
-    label: '企业',
-    matchPath: '/company', // 只匹配/company和/company/:id
-    excludePath: '/company/product' // 排除产品管理相关路径
+    key: 'inquiry',
+    icon: () => h(MessageOutlined),
+    label: '意向管理',
+    children: [
+      {
+        key: '/workspace/inquiry/list',
+        label: '意向列表'
+      },
+      {
+        key: '/workspace/inquiry/stats',
+        label: '意向统计'
+      }
+    ]
   },
   {
-    key: '/activity',
-    label: '活动'
-  },
-  {
-    key: '/workspace',
-    label: '工作台',
-    auth: true,
-    matchPath: ['/workspace', '/company/product'] // 工作台相关路径
+    key: 'stats',
+    icon: () => h(BarChartOutlined),
+    label: '数据统计',
+    children: [
+      {
+        key: '/workspace/stats/overview',
+        label: '总览'
+      },
+      {
+        key: '/workspace/stats/product',
+        label: '产品统计'
+      },
+      {
+        key: '/workspace/stats/activity',
+        label: '活动统计'
+      }
+    ]
   }
 ]
 
@@ -260,6 +300,11 @@ const isCompanyUser = computed(() => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
   return userInfo.role === 'company'
 })
+
+// 处理菜单点击
+const handleMenuClick = ({ key }) => {
+  router.push(key)
+}
 </script>
 
 <style scoped lang="less">

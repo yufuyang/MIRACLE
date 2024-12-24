@@ -146,7 +146,7 @@
         <a-form-item label="产品价格" name="price">
           <a-input-number
             v-model:value="formData.price"
-            placeholder="请输入产品��格"
+            placeholder="请输入产品价格"
             :min="0"
             :precision="2"
             style="width: 100%"

@@ -67,70 +67,35 @@ const routes = [
         component: () => import('@/views/workspace/index.vue')
       },
       {
-        path: 'product/list',
-        name: 'CompanyProductList',
-        component: () => import('@/views/company/product/list.vue')
-      },
-      {
-        path: 'product/category',
-        name: 'CompanyProductCategory',
-        component: () => import('@/views/company/product/category.vue')
-      },
-      {
-        path: 'activity/list',
-        name: 'CompanyActivityList',
-        component: () => import('@/views/company/activity/list.vue')
-      },
-      {
-        path: 'activity/stats',
-        name: 'CompanyActivityStats',
-        component: () => import('@/views/company/activity/stats.vue')
-      },
-      {
-        path: 'inquiry/list',
-        name: 'CompanyInquiryList',
-        component: () => import('@/views/company/inquiry/list.vue')
-      },
-      {
-        path: 'inquiry/stats',
-        name: 'CompanyInquiryStats',
-        component: () => import('@/views/company/inquiry/stats.vue')
-      },
-      {
-        path: 'stats/overview',
-        name: 'StatsOverview',
-        component: () => import('@/views/stats/overview.vue')
-      },
-      {
-        path: 'stats/product',
-        name: 'StatsProduct',
-        component: () => import('@/views/stats/product.vue')
-      },
-      {
-        path: 'stats/activity',
-        name: 'StatsActivity',
-        component: () => import('@/views/stats/activity.vue')
-      },
-      {
-        path: 'profile',
-        name: 'Profile',
-        component: () => import('@/views/profile/index.vue')
-      },
-      {
-        path: '/workspace/product/list',
-        name: 'ProductList',
-        component: () => import('@/views/company/product/list.vue'),
-        meta: {
-          title: '产品列表'
-        }
-      },
-      {
-        path: '/workspace/product/detail/:id',
-        name: 'ProductDetail',
-        component: () => import('@/views/company/product/detail.vue'),
-        meta: {
-          title: '产品详情'
-        }
+        path: 'product',
+        name: 'CompanyProduct',
+        redirect: 'product/list',
+        children: [
+          {
+            path: 'list',
+            name: 'CompanyProductList',
+            component: () => import('@/views/company/product/list.vue'),
+            meta: {
+              title: '产品列表'
+            }
+          },
+          {
+            path: 'detail/:id',
+            name: 'CompanyProductDetail',
+            component: () => import('@/views/company/product/detail.vue'),
+            meta: {
+              title: '产品详情'
+            }
+          },
+          {
+            path: 'category',
+            name: 'CompanyProductCategory',
+            component: () => import('@/views/company/product/category.vue'),
+            meta: {
+              title: '产品分类'
+            }
+          }
+        ]
       }
     ]
   },
