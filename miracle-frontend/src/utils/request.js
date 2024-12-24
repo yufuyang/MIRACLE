@@ -28,11 +28,11 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     if (res.code === 401) {
-      message.error('登录已过期，请重新登录')
+      // token过期，直接清除用户信息并跳转到登录页
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
       router.push('/login')
-      return Promise.reject(new Error('登录已过期'))
+      return Promise.reject(new Error('登录已过期，请重新登录'))
     }
     return res
   },
@@ -41,10 +41,11 @@ service.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          message.error('登录已过期，请重新登录')
+          // token过期，直接清除用户信息并跳转到登录页
           localStorage.removeItem('token')
           localStorage.removeItem('userInfo')
           router.push('/login')
+          message.error('登录已过期，请重新登录')
           break
         case 403:
           message.error('没有权限访问')

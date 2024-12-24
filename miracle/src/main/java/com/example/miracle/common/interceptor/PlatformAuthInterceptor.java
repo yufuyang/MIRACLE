@@ -26,6 +26,11 @@ public class PlatformAuthInterceptor implements HandlerInterceptor {
             throw new BusinessException("未登录");
         }
 
+        // 如果token以Bearer 开头，去掉Bearer 
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
         // 验证token
         Claims claims = jwtUtil.parseToken(token);
         if (claims == null) {

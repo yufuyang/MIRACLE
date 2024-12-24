@@ -1,8 +1,12 @@
 package com.example.miracle.common.exception;
 
 import com.example.miracle.common.dto.SingleResponse;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
@@ -10,14 +14,30 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(BusinessException.class)
-    public SingleResponse<?> handleBusinessException(BusinessException e) {
-        log.error("业务异常：{}", e.getMessage());
+    @ResponseStatus(HttpStatus.OK)
+    public SingleResponse<String> handleBusinessException(BusinessException e) {
+        log.error("业务异常：", e);
         return SingleResponse.buildFailure(e.getMessage());
     }
 
+    @ExceptionHandler(ExpiredJwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public SingleResponse<String> handleExpiredJwtException(ExpiredJwtException e) {
+        log.error("Token已过期：", e);
+        return SingleResponse.buildFailure("登录已过期，请重新登录");
+    }
+
+    @ExceptionHandler(JwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public SingleResponse<String> handleJwtException(JwtException e) {
+        log.error("Token验证失败：", e);
+        return SingleResponse.buildFailure("token无效");
+    }
+
     @ExceptionHandler(Exception.class)
-    public SingleResponse<?> handleException(Exception e) {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public SingleResponse<String> handleException(Exception e) {
         log.error("系统异常：", e);
-        return SingleResponse.buildFailure("系统异常，请联系管理员");
+        return SingleResponse.buildFailure("系统错误，请稍后重试");
     }
 }

@@ -62,7 +62,7 @@ export function getCompanyProducts(params) {
   })
 }
 
-// 添加公司产品
+// 添��公司产品
 export function addCompanyProduct(data) {
   return request({
     url: '/company/product',
@@ -168,6 +168,49 @@ export function setMainImage(id) {
 export function updateImageSort(data) {
   return request({
     url: '/company/product/image/sort',
+    method: 'put',
+    data
+  })
+}
+
+// 获取产品步骤列表
+export function getProductSteps(productId) {
+  return request({
+    url: `/company/product/step/list/${productId}`,
+    method: 'get'
+  })
+}
+
+// 添加产品步骤
+export function addProductStep(data) {
+  return request({
+    url: '/company/product/step',
+    method: 'post',
+    data
+  })
+}
+
+// 更新产品步骤
+export function updateProductStep(data) {
+  return request({
+    url: '/company/product/step',
+    method: 'put',
+    data
+  })
+}
+
+// 删除产品步骤
+export function deleteProductStep(id) {
+  return request({
+    url: `/company/product/step/${id}`,
+    method: 'delete'
+  })
+}
+
+// 更新步骤排序
+export function updateStepsSort(data) {
+  return request({
+    url: '/company/product/step/sort',
     method: 'put',
     data
   })
