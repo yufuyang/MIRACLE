@@ -8,6 +8,20 @@ const service = axios.create({
   timeout: 10000
 })
 
+// 是否正在重定向到登录页面
+let isRedirecting = false
+
+const redirectToLogin = () => {
+  if (!isRedirecting) {
+    isRedirecting = true
+    localStorage.removeItem('token')
+    localStorage.removeItem('userInfo')
+    router.push('/login').finally(() => {
+      isRedirecting = false
+    })
+  }
+}
+
 // 请求拦截器
 service.interceptors.request.use(
   config => {
@@ -28,10 +42,8 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     if (res.code === 401) {
-      // token过期，直接清除用户信息并跳转到登录页
-      localStorage.removeItem('token')
-      localStorage.removeItem('userInfo')
-      router.push('/login')
+      message.error('登录已过期，请重新登录')
+      redirectToLogin()
       return Promise.reject(new Error('登录已过期，请重新登录'))
     }
     return res
@@ -41,11 +53,8 @@ service.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          // token过期，直接清除用户信息并跳转到登录页
-          localStorage.removeItem('token')
-          localStorage.removeItem('userInfo')
-          router.push('/login')
           message.error('登录已过期，请重新登录')
+          redirectToLogin()
           break
         case 403:
           message.error('没有权限访问')

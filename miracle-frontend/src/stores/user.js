@@ -34,13 +34,18 @@ export const useUserStore = defineStore('user', () => {
   const login = async (loginForm) => {
     try {
       const loginApi = loginForm.role === 'company' ? companyLogin : merchantLogin
-      const res = await loginApi(loginForm)
+      const res = await loginApi({
+        username: loginForm.username,
+        password: loginForm.password
+      })
+      
       if (res.code === 200) {
         const { token: newToken, ...info } = res.data
-        setToken(newToken)
+        // 设置token和用户信息
+        setToken('Bearer ' + newToken)
         updateUserInfo({ ...info, role: loginForm.role })
         message.success('登录成功')
-        router.push('/workspace')
+        router.push('/')
         return true
       } else {
         message.error(res.msg || '登录失败')
@@ -48,7 +53,7 @@ export const useUserStore = defineStore('user', () => {
       }
     } catch (error) {
       console.error('登录失败:', error)
-      message.error('登录失败')
+      message.error(error.response?.data?.message || '登录失败')
       return false
     }
   }

@@ -98,29 +98,13 @@ const handleLogin = async () => {
   loginFormRef.value.validate().then(async () => {
     loading.value = true
     try {
-      // 根据角色选择不同的登录接口
-      const loginApi = loginForm.role === 'company' ? companyLogin : merchantLogin
-      const response = await loginApi({
-        username: loginForm.username,
-        password: loginForm.password
-      })
-      
-      if (response.data) {
-        // 构造用户信息对象
-        const userInfo = {
-          username: response.data.username,
-          role: loginForm.role
-        }
-        // 使用返回的 token
-        const token = response.data.token
-        userStore.login(userInfo, token)
-        message.success('登录成功')
-        router.push('/')
+      const result = await userStore.login(loginForm)
+      if (!result) {
+        loading.value = false
       }
     } catch (error) {
       console.error('Login failed:', error)
       message.error(error.response?.data?.message || '登录失败')
-    } finally {
       loading.value = false
     }
   }).catch(error => {
