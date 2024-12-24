@@ -4,12 +4,18 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useUserStore } from './stores/user'
+import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
 
-onMounted(() => {
+onMounted(async () => {
+  // 初始化用户状态
   userStore.initUserState()
+  
+  // 如果已登录，获取用户详情
+  if (userStore.isLoggedIn()) {
+    await userStore.fetchUserDetail()
+  }
 })
 </script>
 

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { message } from 'ant-design-vue'
-import { companyLogin, merchantLogin } from '@/api/user'
+import { companyLogin, merchantLogin, getUserDetail } from '@/api/user'
 import router from '@/router'
 
 export const useUserStore = defineStore('user', () => {
@@ -30,6 +30,23 @@ export const useUserStore = defineStore('user', () => {
     localStorage.setItem('token', newToken)
   }
 
+  // 获取用户详情
+  const fetchUserDetail = async () => {
+    try {
+      const res = await getUserDetail()
+      if (res.code === 200) {
+        const detail = res.data
+        updateUserInfo({
+          ...userInfo.value,
+          ...detail
+        })
+        return detail
+      }
+    } catch (error) {
+      console.error('获取用户详情失败:', error)
+    }
+  }
+
   // 登录
   const login = async (loginForm) => {
     try {
@@ -41,9 +58,13 @@ export const useUserStore = defineStore('user', () => {
       
       if (res.code === 200) {
         const { token: newToken, ...info } = res.data
-        // 设置token和用户信息
+        // 设置token和基本用户信息
         setToken('Bearer ' + newToken)
         updateUserInfo({ ...info, role: loginForm.role })
+        
+        // 获取用户详情
+        await fetchUserDetail()
+        
         message.success('登录成功')
         router.push('/')
         return true
@@ -80,6 +101,7 @@ export const useUserStore = defineStore('user', () => {
     logout,
     isLoggedIn,
     initUserState,
-    updateUserInfo
+    updateUserInfo,
+    fetchUserDetail
   }
 }) 

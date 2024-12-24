@@ -46,6 +46,20 @@ public class CompanyUserController  {
     }
 
 
+    @GetMapping
+    public SingleResponse<CompanyUser> getById() {
+        Long id = baseController.getUserId();
+        return SingleResponse.of(companyUserService.getById(id));
+    }
+
+
+    @PutMapping
+    public SingleResponse<CompanyUser> update(@RequestBody CompanyUser companyUser) {
+        companyUserService.updateById(companyUser);
+        return SingleResponse.of(companyUser);
+    }
+
+
     /**
      * 根据公司ID查询用户列表
      */

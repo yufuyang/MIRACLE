@@ -26,7 +26,7 @@
             <a-dropdown>
               <a class="user-dropdown" @click.prevent>
                 <user-outlined />
-                <span class="username">{{ userInfo.username }}</span>
+                <span class="username">{{ userInfo.realName || userInfo.username }}</span>
               </a>
               <template #overlay>
                 <a-menu>
@@ -54,11 +54,11 @@
           mode="inline"
           :style="{ height: '100%', borderRight: 0 }"
         >
-          <a-menu-item key="workspace">
+          <a-menu-item key="overview">
             <template #icon>
               <dashboard-outlined />
             </template>
-            <router-link to="/workspace">工作台</router-link>
+            <router-link to="/workspace/stats/overview">总览</router-link>
           </a-menu-item>
 
           <a-sub-menu key="product">
@@ -100,14 +100,37 @@
             </a-menu-item>
           </a-sub-menu>
 
+          <a-sub-menu key="order">
+            <template #icon>
+              <shopping-cart-outlined />
+            </template>
+            <template #title>订单管理</template>
+            <a-menu-item key="order-list">
+              <router-link to="/workspace/order/list">订单列表</router-link>
+            </a-menu-item>
+            <a-menu-item key="order-stats">
+              <router-link to="/workspace/order/stats">订单统计</router-link>
+            </a-menu-item>
+          </a-sub-menu>
+
+          <a-sub-menu key="cooperation">
+            <template #icon>
+              <team-outlined />
+            </template>
+            <template #title>合作管理</template>
+            <a-menu-item key="cooperation-list">
+              <router-link to="/workspace/cooperation/list">合作列表</router-link>
+            </a-menu-item>
+            <a-menu-item key="cooperation-stats">
+              <router-link to="/workspace/cooperation/stats">合作统计</router-link>
+            </a-menu-item>
+          </a-sub-menu>
+
           <a-sub-menu key="stats">
             <template #icon>
               <bar-chart-outlined />
             </template>
             <template #title>数据统计</template>
-            <a-menu-item key="stats-overview">
-              <router-link to="/workspace/stats/overview">总览</router-link>
-            </a-menu-item>
             <a-menu-item key="stats-product">
               <router-link to="/workspace/stats/product">产品统计</router-link>
             </a-menu-item>
@@ -144,16 +167,18 @@ import {
   ShopOutlined,
   CalendarOutlined,
   MessageOutlined,
-  BarChartOutlined
+  BarChartOutlined,
+  ShoppingCartOutlined,
+  TeamOutlined
 } from '@ant-design/icons-vue'
 
 const router = useRouter()
 const route = useRoute()
 
-// 用户信息
+// 用���信息
 const userInfo = ref(null)
 
-// 顶部导航选中的菜单项
+// 顶部导航栏中的菜单项
 const menuItems = [
   {
     key: 'product',

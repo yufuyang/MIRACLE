@@ -64,7 +64,15 @@ const routes = [
       {
         path: '',
         name: 'Workspace',
-        component: () => import('@/views/workspace/index.vue')
+        redirect: '/workspace/stats/overview'
+      },
+      {
+        path: 'stats/overview',
+        name: 'StatsOverview',
+        component: () => import('@/views/workspace/stats/overview.vue'),
+        meta: {
+          title: '总览'
+        }
       },
       {
         path: 'product',

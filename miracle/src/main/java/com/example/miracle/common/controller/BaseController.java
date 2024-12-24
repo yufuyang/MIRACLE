@@ -62,5 +62,19 @@ public class BaseController {
         return merchantUser.getMerchantId();
     }
 
+    public Long getUserId() {
+
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        Long userId = jwtUtil.getUserId(token);
+        if (Objects.isNull(userId)) {
+            throw new BusinessException("token无效");
+        }
+        return userId;
+    }
+
 
 }

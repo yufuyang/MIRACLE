@@ -50,4 +50,21 @@ export function logout() {
     url: '/user/logout',
     method: 'post'
   })
+}
+
+// 获取用户详情
+export function getUserDetail() {
+  return request({
+    url: '/company/user',
+    method: 'get'
+  })
+}
+
+// 更新用户信息
+export function updateUserInfo(data) {
+  return request({
+    url: '/company/user',
+    method: 'put',
+    data
+  })
 } 
