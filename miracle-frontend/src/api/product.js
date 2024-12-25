@@ -1,20 +1,18 @@
 import request from '@/utils/request'
 
 // 获取产品分类列表
-export function getProductCategories(companyId) {
+export function getProductCategories(query) {
   return request({
     url: '/website/product/category/list',
     method: 'post',
-    data: {
-      companyId
-    }
+    data: query
   })
 }
 
 // 获取产品分类树
-export function getProductCategoryTree() {
+export function getProductCategoryTree(companyId) {
   return request({
-    url: '/website/product/category/tree',
+    url: `/website/product/category/tree/${companyId}`,
     method: 'get'
   })
 }
@@ -73,7 +71,7 @@ export function deleteProduct(id) {
 // 添加意向
 export function addIntention(data) {
   return request({
-    url: '/api/merchant/product/intention',
+    url: '/merchant/product/intention',
     method: 'post',
     data
   })
@@ -82,7 +80,7 @@ export function addIntention(data) {
 // 取消意向
 export function cancelIntention(data) {
   return request({
-    url: '/api/merchant/product/intention/cancel',
+    url: '/merchant/product/intention/cancel',
     method: 'post',
     data
   })

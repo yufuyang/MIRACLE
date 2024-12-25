@@ -35,12 +35,20 @@
             <a-col :span="6" v-for="product in hotProducts" :key="product.id">
               <a-card hoverable class="product-card" @click="goToProduct(product.id)">
                 <template #cover>
-                  <img :alt="product.name" :src="product.imageUrl || defaultImage" />
+                  <a-image
+                    :src="product.imageUrl || defaultImage"
+                    :alt="product.productName"
+                    :preview="false"
+                    style="height: 200px; object-fit: cover"
+                  />
                 </template>
-                <a-card-meta :title="product.name">
+                <a-card-meta :title="product.productName">
                   <template #description>
                     <div class="product-info">
-                      <div class="product-desc">{{ product.description }}</div>
+                      <div class="product-price">
+                        <span class="price">¥{{ product.price }}</span>
+                        <span class="unit">/ {{ product.unit }}</span>
+                      </div>
                       <div class="product-company">{{ product.companyName }}</div>
                     </div>
                   </template>
@@ -255,18 +263,17 @@ onMounted(() => {
           left: 0;
           right: 0;
           padding: 20px;
-          background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+          background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
           color: #fff;
 
           h3 {
-            margin: 0 0 8px;
             font-size: 24px;
-            color: #fff;
+            margin-bottom: 8px;
           }
 
           p {
-            margin: 0;
             font-size: 14px;
+            margin: 0;
             opacity: 0.8;
           }
         }
@@ -276,22 +283,19 @@ onMounted(() => {
 
   .section {
     max-width: 1200px;
-    margin: 0 auto 48px;
-    padding: 0 24px;
-    background: #fff;
+    margin: 0 auto;
+    padding: 40px 24px;
 
     .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
-      padding-top: 24px;
 
       .section-title {
         font-size: 24px;
-        font-weight: 600;
+        font-weight: bold;
         margin: 0;
-        color: #1f1f1f;
       }
 
       .more-link {
@@ -303,78 +307,88 @@ onMounted(() => {
         }
       }
     }
-  }
 
-  .product-card,
-  .company-card {
-    height: 100%;
-    transition: all 0.3s;
-
-    &:not(.empty-card) {
+    .product-card {
       cursor: pointer;
+      transition: all 0.3s;
 
       &:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      }
-    }
-
-    &.empty-card {
-      cursor: default;
-      
-      :deep(.ant-skeleton-image) {
-        width: 100%;
-        height: 200px;
-        background: #f5f5f5;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
-      :deep(.ant-skeleton) {
-        .ant-skeleton-title {
-          margin: 0;
+      :deep(.ant-card-meta-title) {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+
+      .product-info {
+        .product-price {
+          margin-bottom: 8px;
+          
+          .price {
+            font-size: 16px;
+            font-weight: bold;
+            color: #f5222d;
+          }
+
+          .unit {
+            font-size: 12px;
+            color: #999;
+            margin-left: 4px;
+          }
+        }
+
+        .product-company {
+          font-size: 12px;
+          color: #666;
         }
       }
     }
 
-    img {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-    }
+    .company-card {
+      cursor: pointer;
+      transition: all 0.3s;
 
-    .product-info,
-    .company-info {
-      margin-top: 12px;
-
-      .product-desc,
-      .company-desc {
-        color: #666;
-        font-size: 14px;
-        margin-bottom: 12px;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
-      .product-company,
-      .company-location {
-        color: #999;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
+      :deep(.ant-card-meta-title) {
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
 
-        .anticon {
-          margin-right: 8px;
+      .company-info {
+        .company-desc {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 8px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        .company-location {
+          font-size: 12px;
+          color: #999;
+
+          .anticon {
+            margin-right: 4px;
+          }
         }
       }
     }
   }
 
   .join-section {
-    background: #fff;
-    padding: 80px 24px;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    padding: 60px 24px;
+    margin-top: 40px;
     text-align: center;
-    margin-top: 48px;
+    color: #fff;
 
     .join-content {
       max-width: 600px;
@@ -382,21 +396,29 @@ onMounted(() => {
 
       h2 {
         font-size: 32px;
+        font-weight: bold;
         margin-bottom: 16px;
-        color: #1f1f1f;
+        color: #fff;
       }
 
       p {
         font-size: 16px;
-        margin-bottom: 32px;
-        color: #666;
+        margin-bottom: 24px;
+        opacity: 0.8;
       }
 
       .ant-btn {
-        height: 48px;
-        padding: 0 40px;
+        height: 44px;
+        padding: 0 32px;
         font-size: 16px;
-        border-radius: 24px;
+        background: #fff;
+        border-color: #fff;
+        color: #1890ff;
+
+        &:hover {
+          background: #f0f0f0;
+          border-color: #f0f0f0;
+        }
       }
     }
   }

@@ -12,7 +12,10 @@ export function getBanners() {
 export function getHotProducts() {
   return request({
     url: '/website/home/hot-products',
-    method: 'get'
+    method: 'get',
+    params: {
+      pageSize: 8
+    }
   })
 }
 
@@ -20,6 +23,9 @@ export function getHotProducts() {
 export function getFeaturedCompanies() {
   return request({
     url: '/website/home/featured-companies',
-    method: 'get'
+    method: 'get',
+    params: {
+      pageSize: 8
+    }
   })
 } 

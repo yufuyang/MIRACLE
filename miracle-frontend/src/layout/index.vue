@@ -178,7 +178,7 @@ const route = useRoute()
 // 用���信息
 const userInfo = ref(null)
 
-// 顶部导航栏中的菜单项
+// 顶部���航栏中的菜单项
 const menuItems = [
   {
     key: 'product',
@@ -246,7 +246,7 @@ const menuItems = [
   }
 ]
 
-// 判断当前路由是否匹配菜单项
+// 判断当前路由是����配菜单项
 const isMenuActive = (item) => {
   const currentPath = route.path
   if (item.matchPath) {
@@ -342,7 +342,7 @@ const isCompanyUser = computed(() => {
   return userInfo.role === 'company'
 })
 
-// 处理菜单点击
+// 处理菜���点���
 const handleMenuClick = ({ key }) => {
   router.push(key)
 }

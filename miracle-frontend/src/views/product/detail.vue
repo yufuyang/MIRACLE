@@ -1,98 +1,112 @@
 <template>
   <div class="product-detail">
-    <div class="container">
-      <!-- 产品信息 -->
-      <div class="product-info">
-        <a-row :gutter="24">
-          <!-- 左侧图片展示 -->
-          <a-col :span="12">
-            <div class="product-images">
-              <a-carousel class="main-image">
-                <div v-for="image in product.images" :key="image.id">
-                  <img :src="image.imageUrl || defaultImage" :alt="product.productName" />
-                </div>
-              </a-carousel>
-              <div class="thumbnail-list">
-                <div
-                  v-for="image in product.images"
-                  :key="image.id"
-                  class="thumbnail"
-                  :class="{ active: currentImage === image.id }"
-                  @click="currentImage = image.id"
-                >
-                  <img :src="image.imageUrl || defaultImage" :alt="product.productName" />
-                </div>
-              </div>
-            </div>
-          </a-col>
-
-          <!-- 右侧产品信息 -->
-          <a-col :span="12">
-            <div class="product-details">
-              <h1 class="product-name">{{ product.productName }}</h1>
-              <div class="product-code">产品编号：{{ product.productCode }}</div>
-              <div class="price">¥ {{ product.price }}</div>
-              <div class="stats">
-                <span><eye-outlined /> {{ product.viewCount }} 浏览</span>
-                <span><heart-outlined /> {{ product.intentionCount }} 意向</span>
-              </div>
-              <div class="company-info">
-                <h3>供应商信息</h3>
-                <p>{{ product.companyName }}</p>
-              </div>
-              <div class="actions">
-                <a-button 
-                  type="primary" 
-                  size="large" 
-                  @click="handleIntention"
-                  :loading="intentionLoading"
-                >
-                  <template #icon>
-                    <heart-outlined />
-                  </template>
-                  {{ isLoggedIn ? '添加意向' : '登录后添加意向' }}
-                </a-button>
-              </div>
-            </div>
-          </a-col>
-        </a-row>
-      </div>
-
-      <!-- 产品详情 -->
-      <div class="product-content">
-        <a-tabs v-model:activeKey="activeTab">
-          <a-tab-pane key="detail" tab="产品详情">
-            <div class="detail-content">
-              <div class="detail-text" v-html="product.description"></div>
-            </div>
-          </a-tab-pane>
-          <a-tab-pane key="steps" tab="产品步骤">
-            <div class="steps-content">
-              <a-steps :current="0" direction="vertical">
-                <a-step title="准备工作" description="检查设备电源和连接是否正常" />
-                <a-step title="安装配置" description="按照说明书进行安装和基础配置" />
-                <a-step title="调试运行" description="进行设备调试和测试运行" />
-                <a-step title="正式使用" description="开始正式使用设备进行生产" />
-              </a-steps>
-            </div>
-          </a-tab-pane>
-          <a-tab-pane key="company" tab="企业信息">
-            <div class="company-detail">
-              <h3>{{ product.companyName }}</h3>
-              <p>{{ product.companyDescription }}</p>
-              <div class="company-images">
-                <img
-                  v-for="image in product.companyImages"
-                  :key="image.id"
-                  :src="image.imageUrl || defaultImage"
-                  :alt="product.companyName"
-                />
-              </div>
-            </div>
-          </a-tab-pane>
-        </a-tabs>
-      </div>
+    <!-- 页面头部 -->
+    <div class="page-header">
+      <a-page-header
+        :title="product?.productName"
+        @back="() => router.back()"
+      >
+        <template #extra>
+          <a-space>
+            <a-button type="primary" @click="handleIntention">
+              <template #icon><heart-outlined /></template>
+              {{ isLoggedIn ? '添加意向' : '登录后添加意向' }}
+            </a-button>
+            <a-button @click="goToCompany">
+              <template #icon><team-outlined /></template>
+              查看企业
+            </a-button>
+          </a-space>
+        </template>
+      </a-page-header>
     </div>
+
+    <a-spin :spinning="loading">
+      <!-- 产品图片 -->
+      <a-card title="产品图片" style="margin-bottom: 24px">
+        <div class="product-images">
+          <div class="image-grid">
+            <div 
+              v-for="(image, index) in productImages.slice(0, 8)" 
+              :key="image.id"
+              class="image-item"
+            >
+              <a-image
+                :src="image.imageUrl || defaultImage"
+                :alt="product.productName"
+                :preview="true"
+              />
+              <div class="image-tag" v-if="index === 0">主图</div>
+            </div>
+          </div>
+        </div>
+      </a-card>
+
+      <!-- 基本信息 -->
+      <a-card title="基本信息" style="margin-bottom: 24px">
+        <a-descriptions :column="2">
+          <a-descriptions-item label="产品名称">{{ product?.productName }}</a-descriptions-item>
+          <a-descriptions-item label="产品编号">{{ product?.productCode }}</a-descriptions-item>
+          <a-descriptions-item label="产品分类">{{ getCategoryName(product?.categoryId) }}</a-descriptions-item>
+          <a-descriptions-item label="发布时间">{{ formatDate(product?.createTime) }}</a-descriptions-item>
+          <a-descriptions-item label="产品描述" :span="2">{{ product?.description || '-' }}</a-descriptions-item>
+        </a-descriptions>
+      </a-card>
+
+      <!-- 数据统计 -->
+      <a-card title="数据统计" style="margin-bottom: 24px">
+        <div class="stats-list">
+          <div class="stat-item">
+            <eye-outlined />
+            <div class="stat-info">
+              <div class="label">浏览量</div>
+              <div class="value">{{ product?.viewCount || 0 }}</div>
+            </div>
+          </div>
+          <div class="stat-item">
+            <heart-outlined />
+            <div class="stat-info">
+              <div class="label">意向数</div>
+              <div class="value">{{ product?.intentionCount || 0 }}</div>
+            </div>
+          </div>
+          <div class="stat-item">
+            <clock-circle-outlined />
+            <div class="stat-info">
+              <div class="label">在线时长</div>
+              <div class="value">{{ formatDuration(product?.createTime) }}</div>
+            </div>
+          </div>
+        </div>
+      </a-card>
+
+      <!-- 公司信息 -->
+      <a-card title="公司信息">
+        <div class="company-content">
+          <div class="company-logo">
+            <img :src="company?.logoUrl || defaultImage" :alt="company?.companyName" />
+          </div>
+          <div class="company-details">
+            <div class="company-name">{{ company?.companyName }}</div>
+            <div class="company-info">
+              <div class="info-item">
+                <environment-outlined />
+                <span>{{ company?.province }} {{ company?.city }} {{ company?.address }}</span>
+              </div>
+              <div class="info-item">
+                <phone-outlined />
+                <span>{{ company?.contactPhone }}</span>
+              </div>
+              <div class="info-item">
+                <user-outlined />
+                <span>联系人：{{ company?.contactName }}</span>
+              </div>
+            </div>
+            <div class="company-desc">{{ company?.companyDesc }}</div>
+          </div>
+        </div>
+      </a-card>
+    </a-spin>
 
     <!-- 意向弹窗 -->
     <a-modal
@@ -115,20 +129,29 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
 import {
+  HeartOutlined,
+  TeamOutlined,
+  EnvironmentOutlined,
   EyeOutlined,
-  HeartOutlined
+  ClockCircleOutlined,
+  PhoneOutlined,
+  UserOutlined
 } from '@ant-design/icons-vue'
-import { getProductDetail, addIntention } from '@/api/product'
-import defaultImage from '@/assets/images/default.jpg'
+import { getProductDetail, getProductImages, getProductCategories, addIntention } from '@/api/product'
+import { getCompanyDetail } from '@/api/company'
+import dayjs from 'dayjs'
 
 const router = useRouter()
 const route = useRoute()
-const activeTab = ref('detail')
-const currentImage = ref(null)
+const currentImageIndex = ref(0)
+const loading = ref(false)
+
+// 默认图片
+const defaultImage = 'https://via.placeholder.com/200x200'
 
 // 判断是否已登录
 const isLoggedIn = computed(() => {
@@ -136,18 +159,12 @@ const isLoggedIn = computed(() => {
 })
 
 // 产品数据
-const product = ref({
-  productName: '',
-  productCode: '',
-  price: 0,
-  viewCount: 0,
-  intentionCount: 0,
-  description: '',
-  companyName: '',
-  companyDescription: '',
-  images: [],
-  companyImages: []
-})
+const product = ref({})
+const productImages = ref([])
+const categories = ref([])
+
+// 公司数据
+const company = ref({})
 
 // 意向相关
 const intentionVisible = ref(false)
@@ -162,15 +179,67 @@ const rules = {
 
 // 获取产品详情
 const loadProductDetail = async () => {
+  loading.value = true
   try {
-    const data = await getProductDetail(route.params.id)
-    product.value = data
-    if (data.images && data.images.length > 0) {
-      currentImage.value = data.images[0].id
-    }
+    const res = await getProductDetail(route.params.id)
+    product.value = res.data
   } catch (error) {
     console.error('获取产品详情失败:', error)
+    message.error('获取产品详情失败')
+  } finally {
+    loading.value = false
   }
+}
+
+// 获取产品图片
+const loadProductImages = async () => {
+  try {
+    const res = await getProductImages(route.params.id)
+    productImages.value = res.data || []
+  } catch (error) {
+    console.error('获取产品图片失败:', error)
+    message.error('获取产品图片失败')
+  }
+}
+
+// 获取分类列表
+const loadCategories = async () => {
+  try {
+    const res = await getProductCategories({})
+    categories.value = res.data || []
+  } catch (error) {
+    console.error('获取���类列表失败:', error)
+    message.error('获取分类列表失败')
+  }
+}
+
+// 获取分类名称
+const getCategoryName = (categoryId) => {
+  const findCategory = (id) => categories.value.find(c => c.id === id)
+  const category = findCategory(categoryId)
+  if (!category) return '-'
+  
+  if (category.parentId) {
+    const parentCategory = findCategory(category.parentId)
+    return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
+  }
+  return category.categoryName
+}
+
+// 格式化日期
+const formatDate = (date) => {
+  if (!date) return '-'
+  return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
+}
+
+// 处理轮播图切换
+const handleCarouselChange = (current) => {
+  currentImageIndex.value = current
+}
+
+// 处理略图点击
+const handleThumbnailClick = (index) => {
+  currentImageIndex.value = index
 }
 
 // 处理添加意向
@@ -182,6 +251,12 @@ const handleIntention = () => {
   intentionVisible.value = true
 }
 
+// 跳转到企业详情
+const goToCompany = () => {
+  router.push(`/company/${product.value.companyId}`)
+}
+
+// 提交意向
 const submitIntention = () => {
   intentionFormRef.value.validate().then(async () => {
     intentionLoading.value = true
@@ -198,151 +273,201 @@ const submitIntention = () => {
       loadProductDetail()
     } catch (error) {
       console.error('添加意向失败:', error)
+      message.error('添加意向失败')
     } finally {
       intentionLoading.value = false
     }
   })
 }
 
+// 添加一个格式化时长的方法
+const formatDuration = (startTime) => {
+  if (!startTime) return '-'
+  const start = dayjs(startTime)
+  const now = dayjs()
+  const days = now.diff(start, 'day')
+  const months = now.diff(start, 'month')
+  const years = now.diff(start, 'year')
+  
+  if (years > 0) {
+    return `${years}年${months % 12}月`
+  } else if (months > 0) {
+    return `${months}月${days % 30}天`
+  } else {
+    return `${days}天`
+  }
+}
+
+// 获取公司详情
+const loadCompanyDetail = async () => {
+  try {
+    const res = await getCompanyDetail(product.value?.companyId)
+    company.value = res.data
+  } catch (error) {
+    console.error('获取公司详情失败:', error)
+    message.error('获取公司详情失败')
+  }
+}
+
 // 初始化
 onMounted(() => {
+  loadCategories()
   loadProductDetail()
+  loadProductImages()
+})
+
+// 监听产品数据变化，获取公司详情
+watch(() => product.value?.companyId, (newVal) => {
+  if (newVal) {
+    loadCompanyDetail()
+  }
 })
 </script>
 
 <style scoped lang="less">
 .product-detail {
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 24px;
+  padding: 24px;
+  background: #f5f5f5;
 
-    .product-info {
-      background: #fff;
-      padding: 24px;
-      border-radius: 4px;
-      margin-bottom: 24px;
+  .page-header {
+    background: #fff;
+    margin-bottom: 24px;
+  }
 
-      .product-images {
-        .main-image {
-          margin-bottom: 16px;
-          
-          img {
-            width: 100%;
-            height: 400px;
-            object-fit: cover;
-          }
-        }
+  .company-content {
+    display: flex;
+    padding: 16px;
 
-        .thumbnail-list {
-          display: flex;
-          gap: 8px;
+    .company-logo {
+      width: 120px;
+      height: 120px;
+      margin-right: 24px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #f0f0f0;
 
-          .thumbnail {
-            width: 80px;
-            height: 80px;
-            cursor: pointer;
-            border: 2px solid transparent;
-
-            &.active {
-              border-color: #1890ff;
-            }
-
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-            }
-          }
-        }
-      }
-
-      .product-details {
-        padding-left: 24px;
-
-        .product-name {
-          font-size: 24px;
-          margin-bottom: 16px;
-        }
-
-        .product-code {
-          color: #666;
-          margin-bottom: 16px;
-        }
-
-        .price {
-          font-size: 28px;
-          color: #f5222d;
-          margin-bottom: 16px;
-        }
-
-        .stats {
-          display: flex;
-          gap: 16px;
-          color: #666;
-          margin-bottom: 24px;
-        }
-
-        .company-info {
-          margin-bottom: 24px;
-          padding: 16px;
-          background: #f5f5f5;
-          border-radius: 4px;
-        }
-
-        .actions {
-          display: flex;
-          gap: 16px;
-        }
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
     }
 
-    .product-content {
-      background: #fff;
-      padding: 24px;
-      border-radius: 4px;
+    .company-details {
+      flex: 1;
 
-      .detail-content {
-        padding: 24px 0;
+      .company-name {
+        font-size: 20px;
+        font-weight: 500;
+        color: #262626;
+        margin-bottom: 16px;
       }
 
-      .steps-content {
-        padding: 40px 0;
-        max-width: 800px;
-        margin: 0 auto;
+      .company-info {
+        margin-bottom: 16px;
 
-        :deep(.ant-steps-vertical) {
-          .ant-steps-item {
-            margin-bottom: 24px;
-            
-            .ant-steps-item-title {
-              font-size: 18px;
-              font-weight: 500;
-            }
-            
-            .ant-steps-item-description {
-              font-size: 14px;
-              color: #666;
-            }
+        .info-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 8px;
+          color: #595959;
+
+          .anticon {
+            margin-right: 8px;
+            color: #1890ff;
           }
         }
       }
 
-      .company-detail {
-        padding: 24px 0;
+      .company-desc {
+        color: #8c8c8c;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+    }
+  }
 
-        .company-images {
+  .product-images {
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      padding: 16px;
+
+      .image-item {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+        background: #fafafa;
+        min-height: 240px;
+
+        :deep(.ant-image) {
+          width: 100%;
+          height: 100%;
           display: flex;
-          gap: 16px;
-          margin-top: 16px;
-          flex-wrap: wrap;
+          align-items: center;
+          justify-content: center;
 
           img {
-            width: 200px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 4px;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 16px;
           }
+        }
+
+        .image-tag {
+          position: absolute;
+          top: 8px;
+          left: 8px;
+          padding: 2px 8px;
+          background: rgba(24, 144, 255, 0.9);
+          color: #fff;
+          border-radius: 4px;
+          font-size: 12px;
+        }
+
+        &:hover {
+          border-color: #1890ff;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+
+  .stats-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 4px;
+
+      .anticon {
+        font-size: 24px;
+        color: #1890ff;
+        margin-right: 16px;
+      }
+
+      .stat-info {
+        flex: 1;
+
+        .label {
+          font-size: 14px;
+          color: #8c8c8c;
+          margin-bottom: 4px;
+        }
+
+        .value {
+          font-size: 24px;
+          font-weight: 500;
+          color: #262626;
         }
       }
     }

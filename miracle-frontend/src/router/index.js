@@ -25,12 +25,21 @@ const routes = [
       {
         path: 'product',
         name: 'Product',
-        component: () => import('@/views/product/index.vue')
-      },
-      {
-        path: 'product/:id',
-        name: 'ProductDetail',
-        component: () => import('@/views/product/detail.vue')
+        component: EmptyLayout,
+        children: [
+          {
+            path: '',
+            name: 'ProductList',
+            component: () => import('@/views/product/list.vue'),
+            meta: { title: '产品列表' }
+          },
+          {
+            path: ':id',
+            name: 'ProductDetail',
+            component: () => import('@/views/product/detail.vue'),
+            meta: { title: '产品详情' }
+          }
+        ]
       },
       {
         path: 'company',

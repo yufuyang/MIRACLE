@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -31,7 +32,7 @@ public class CompanyProductCategoryServiceImpl extends ServiceImpl<CompanyProduc
     public MultiResponse<CompanyProductCategory> list(CompanyProductCategoryQuery query) {
 
         LambdaQueryWrapper<CompanyProductCategory> wrapper = new LambdaQueryWrapper<CompanyProductCategory>()
-                .eq(CompanyProductCategory::getCompanyId, query.getCompanyId())
+                .eq(Objects.nonNull(query.getCompanyId()), CompanyProductCategory::getCompanyId, query.getCompanyId())
                 .eq(query.getParentId() != null, CompanyProductCategory::getParentId, query.getParentId())
                 .eq(query.getStatus() != null, CompanyProductCategory::getStatus, query.getStatus())
                 .orderByAsc(CompanyProductCategory::getSort);
@@ -61,7 +62,6 @@ public class CompanyProductCategoryServiceImpl extends ServiceImpl<CompanyProduc
     }
 
 
-
     /**
      * 构建树形结构
      */
@@ -73,13 +73,13 @@ public class CompanyProductCategoryServiceImpl extends ServiceImpl<CompanyProduc
 
         // 构建父子关系
         Map<Long, List<CompanyProductCategoryTreeDTO>> parentIdMap = dtoList.stream()
-                .collect(Collectors.groupingBy(dto -> 
-                    dto.getParentId() != null ? dto.getParentId() : 0L
+                .collect(Collectors.groupingBy(dto ->
+                        dto.getParentId() != null ? dto.getParentId() : 0L
                 ));
 
         // 设置子节点
-        dtoList.forEach(dto -> 
-            dto.setChildren(parentIdMap.getOrDefault(dto.getId(), new ArrayList<>()))
+        dtoList.forEach(dto ->
+                dto.setChildren(parentIdMap.getOrDefault(dto.getId(), new ArrayList<>()))
         );
 
         // 返回顶层节点

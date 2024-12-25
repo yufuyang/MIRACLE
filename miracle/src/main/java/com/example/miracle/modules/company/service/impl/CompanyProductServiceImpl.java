@@ -18,6 +18,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Objects;
+
 /**
  * 公司产品服务实现类
  */
@@ -32,7 +34,7 @@ public class CompanyProductServiceImpl extends ServiceImpl<CompanyProductMapper,
     public MultiResponse<CompanyProduct> pageQuery(CompanyProductPageQuery companyProductPageQuery) {
 
         LambdaQueryWrapper<CompanyProduct> wrapper = new LambdaQueryWrapper<CompanyProduct>()
-                .eq(CompanyProduct::getCompanyId, companyProductPageQuery.getCompanyId())
+                .eq(Objects.nonNull(companyProductPageQuery.getCompanyId()), CompanyProduct::getCompanyId, companyProductPageQuery.getCompanyId())
                 .like(StringUtils.isNotBlank(companyProductPageQuery.getProductName()), CompanyProduct::getProductName, companyProductPageQuery.getProductName())
                 .like(StringUtils.isNotBlank(companyProductPageQuery.getProductCode()), CompanyProduct::getProductCode, companyProductPageQuery.getProductCode())
                 .eq(companyProductPageQuery.getStatus() != null, CompanyProduct::getStatus, companyProductPageQuery.getStatus())
@@ -76,10 +78,10 @@ public class CompanyProductServiceImpl extends ServiceImpl<CompanyProductMapper,
 
         // 更新主图
         productImageService.update(
-            new LambdaUpdateWrapper<CompanyProductImage>()
-                .eq(CompanyProductImage::getProductId, companyProduct.getId())
-                .eq(CompanyProductImage::getIsMain, 1)
-                .set(CompanyProductImage::getImageUrl, companyProduct.getImageUrl())
+                new LambdaUpdateWrapper<CompanyProductImage>()
+                        .eq(CompanyProductImage::getProductId, companyProduct.getId())
+                        .eq(CompanyProductImage::getIsMain, 1)
+                        .set(CompanyProductImage::getImageUrl, companyProduct.getImageUrl())
         );
 
         return companyProduct;
