@@ -1,5 +1,6 @@
 package com.example.miracle.modules.company.entity;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.miracle.common.base.BaseEntity;
 import lombok.Data;
@@ -43,4 +44,7 @@ public class CompanyUser extends BaseEntity {
      * 状态：0-禁用 1-启用
      */
     private Integer status;
+
+    @TableField(exist = false)
+    private String role;
 } 

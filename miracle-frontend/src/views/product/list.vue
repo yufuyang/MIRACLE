@@ -1,32 +1,22 @@
 <template>
   <div class="product-list">
-    <!-- 搜索表单 -->
-    <a-card>
-      <a-form layout="inline" :model="searchForm" @finish="handleSearch">
-        <a-form-item label="产品名称" name="productName">
-          <a-input v-model:value="searchForm.productName" placeholder="请输入产品名称" allow-clear style="width: 200px" />
-        </a-form-item>
-        <a-form-item label="分类">
-          <a-tree-select
-            v-model:value="searchForm.categoryId"
-            :tree-data="categoryTree"
-            :field-names="{
-              children: 'children',
-              label: 'categoryName',
-              value: 'id'
-            }"
-            placeholder="请选择分类"
-            allow-clear
-            tree-default-expand-all
+    <!-- 搜索区域 -->
+    <div class="filter-section">
+      <a-form layout="inline" :model="searchForm">
+        <a-form-item label="产品名称">
+          <a-input
+            v-model:value="searchForm.productName"
+            placeholder="请输入产品名称"
+            allowClear
             style="width: 200px"
           />
         </a-form-item>
         <a-form-item>
-          <a-button type="primary" html-type="submit">
+          <a-button type="primary" @click="handleSearch">
             <template #icon>
               <search-outlined />
             </template>
-            搜索
+            查询
           </a-button>
           <a-button style="margin-left: 8px" @click="handleReset">
             <template #icon>
@@ -36,10 +26,21 @@
           </a-button>
         </a-form-item>
       </a-form>
+    </div>
 
-      <!-- 产品列表 -->
-      <div class="product-grid" style="margin-top: 16px">
-        <a-row :gutter="[24, 24]">
+    <!-- 排序区域 -->
+    <div class="sort-tabs">
+      <a-radio-group v-model:value="searchForm.orderField" @change="handleSortChange">
+        <a-radio-button value="default">默认排序</a-radio-button>
+        <a-radio-button value="viewCount">浏览数</a-radio-button>
+        <a-radio-button value="intentionCount">意向数</a-radio-button>
+      </a-radio-group>
+    </div>
+
+    <!-- 产品列表 -->
+    <div class="product-grid">
+      <a-row :gutter="[24, 24]">
+        <template v-if="products.length">
           <a-col :span="6" v-for="product in products" :key="product.id">
             <a-card hoverable class="product-card" @click="handleDetail(product)">
               <template #cover>
@@ -53,9 +54,13 @@
               <a-card-meta :title="product.productName">
                 <template #description>
                   <div class="product-info">
-                    <div class="product-price">
-                      <span class="price">¥{{ product.price }}</span>
-                      <span class="unit">/ {{ product.unit }}</span>
+                    <div class="product-stats">
+                      <span class="stat-item">
+                        <eye-outlined /> {{ product.viewCount || 0 }}
+                      </span>
+                      <span class="stat-item">
+                        <heart-outlined /> {{ product.intentionCount || 0 }}
+                      </span>
                     </div>
                     <div class="product-company">{{ product.companyName }}</div>
                   </div>
@@ -63,21 +68,24 @@
               </a-card-meta>
             </a-card>
           </a-col>
-        </a-row>
-      </div>
+        </template>
+        <template v-else>
+          <a-empty />
+        </template>
+      </a-row>
+    </div>
 
-      <!-- 分页 -->
-      <div class="pagination" style="margin-top: 16px; text-align: right">
-        <a-pagination
-          v-model:current="pagination.current"
-          v-model:pageSize="pagination.pageSize"
-          :total="pagination.total"
-          show-size-changer
-          show-quick-jumper
-          @change="handleTableChange"
-        />
-      </div>
-    </a-card>
+    <!-- 分页 -->
+    <div class="pagination">
+      <a-pagination
+        v-model:current="pagination.current"
+        v-model:pageSize="pagination.pageSize"
+        :total="pagination.total"
+        show-size-changer
+        show-quick-jumper
+        @change="handleTableChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -86,9 +94,11 @@ import { ref, onMounted, reactive } from 'vue'
 import { message } from 'ant-design-vue'
 import {
   SearchOutlined,
-  RedoOutlined
+  RedoOutlined,
+  EyeOutlined,
+  HeartOutlined
 } from '@ant-design/icons-vue'
-import { getProductList, getProductCategories } from '@/api/product'
+import { getProductList } from '@/api/product'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -99,7 +109,8 @@ const defaultImage = 'https://via.placeholder.com/200x200'
 // 搜索表单
 const searchForm = reactive({
   productName: '',
-  categoryId: undefined
+  orderField: 'default', // 默认排序
+  asc: false // 默认降序
 })
 
 // 分页配置
@@ -131,7 +142,7 @@ const fetchProducts = async () => {
     pagination.total = res.total || 0
   } catch (error) {
     console.error('获取产品列表失败:', error)
-    message.error('获取产品列表失败')
+    message.error('获��产品列表失败')
   } finally {
     loading.value = false
   }
@@ -158,7 +169,8 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   searchForm.productName = ''
-  searchForm.categoryId = undefined
+  searchForm.orderField = 'default'
+  searchForm.asc = false
   handleSearch()
 }
 
@@ -174,9 +186,14 @@ const handleDetail = (record) => {
   router.push(`/product/${record.id}`)
 }
 
+// 排序变化
+const handleSortChange = () => {
+  searchForm.asc = false // 每次切换排序方式时，默认为降序
+  fetchProducts()
+}
+
 // 初始化
 onMounted(() => {
-  fetchCategories()
   fetchProducts()
 })
 </script>
@@ -184,30 +201,63 @@ onMounted(() => {
 <style scoped lang="less">
 .product-list {
   padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  .filter-section {
+    margin-bottom: 24px;
+    padding: 24px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .sort-tabs {
+    margin-bottom: 24px;
+    padding: 16px 24px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  .product-grid {
+    margin-bottom: 24px;
+  }
 
   .product-card {
     cursor: pointer;
     transition: all 0.3s;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
 
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
+    :deep(.ant-card-cover) {
+      img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+      }
+    }
+
     .product-info {
-      .product-price {
+      .product-stats {
+        display: flex;
+        justify-content: space-between;
         margin-bottom: 8px;
         
-        .price {
-          font-size: 16px;
-          font-weight: bold;
-          color: #f5222d;
-        }
+        .stat-item {
+          color: #8c8c8c;
+          font-size: 14px;
 
-        .unit {
-          font-size: 12px;
-          color: #999;
-          margin-left: 4px;
+          .anticon {
+            margin-right: 4px;
+            color: #1890ff;
+          }
         }
       }
 
@@ -216,6 +266,15 @@ onMounted(() => {
         color: #666;
       }
     }
+  }
+
+  .pagination {
+    margin-top: 24px;
+    text-align: right;
+    padding: 16px 24px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 }
 </style> 

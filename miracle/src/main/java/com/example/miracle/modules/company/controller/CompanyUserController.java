@@ -1,5 +1,6 @@
 package com.example.miracle.modules.company.controller;
 
+import com.example.miracle.common.constant.CommonConstant;
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
@@ -49,7 +50,9 @@ public class CompanyUserController  {
     @GetMapping
     public SingleResponse<CompanyUser> getById() {
         Long id = baseController.getUserId();
-        return SingleResponse.of(companyUserService.getById(id));
+        CompanyUser companyUser = companyUserService.getById(id);
+        companyUser.setRole(CommonConstant.COMPANY_ROLE);
+        return SingleResponse.of(companyUser);
     }
 
 

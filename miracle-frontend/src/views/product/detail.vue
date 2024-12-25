@@ -8,9 +8,13 @@
       >
         <template #extra>
           <a-space>
-            <a-button type="primary" @click="handleIntention">
+            <a-button 
+              v-if="showIntentionButton"
+              type="primary" 
+              @click="handleIntention"
+            >
               <template #icon><heart-outlined /></template>
-              {{ isLoggedIn ? '添加意向' : '登录后添加意向' }}
+              添加意向
             </a-button>
             <a-button @click="goToCompany">
               <template #icon><team-outlined /></template>
@@ -143,6 +147,7 @@ import {
 } from '@ant-design/icons-vue'
 import { getProductDetail, getProductImages, getProductCategories, addIntention } from '@/api/product'
 import { getCompanyDetail } from '@/api/company'
+import { getUserDetail } from '@/api/user'
 import dayjs from 'dayjs'
 
 const router = useRouter()
@@ -153,9 +158,29 @@ const loading = ref(false)
 // 默认图片
 const defaultImage = 'https://via.placeholder.com/200x200'
 
-// 判断是否已登录
+// 用户数据
+const userInfo = ref({})
+
+// 判断是否已���录
 const isLoggedIn = computed(() => {
   return !!localStorage.getItem('token')
+})
+
+// 判断是否为商户
+const isMerchant = computed(() => {
+  return userInfo.value?.role === 'MERCHANT'
+})
+
+// 判断是否为企业用户
+const isCompany = computed(() => {
+  return userInfo.value?.role === 'COMPANY'
+})
+
+// 判断是否显示添加意向按钮
+const showIntentionButton = computed(() => {
+  if (!isLoggedIn.value) return true // 未登录时显示
+  if (isCompany.value) return false // 企业用户不显示
+  return true // 其他情况显示
 })
 
 // 产品数据
@@ -175,6 +200,17 @@ const intentionForm = reactive({
 })
 const rules = {
   remark: [{ required: true, message: '请输入意向备注', trigger: 'blur' }]
+}
+
+// 获取用户信息
+const loadUserInfo = async () => {
+  if (!isLoggedIn.value) return
+  try {
+    const res = await getUserDetail()
+    userInfo.value = res.data
+  } catch (error) {
+    console.error('获取用户信息失败:', error)
+  }
 }
 
 // 获取产品详情
@@ -208,7 +244,7 @@ const loadCategories = async () => {
     const res = await getProductCategories({})
     categories.value = res.data || []
   } catch (error) {
-    console.error('获取���类列表失败:', error)
+    console.error('获取分类列表失败:', error)
     message.error('获取分类列表失败')
   }
 }
@@ -248,6 +284,12 @@ const handleIntention = () => {
     router.push('/login')
     return
   }
+  
+  if (userInfo.value?.role !== 'MERCHANT') {
+    message.warning('只有商户用户才能添加意向')
+    return
+  }
+  
   intentionVisible.value = true
 }
 
@@ -314,6 +356,7 @@ onMounted(() => {
   loadCategories()
   loadProductDetail()
   loadProductImages()
+  loadUserInfo()
 })
 
 // 监听产品数据变化，获取公司详情
