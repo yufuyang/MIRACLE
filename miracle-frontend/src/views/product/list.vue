@@ -48,7 +48,7 @@
                   :src="product.imageUrl"
                   :fallback="defaultImage"
                   :preview="false"
-                  style="height: 200px; object-fit: cover"
+                  style="height: 280px; object-fit: cover"
                 />
               </template>
               <a-card-meta :title="product.productName">
@@ -142,7 +142,7 @@ const fetchProducts = async () => {
     pagination.total = res.total || 0
   } catch (error) {
     console.error('获取产品列表失败:', error)
-    message.error('获��产品列表失败')
+    message.error('获取产品列表失败')
   } finally {
     loading.value = false
   }
@@ -228,31 +228,33 @@ onMounted(() => {
     cursor: pointer;
     transition: all 0.3s;
     background: #fff;
-    border-radius: 4px;
-    overflow: hidden;
+    height: 100%;
 
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
-    :deep(.ant-card-cover) {
-      img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-      }
+    :deep(.ant-card-meta-title) {
+      font-size: 14px;
+      margin-bottom: 8px;
+      white-space: normal;
+      line-height: 1.3;
+    }
+
+    :deep(.ant-card-body) {
+      padding: 12px;
     }
 
     .product-info {
       .product-stats {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
         
         .stat-item {
           color: #8c8c8c;
-          font-size: 14px;
+          font-size: 12px;
 
           .anticon {
             margin-right: 4px;
@@ -270,11 +272,7 @@ onMounted(() => {
 
   .pagination {
     margin-top: 24px;
-    text-align: right;
-    padding: 16px 24px;
-    background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    text-align: center;
   }
 }
 </style> 

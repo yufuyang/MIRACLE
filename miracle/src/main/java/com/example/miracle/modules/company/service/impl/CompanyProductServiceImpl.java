@@ -13,11 +13,14 @@ import com.example.miracle.modules.company.mapper.CompanyProductMapper;
 import com.example.miracle.modules.company.service.CompanyProductService;
 import com.example.miracle.modules.company.service.CompanyProductImageService;
 import com.example.miracle.modules.company.service.CompanyProductStatsService;
+import com.example.miracle.modules.website.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -32,7 +35,7 @@ public class CompanyProductServiceImpl extends ServiceImpl<CompanyProductMapper,
 
     @Override
     public MultiResponse<CompanyProduct> pageQuery(CompanyProductPageQuery companyProductPageQuery) {
-
+        // 普通查询
         LambdaQueryWrapper<CompanyProduct> wrapper = new LambdaQueryWrapper<CompanyProduct>()
                 .eq(Objects.nonNull(companyProductPageQuery.getCompanyId()), CompanyProduct::getCompanyId, companyProductPageQuery.getCompanyId())
                 .like(StringUtils.isNotBlank(companyProductPageQuery.getProductName()), CompanyProduct::getProductName, companyProductPageQuery.getProductName())
@@ -41,6 +44,14 @@ public class CompanyProductServiceImpl extends ServiceImpl<CompanyProductMapper,
                 .orderByDesc(CompanyProduct::getCreateTime);
 
         Page<CompanyProduct> page = this.page(new Page<>(companyProductPageQuery.getPageNum(), companyProductPageQuery.getPageSize()), wrapper);
+
+        return MultiResponse.of(page.getRecords(), (int) page.getTotal());
+    }
+
+    @Override
+    public MultiResponse<ProductDTO> pageQueryProductDTO(CompanyProductPageQuery companyProductPageQuery) {
+        // 使用 Mapper 进行分页查询
+        Page<ProductDTO> page = this.baseMapper.selectProductDTOPage(new Page<>(companyProductPageQuery.getPageNum(), companyProductPageQuery.getPageSize()), companyProductPageQuery);
 
         return MultiResponse.of(page.getRecords(), (int) page.getTotal());
     }

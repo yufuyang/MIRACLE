@@ -12,6 +12,7 @@ import com.example.miracle.modules.company.entity.CompanyProductStats;
 import com.example.miracle.modules.company.service.CompanyProductImageService;
 import com.example.miracle.modules.company.service.CompanyProductService;
 import com.example.miracle.modules.company.service.CompanyProductStatsService;
+import com.example.miracle.modules.website.dto.ProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -52,10 +53,9 @@ public class WebsiteCompanyProductController {
      * 分页查询产品列表
      */
     @PostMapping("/page")
-    public MultiResponse<CompanyProduct> pageQuery(@RequestBody CompanyProductPageQuery companyProductPageQuery) {
+    public MultiResponse<ProductDTO> pageQuery(@RequestBody CompanyProductPageQuery companyProductPageQuery) {
 
-
-        return companyProductService.pageQuery(companyProductPageQuery);
+        return companyProductService.pageQueryProductDTO(companyProductPageQuery);
     }
 
 
