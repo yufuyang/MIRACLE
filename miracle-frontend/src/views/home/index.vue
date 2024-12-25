@@ -45,9 +45,13 @@
                 <a-card-meta :title="product.productName">
                   <template #description>
                     <div class="product-info">
-                      <div class="product-price">
-                        <span class="price">¥{{ product.price }}</span>
-                        <span class="unit">/ {{ product.unit }}</span>
+                      <div class="product-stats">
+                        <span class="stat-item">
+                          <eye-outlined /> {{ product.viewCount || 0 }}
+                        </span>
+                        <span class="stat-item">
+                          <heart-outlined /> {{ product.intentionCount || 0 }}
+                        </span>
                       </div>
                       <div class="product-company">{{ product.companyName }}</div>
                     </div>
@@ -153,7 +157,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { EnvironmentOutlined, PictureOutlined } from '@ant-design/icons-vue'
+import { EnvironmentOutlined, PictureOutlined, EyeOutlined, HeartOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
 import { getBanners, getHotProducts, getFeaturedCompanies } from '@/api/home'
 
@@ -323,19 +327,19 @@ onMounted(() => {
       }
 
       .product-info {
-        .product-price {
+        .product-stats {
+          display: flex;
+          justify-content: space-between;
           margin-bottom: 8px;
           
-          .price {
-            font-size: 16px;
-            font-weight: bold;
-            color: #f5222d;
-          }
+          .stat-item {
+            color: #8c8c8c;
+            font-size: 14px;
 
-          .unit {
-            font-size: 12px;
-            color: #999;
-            margin-left: 4px;
+            .anticon {
+              margin-right: 4px;
+              color: #1890ff;
+            }
           }
         }
 
@@ -384,11 +388,11 @@ onMounted(() => {
   }
 
   .join-section {
-    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    background: #fff;
     padding: 60px 24px;
     margin-top: 40px;
     text-align: center;
-    color: #fff;
+    border-top: 1px solid #f0f0f0;
 
     .join-content {
       max-width: 600px;
@@ -398,12 +402,13 @@ onMounted(() => {
         font-size: 32px;
         font-weight: bold;
         margin-bottom: 16px;
-        color: #fff;
+        color: #1890ff;
       }
 
       p {
         font-size: 16px;
         margin-bottom: 24px;
+        color: #666;
         opacity: 0.8;
       }
 
@@ -411,13 +416,13 @@ onMounted(() => {
         height: 44px;
         padding: 0 32px;
         font-size: 16px;
-        background: #fff;
-        border-color: #fff;
-        color: #1890ff;
+        background: #1890ff;
+        border-color: #1890ff;
+        color: #fff;
 
         &:hover {
-          background: #f0f0f0;
-          border-color: #f0f0f0;
+          background: #40a9ff;
+          border-color: #40a9ff;
         }
       }
     }
