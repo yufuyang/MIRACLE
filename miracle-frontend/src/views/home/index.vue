@@ -3,12 +3,23 @@
     <!-- 轮播图 -->
     <div class="banner-section">
       <a-carousel autoplay>
-        <div class="banner-item" v-for="i in 4" :key="i">
-          <div class="banner-placeholder">
-            <picture-outlined />
-            <span>轮播图 {{ i }}</span>
+        <template v-if="banners && banners.length > 0">
+          <div class="banner-item" v-for="banner in banners" :key="banner.id" @click="goToActivity(banner.id)">
+            <img :src="banner.coverImage" :alt="banner.title" />
+            <div class="banner-content">
+              <h3>{{ banner.title }}</h3>
+              <p>{{ banner.description }}</p>
+            </div>
           </div>
-        </div>
+        </template>
+        <template v-else>
+          <div class="banner-item">
+            <div class="banner-placeholder">
+              <picture-outlined />
+              <span>暂无活动</span>
+            </div>
+          </div>
+        </template>
       </a-carousel>
     </div>
 
@@ -139,6 +150,7 @@ import defaultImage from '@/assets/images/default.jpg'
 import { getBanners, getHotProducts, getFeaturedCompanies } from '@/api/home'
 
 const router = useRouter()
+const banners = ref([])
 
 // 判断是否已登录
 const isLoggedIn = computed(() => {
@@ -146,7 +158,6 @@ const isLoggedIn = computed(() => {
 })
 
 // 数据
-const banners = ref([])
 const hotProducts = ref([])
 const featuredCompanies = ref([])
 
@@ -164,7 +175,9 @@ const loadHomeData = async () => {
       getFeaturedCompanies()
     ])
 
+    console.log('轮播图数据:', bannersRes)
     banners.value = bannersRes.data || []
+    console.log('处理后的轮播图数据:', banners.value)
     hotProducts.value = productsRes.data || []
     featuredCompanies.value = companiesRes.data || []
   } catch (error) {
@@ -173,6 +186,10 @@ const loadHomeData = async () => {
 }
 
 // 跳转函数
+const goToActivity = (id) => {
+  router.push(`/activity/detail/${id}`)
+}
+
 const goToProduct = (id) => {
   router.push(`/product/${id}`)
 }
@@ -207,6 +224,7 @@ onMounted(() => {
         overflow: hidden;
         position: relative;
         border-radius: 8px;
+        cursor: pointer;
         
         .banner-placeholder {
           width: 100%;
@@ -231,40 +249,25 @@ onMounted(() => {
           object-fit: cover;
         }
 
-        .banner-skeleton {
-          width: 100%;
-          height: 100%;
-          background: #f5f5f5;
-          border-radius: 8px;
-          overflow: hidden;
+        .banner-content {
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 20px;
+          background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+          color: #fff;
 
-          .full-skeleton {
-            width: 100%;
-            height: 100%;
-            
-            :deep(.ant-skeleton-image) {
-              width: 100%;
-              height: 100%;
-              border-radius: 8px;
-              margin: 0;
-              background: linear-gradient(90deg, #f2f2f2 25%, #e6e6e6 37%, #f2f2f2 63%);
-              background-size: 400% 100%;
-              animation: ant-skeleton-loading 1.4s ease infinite;
-            }
-          }
-        }
-      }
-
-      .slick-dots {
-        li {
-          button {
-            background: #d9d9d9;
+          h3 {
+            margin: 0 0 8px;
+            font-size: 24px;
+            color: #fff;
           }
 
-          &.slick-active {
-            button {
-              background: #1890ff;
-            }
+          p {
+            margin: 0;
+            font-size: 14px;
+            opacity: 0.8;
           }
         }
       }

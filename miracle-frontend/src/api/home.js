@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-// 获取轮播图
+// 获取首页轮播图
 export function getBanners() {
   return request({
     url: '/website/home/banners',
