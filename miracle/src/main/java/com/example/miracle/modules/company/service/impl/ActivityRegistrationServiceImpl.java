@@ -98,11 +98,6 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
         if (CollectionUtils.isEmpty(page.getRecords())) {
             return MultiResponse.buildSuccess();
         }
-        // 获取商户信息
-        List<Long> merchantIds = page.getRecords().stream().map(ActivityRegistration::getMerchantId).distinct().collect(Collectors.toList());
-
-        Map<Long, Merchant> merchantMap = merchantService.list(new LambdaQueryWrapper<Merchant>().in(Merchant::getId, merchantIds)).stream().collect(Collectors.toMap(Merchant::getId, merchant -> merchant));
-
         // 组装数据
         List<ActivityRegistrationDTO> dtoList = new ArrayList<>();
 
@@ -110,14 +105,6 @@ public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistr
 
             ActivityRegistrationDTO dto = new ActivityRegistrationDTO();
             BeanUtils.copyProperties(registration, dto);
-
-
-            // 设置商户信息
-            Merchant merchant = merchantMap.get(registration.getMerchantId());
-            if (merchant != null) {
-
-                dto.setMerchantName(merchant.getMerchantName());
-            }
 
             dtoList.add(dto);
         });

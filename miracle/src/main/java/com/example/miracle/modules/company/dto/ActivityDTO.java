@@ -57,4 +57,9 @@ public class ActivityDTO {
      * 报名人数
      */
     private Integer registerCount;
+
+    private LocalDateTime createTime;
+
+
+    private LocalDateTime updateTime;
 } 

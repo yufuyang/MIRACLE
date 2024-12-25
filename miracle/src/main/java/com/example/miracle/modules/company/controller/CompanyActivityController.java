@@ -37,6 +37,7 @@ public class CompanyActivityController {
     public SingleResponse<Long> createActivity(@RequestBody Activity activity) {
 
         Long companyId = baseController.getCompanyId();
+        activity.setStatus(0);
         activity.setCompanyId(companyId);
         activityService.save(activity);
 

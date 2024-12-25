@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -42,6 +43,18 @@ public class ActivityServiceImpl extends ServiceImpl<ActivityMapper, Activity> i
         }
         if (qry.getCompanyId() != null) {
             activityLambdaQueryWrapper.eq(Activity::getCompanyId, qry.getCompanyId());
+        }
+
+        if (StringUtils.hasText(qry.getTitle())) {
+            activityLambdaQueryWrapper.like(Activity::getTitle, qry.getTitle());
+        }
+
+        if (qry.getStartTime() != null) {
+            activityLambdaQueryWrapper.ge(Activity::getStartTime, qry.getStartTime());
+        }
+
+        if (qry.getEndTime() != null) {
+            activityLambdaQueryWrapper.le(Activity::getEndTime, qry.getEndTime());
         }
 
         if (qry.getMerchantId() != null) {

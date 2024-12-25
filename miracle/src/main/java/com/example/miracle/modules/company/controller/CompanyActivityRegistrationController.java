@@ -45,7 +45,7 @@ public class CompanyActivityRegistrationController {
     /**
      * 获取报名列表
      */
-    @GetMapping
+    @PostMapping
     public MultiResponse<ActivityRegistrationDTO> listRegistrations(@RequestBody ActivityRegistrationPageQry activityRegistrationPageQry){
         return activityRegistrationService.listRegistrations(activityRegistrationPageQry);
     }

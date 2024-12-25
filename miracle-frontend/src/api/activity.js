@@ -12,7 +12,7 @@ export function getActivityList(params) {
 // 获取活动详情
 export function getActivityDetail(id) {
   return request({
-    url: `/website/activity/${id}`,
+    url: `/company/activity/${id}`,
     method: 'get'
   })
 }
@@ -29,7 +29,7 @@ export function createActivity(data) {
 // 企业端 - 更新活动
 export function updateActivity(data) {
   return request({
-    url: '/company/activity',
+    url: `/company/activity/${data.id}`,
     method: 'put',
     data
   })
@@ -65,7 +65,32 @@ export function auditActivityRegistration(data) {
 export function getActivityRegistrations(params) {
   return request({
     url: '/company/activity/registration',
-    method: 'get',
-    params
+    method: 'post',
+    data: params
+  })
+}
+
+// 获取活动统计数据
+export function getActivityStats() {
+  return request({
+    url: '/company/activity/stats',
+    method: 'get'
+  })
+}
+
+// 获取热门活动
+export function getHotActivities() {
+  return request({
+    url: '/company/activity/hot',
+    method: 'get'
+  })
+}
+
+// 企业端 - 获取活动列表
+export function getCompanyActivityList(data) {
+  return request({
+    url: '/company/activity/list',
+    method: 'post',
+    data
   })
 } 

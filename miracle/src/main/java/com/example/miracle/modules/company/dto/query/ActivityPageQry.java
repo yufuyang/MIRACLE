@@ -4,6 +4,8 @@ import com.example.miracle.common.dto.PageQuery;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDateTime;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class ActivityPageQry  extends PageQuery {
@@ -17,7 +19,12 @@ public class ActivityPageQry  extends PageQuery {
      * 排序字段:viewCount-浏览量,registerCount-报名人数
      */
     private String orderBy;
-    
+
+    private String title;
+
+    private LocalDateTime startTime;
+
+    private LocalDateTime endTime;
     /**
      * 企业ID
      */

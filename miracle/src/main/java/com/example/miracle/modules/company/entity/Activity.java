@@ -43,11 +43,6 @@ public class Activity extends BaseEntity {
     private LocalDateTime endTime;
 
     /**
-     * 活动地点
-     */
-    private String location;
-
-    /**
      * 状态:0-未开始,1-进行中,2-已结束
      */
     private Integer status;
