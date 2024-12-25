@@ -44,12 +44,19 @@ const routes = [
       {
         path: 'company',
         name: 'Company',
-        component: () => import('@/views/company/list.vue')
-      },
-      {
-        path: 'company/:id',
-        name: 'CompanyDetail',
-        component: () => import('@/views/company/detail.vue')
+        component: EmptyLayout,
+        children: [
+          {
+            path: '',
+            name: 'CompanyList',
+            component: () => import('@/views/company/list.vue')
+          },
+          {
+            path: ':id',
+            name: 'CompanyDetail',
+            component: () => import('@/views/company/detail.vue')
+          }
+        ]
       },
       {
         path: 'activity',

@@ -46,7 +46,7 @@
       <a-row :gutter="[24, 24]">
         <template v-if="companies.length > 0">
           <a-col :span="6" v-for="company in companies" :key="company.id">
-            <a-card hoverable class="company-card" @click="goToDetail(company.id)">
+            <a-card hoverable class="company-card" @click="goToDetail(company)">
               <template #cover>
                 <img :alt="company.companyName" :src="company.logoUrl || defaultImage" />
               </template>
@@ -123,7 +123,7 @@ import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined, EnvironmentOutlined, ApartmentOutlined, TeamOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
-import { getCompanyList } from '@/api/company'
+import { getCompanyList } from '@/api/website/company'
 
 const router = useRouter()
 
@@ -190,8 +190,14 @@ const onPageChange = (page, pageSize) => {
 }
 
 // 跳转到详情页
-const goToDetail = (id) => {
-  router.push(`/company/${id}`)
+const goToDetail = (company) => {
+  router.push({
+    path: `/company/${company.id}`,
+    query: {
+      productCount: company.productCount,
+      intentionCount: company.intentionCount
+    }
+  })
 }
 
 // 初始化

@@ -17,10 +17,6 @@
               <heart-outlined />
               <span>意向数：{{ company.intentionCount || 0 }}</span>
             </div>
-            <div class="meta-item">
-              <environment-outlined />
-              <span>地址：{{ company.address }}</span>
-            </div>
           </div>
         </div>
       </div>
@@ -31,16 +27,12 @@
       <div class="contact-title">联系方式</div>
       <div class="contact-list">
         <div class="contact-item">
-          <link-outlined />
-          <a :href="company.website" target="_blank">{{ company.website }}</a>
+          <user-outlined />
+          <span>联系人：{{ company.contactName }}</span>
         </div>
         <div class="contact-item">
-          <mail-outlined />
-          <span>{{ company.email }}</span>
-        </div>
-        <div class="contact-item">
-          <environment-outlined />
-          <span>{{ company.address }}</span>
+          <phone-outlined />
+          <span>联系电话：{{ company.contactPhone }}</span>
         </div>
       </div>
     </div>
@@ -48,33 +40,31 @@
     <!-- 标签页内容 -->
     <div class="tab-content">
       <a-tabs>
-        <!-- 公司简介 -->
-        <a-tab-pane key="1" tab="公司简介">
+        <!-- 公司介绍 -->
+        <a-tab-pane key="1" tab="公司介绍">
           <div class="company-intro">
             <div class="section">
-              <h2>公司介绍</h2>
               <div class="content">{{ company.description }}</div>
             </div>
-            <div class="section">
-              <h2>主营业务</h2>
-              <div class="content">{{ company.business }}</div>
-            </div>
-            <div class="section">
-              <h2>公司图片</h2>
-              <div class="image-list">
-                <div v-for="(image, index) in company.images" :key="index" class="image-item">
-                  <img :src="image" :alt="company.companyName" />
-                </div>
+          </div>
+        </a-tab-pane>
+
+        <!-- 公司图片 -->
+        <a-tab-pane key="2" tab="公司图片">
+          <div class="company-images">
+            <div class="image-list">
+              <div v-for="(image, index) in environmentImages" :key="index" class="image-item">
+                <img :src="image.url" :alt="company.companyName" />
               </div>
             </div>
           </div>
         </a-tab-pane>
 
         <!-- 公司产品 -->
-        <a-tab-pane key="2" tab="公司产品">
+        <a-tab-pane key="3" tab="公司产品">
           <div class="company-products">
             <a-row :gutter="[24, 24]">
-              <a-col :span="8" v-for="product in company.products" :key="product.id">
+              <a-col :span="8" v-for="product in products" :key="product.id">
                 <a-card hoverable class="product-card" @click="goToProduct(product.id)">
                   <template #cover>
                     <img :alt="product.productName" :src="product.imageUrl || defaultImage" />
@@ -82,10 +72,13 @@
                   <a-card-meta :title="product.productName">
                     <template #description>
                       <div class="product-info">
-                        <div class="product-desc">{{ product.description }}</div>
-                        <div class="stats">
-                          <span><eye-outlined /> {{ product.viewCount }} 浏览量</span>
-                          <span><heart-outlined /> {{ product.intentionCount }} 意向数</span>
+                        <div class="product-stats">
+                          <span class="stat-item">
+                            <eye-outlined /> 浏览数：{{ product.viewCount || 0 }}
+                          </span>
+                          <span class="stat-item">
+                            <heart-outlined /> 意向数：{{ product.intentionCount || 0 }}
+                          </span>
                         </div>
                       </div>
                     </template>
@@ -97,8 +90,8 @@
             <div class="pagination">
               <a-pagination
                 v-model:current="productPage"
-                :total="company.products.length"
-                :pageSize="9"
+                :total="productTotal"
+                :pageSize="productPageSize"
                 show-size-changer
                 @change="onPageChange"
               />
@@ -113,60 +106,75 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
 import { 
   ShopOutlined, 
   HeartOutlined, 
-  EnvironmentOutlined,
-  LinkOutlined,
-  MailOutlined,
+  PhoneOutlined,
+  UserOutlined,
   EyeOutlined
 } from '@ant-design/icons-vue'
+import { getCompanyDetail } from '@/api/website/company'
+import { getCompanyProducts } from '@/api/website/companyProduct'
+import { getEnvironmentImages } from '@/api/website/environment'
 import defaultImage from '@/assets/images/default.jpg'
 
 const route = useRoute()
 const router = useRouter()
-const productPage = ref(1)
 
-// 模拟公司数据
-const company = ref({
-  id: 1,
-  companyName: '科技创新有限公司',
-  logo: defaultImage,
-  description: '专注于人工智能和大数据技术的创新型企业，致力于为客户提供智能化解决方案。',
-  business: '人工智能应用开发、大数据分析、智能制造解决方案等。',
-  address: '上海市浦东新区张江高科技园区',
-  website: 'https://www.example.com',
-  email: 'contact@example.com',
-  productCount: 12,
-  intentionCount: 1580,
-  images: [defaultImage, defaultImage, defaultImage],
-  products: [
-    {
-      id: 1,
-      productName: '高性能工业机器人',
-      description: '智能化工业机器人，适用于各类制造场景',
-      imageUrl: defaultImage,
-      viewCount: 1234,
-      intentionCount: 56
-    },
-    {
-      id: 2,
-      productName: '智能包装生产线',
-      description: '全自动智能包装系统，提高生产效率',
-      imageUrl: defaultImage,
-      viewCount: 890,
-      intentionCount: 45
-    },
-    {
-      id: 3,
-      productName: '工业物联网传感器',
-      description: '高精度工业传感器，实时监控生产数据',
-      imageUrl: defaultImage,
-      viewCount: 2345,
-      intentionCount: 120
+// 数据
+const company = ref({})
+const products = ref([])
+const productPage = ref(1)
+const productPageSize = ref(9)
+const productTotal = ref(0)
+const environmentImages = ref([])
+const companyId = ref(null)
+
+// 获取公司详情
+const loadCompanyDetail = async () => {
+  try {
+    const res = await getCompanyDetail(companyId.value)
+    company.value = {
+      ...res.data,
+      productCount: route.query.productCount,
+      intentionCount: route.query.intentionCount
     }
-  ]
-})
+  } catch (error) {
+    console.error('获取公司详情失败:', error)
+    message.error('获取公司详情失败')
+  }
+}
+
+// 获取公司产品
+const loadCompanyProducts = async () => {
+  try {
+    const params = {
+      companyId: companyId.value,
+      pageNum: productPage.value,
+      pageSize: productPageSize.value
+    }
+    const res = await getCompanyProducts(params)
+    products.value = res.data || []
+    productTotal.value = res.total || 0
+  } catch (error) {
+    console.error('获取公司产品失败:', error)
+    message.error('获取公司产品失败')
+  }
+}
+
+// 获取环境图片
+const loadEnvironmentImages = async () => {
+  try {
+    const res = await getEnvironmentImages(companyId.value, 'company')
+    if (res.data) {
+      environmentImages.value = res.data
+    }
+  } catch (error) {
+    console.error('获取环境图片失败:', error)
+    message.error('获取环境图片失败')
+  }
+}
 
 // 跳转到产品详情
 const goToProduct = (productId) => {
@@ -174,15 +182,23 @@ const goToProduct = (productId) => {
 }
 
 // 分页变化
-const onPageChange = (page) => {
+const onPageChange = (page, pageSize) => {
   productPage.value = page
+  productPageSize.value = pageSize
+  loadCompanyProducts()
 }
 
 // 初始化
-onMounted(() => {
+onMounted(async () => {
   const id = route.params.id
-  // 这里应该根据id获取公司详情
-  console.log('公司ID:', id)
+  if (id) {
+    companyId.value = id
+    await Promise.all([
+      loadCompanyDetail(),
+      loadCompanyProducts(),
+      loadEnvironmentImages()
+    ])
+  }
 })
 </script>
 
@@ -294,36 +310,37 @@ onMounted(() => {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
     .company-intro {
-      .section {
-        margin-bottom: 32px;
+      .content {
+        color: #666;
+        line-height: 1.8;
+        font-size: 14px;
+        padding: 16px;
+        background: #fafafa;
+        border-radius: 4px;
+      }
+    }
 
-        h2 {
-          font-size: 18px;
-          font-weight: 500;
-          margin-bottom: 16px;
-          color: #333;
-        }
+    .company-images {
+      .image-list {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
 
-        .content {
-          color: #666;
-          line-height: 1.8;
-        }
+        .image-item {
+          aspect-ratio: 16/9;
+          border-radius: 8px;
+          overflow: hidden;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+          transition: transform 0.3s ease;
 
-        .image-list {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 16px;
+          &:hover {
+            transform: translateY(-4px);
+          }
 
-          .image-item {
-            aspect-ratio: 16/9;
-            border-radius: 8px;
-            overflow: hidden;
-
-            img {
-              width: 100%;
-              height: 100%;
-              object-fit: cover;
-            }
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
           }
         }
       }
@@ -336,37 +353,27 @@ onMounted(() => {
 
         &:hover {
           transform: translateY(-4px);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        :deep(.ant-card-cover) {
-          img {
-            height: 200px;
-            object-fit: cover;
-          }
+        :deep(.ant-card-meta-title) {
+          margin-bottom: 12px;
         }
 
         .product-info {
-          .product-desc {
-            color: #666;
-            font-size: 14px;
-            margin: 8px 0;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-
-          .stats {
+          .product-stats {
             display: flex;
-            justify-content: space-between;
+            gap: 16px;
             color: #666;
             font-size: 14px;
 
-            span {
+            .stat-item {
               display: flex;
               align-items: center;
               gap: 4px;
+
+              .anticon {
+                font-size: 16px;
+              }
             }
           }
         }

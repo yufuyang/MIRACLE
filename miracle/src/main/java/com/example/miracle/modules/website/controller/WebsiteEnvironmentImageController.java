@@ -25,8 +25,8 @@ public class WebsiteEnvironmentImageController {
      * 获取环境照片列表
      */
     @GetMapping("/list")
-    public SingleResponse<List<EnvironmentImage>> list(@RequestParam Long ownerId, @RequestParam String ownerType) {
-        return SingleResponse.of(environmentImageService.listByOwner(ownerId, ownerType));
+    public SingleResponse<List<EnvironmentImage>> list(@RequestParam Long ownerId) {
+        return SingleResponse.of(environmentImageService.listByOwner(ownerId, "company"));
     }
 
 } 

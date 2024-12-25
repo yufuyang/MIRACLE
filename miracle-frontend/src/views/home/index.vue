@@ -293,28 +293,34 @@ onMounted(() => {
   .section {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 40px 24px;
+    padding: 40px 0;
+    position: relative;
+
+    &:not(:last-child) {
+      margin-bottom: 40px;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 1px;
+        background: linear-gradient(to right, transparent, #e8e8e8, transparent);
+      }
+    }
 
     .section-header {
+      padding: 0 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
+    }
 
-      .section-title {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0;
-      }
-
-      .more-link {
-        color: #1890ff;
-        cursor: pointer;
-
-        &:hover {
-          color: #40a9ff;
-        }
-      }
+    .product-grid,
+    .company-grid {
+      padding: 0 24px;
     }
 
     .product-card {
