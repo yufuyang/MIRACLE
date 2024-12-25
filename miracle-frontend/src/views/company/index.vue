@@ -61,7 +61,14 @@
                 <template #description>
                   <div class="company-info">
                     <p>{{ company.province }} {{ company.city }}</p>
-                    <p class="description">{{ company.companyDesc }}</p>
+                    <div class="stats">
+                      <span>
+                        <ShopOutlined /> 产品数：{{ company.productCount }}
+                      </span>
+                      <span>
+                        <HeartOutlined /> 意向数：{{ company.intentionCount }}
+                      </span>
+                    </div>
                   </div>
                 </template>
               </a-card-meta>
@@ -88,6 +95,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { ShopOutlined, HeartOutlined } from '@ant-design/icons-vue'
 import { getCompanyList } from '@/api/company'
 
 const router = useRouter()
@@ -109,9 +117,16 @@ const total = ref(0)
 // 获取企业列表
 const loadCompanies = async () => {
   try {
-    const data = await getCompanyList(searchForm)
-    companies.value = data.records
-    total.value = data.total
+    const response = await getCompanyList(searchForm)
+    console.log('企业列表数据:', response)
+    if (response.data) {
+      companies.value = response.data.map(company => ({
+        ...company,
+        productCount: company.productCount || 0,
+        intentionCount: company.intentionCount || 0
+      }))
+      total.value = response.total
+    }
   } catch (error) {
     console.error('获取企业列表失败:', error)
   }
@@ -206,6 +221,21 @@ onMounted(() => {
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
+        margin-bottom: 12px;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: space-between;
+        color: #666;
+        font-size: 14px;
+        margin-top: 8px;
+
+        span {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
       }
     }
   }

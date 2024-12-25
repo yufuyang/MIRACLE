@@ -56,10 +56,10 @@
                   <div class="product-info">
                     <div class="product-stats">
                       <span class="stat-item">
-                        <eye-outlined /> {{ product.viewCount || 0 }}
+                        <eye-outlined /> 浏览数：{{ product.viewCount || 0 }}
                       </span>
                       <span class="stat-item">
-                        <heart-outlined /> {{ product.intentionCount || 0 }}
+                        <heart-outlined /> 意向数：{{ product.intentionCount || 0 }}
                       </span>
                     </div>
                     <div class="product-company">{{ product.companyName }}</div>
@@ -110,7 +110,7 @@ const defaultImage = 'https://via.placeholder.com/200x200'
 const searchForm = reactive({
   productName: '',
   orderField: 'default', // 默认排序
-  asc: false // 默认降序
+  asc: false // 默���降序
 })
 
 // 分页配置

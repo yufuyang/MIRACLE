@@ -47,10 +47,10 @@
                     <div class="product-info">
                       <div class="product-stats">
                         <span class="stat-item">
-                          <eye-outlined /> {{ product.viewCount || 0 }}
+                          <eye-outlined /> 浏览数：{{ product.viewCount || 0 }}
                         </span>
                         <span class="stat-item">
-                          <heart-outlined /> {{ product.intentionCount || 0 }}
+                          <heart-outlined /> 意向数：{{ product.intentionCount || 0 }}
                         </span>
                       </div>
                       <div class="product-company">{{ product.companyName }}</div>
@@ -100,14 +100,19 @@
             <a-col :span="6" v-for="company in featuredCompanies" :key="company.id">
               <a-card hoverable class="company-card" @click="goToCompany(company.id)">
                 <template #cover>
-                  <img :alt="company.name" :src="company.logoUrl || defaultImage" />
+                  <img :alt="company.companyName" :src="company.logoUrl || defaultImage" />
                 </template>
-                <a-card-meta :title="company.name">
+                <a-card-meta :title="company.companyName">
                   <template #description>
                     <div class="company-info">
-                      <div class="company-desc">{{ company.description }}</div>
-                      <div class="company-location">
-                        <environment-outlined /> {{ company.location }}
+                      <p>{{ company.province }} {{ company.city }}</p>
+                      <div class="stats">
+                        <span>
+                          <ShopOutlined /> 产品数：{{ company.productCount || 0 }}
+                        </span>
+                        <span>
+                          <HeartOutlined /> 意向数：{{ company.intentionCount || 0 }}
+                        </span>
                       </div>
                     </div>
                   </template>
@@ -157,7 +162,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { EnvironmentOutlined, PictureOutlined, EyeOutlined, HeartOutlined } from '@ant-design/icons-vue'
+import { EnvironmentOutlined, PictureOutlined, EyeOutlined, HeartOutlined, ShopOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
 import { getBanners, getHotProducts, getFeaturedCompanies } from '@/api/home'
 
@@ -362,6 +367,7 @@ onMounted(() => {
       :deep(.ant-card-meta-title) {
         font-size: 16px;
         margin-bottom: 8px;
+        text-align: left;
       }
 
       .company-info {
@@ -381,6 +387,24 @@ onMounted(() => {
 
           .anticon {
             margin-right: 4px;
+          }
+        }
+
+        .stats {
+          display: flex;
+          justify-content: space-between;
+          color: #666;
+          font-size: 14px;
+          margin-top: 8px;
+
+          span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+
+            .anticon {
+              color: #1890ff;
+            }
           }
         }
       }

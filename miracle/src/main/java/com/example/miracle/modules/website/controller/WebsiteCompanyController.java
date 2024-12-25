@@ -5,6 +5,7 @@ import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.modules.platform.dto.query.CompanyPageQuery;
 import com.example.miracle.modules.platform.entity.Company;
 import com.example.miracle.modules.platform.service.CompanyService;
+import com.example.miracle.modules.website.dto.CompanyDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,8 +32,8 @@ public class WebsiteCompanyController {
      * 分页查询公司列表
      */
     @PostMapping("/page")
-    public MultiResponse<Company> pageQuery(@RequestBody CompanyPageQuery query) {
-        return companyService.pageQuery(query);
+    public MultiResponse<CompanyDTO> pageQuery(@RequestBody CompanyPageQuery query) {
+        return companyService.pageQueryDTO(query);
     }
 
 

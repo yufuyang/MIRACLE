@@ -95,18 +95,15 @@
               <a-card-meta :title="product.productName">
                 <template #description>
                   <div class="product-info">
-                    <div class="product-price">
-                      <span class="price">¥{{ product.price }}</span>
-                      <span class="unit">/ {{ product.unit }}</span>
+                    <div class="product-stats">
+                      <span class="stat-item">
+                        <eye-outlined /> 浏览数：{{ product.viewCount || 0 }}
+                      </span>
+                      <span class="stat-item">
+                        <heart-outlined /> 意向数：{{ product.intentionCount || 0 }}
+                      </span>
                     </div>
-                    <div class="product-meta">
-                      <div class="company-name">
-                        <team-outlined /> {{ product.companyName }}
-                      </div>
-                      <div class="product-category">
-                        <tag-outlined /> {{ getCategoryName(product.categoryId) }}
-                      </div>
-                    </div>
+                    <div class="product-company">{{ product.companyName }}</div>
                   </div>
                 </template>
               </a-card-meta>
@@ -143,7 +140,9 @@ import {
   UpOutlined,
   DownOutlined,
   TeamOutlined,
-  TagOutlined
+  TagOutlined,
+  EyeOutlined,
+  HeartOutlined
 } from '@ant-design/icons-vue'
 import { getProductList, getProductCategories } from '@/api/product'
 
@@ -309,25 +308,8 @@ onMounted(() => {
       }
 
       .product-info {
-        .product-price {
-          margin-bottom: 8px;
-          
-          .price {
-            font-size: 16px;
-            font-weight: bold;
-            color: #f5222d;
-          }
-
-          .unit {
-            font-size: 12px;
-            color: #999;
-            margin-left: 4px;
-          }
-        }
-
-        .product-meta {
-          .company-name,
-          .product-category {
+        .product-stats {
+          .stat-item {
             font-size: 12px;
             color: #666;
             margin-bottom: 4px;
@@ -336,6 +318,12 @@ onMounted(() => {
               margin-right: 4px;
             }
           }
+        }
+
+        .product-company {
+          font-size: 12px;
+          color: #666;
+          margin-bottom: 4px;
         }
       }
     }

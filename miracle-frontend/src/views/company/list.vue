@@ -48,22 +48,19 @@
           <a-col :span="6" v-for="company in companies" :key="company.id">
             <a-card hoverable class="company-card" @click="goToDetail(company.id)">
               <template #cover>
-                <img :alt="company.name" :src="company.logoUrl || defaultImage" />
+                <img :alt="company.companyName" :src="company.logoUrl || defaultImage" />
               </template>
-              <a-card-meta :title="company.name">
+              <a-card-meta :title="company.companyName">
                 <template #description>
                   <div class="company-info">
-                    <div class="company-desc">{{ company.description }}</div>
-                    <div class="company-meta">
-                      <div class="company-location">
-                        <environment-outlined /> {{ company.location }}
-                      </div>
-                      <div class="company-industry">
-                        <apartment-outlined /> {{ company.industry }}
-                      </div>
-                      <div class="company-size">
-                        <team-outlined /> {{ company.size }}
-                      </div>
+                    <p>{{ company.province }} {{ company.city }}</p>
+                    <div class="stats">
+                      <span>
+                        <ShopOutlined /> 产品数：{{ company.productCount }}
+                      </span>
+                      <span>
+                        <HeartOutlined /> 意向数：{{ company.intentionCount }}
+                      </span>
                     </div>
                   </div>
                 </template>
@@ -124,7 +121,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined, EnvironmentOutlined, ApartmentOutlined, TeamOutlined } from '@ant-design/icons-vue'
+import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined, EnvironmentOutlined, ApartmentOutlined, TeamOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
 import { getCompanyList } from '@/api/company'
 
@@ -150,8 +147,8 @@ const loadCompanies = async () => {
   loading.value = true
   try {
     const res = await getCompanyList(searchForm)
-    companies.value = res.data.records || []
-    total.value = res.data.total || 0
+    companies.value = res.data || []
+    total.value = res.total || 0
   } catch (error) {
     console.error('获取企业列表失败:', error)
   } finally {
@@ -249,37 +246,14 @@ onMounted(() => {
 
       img {
         width: 100%;
-        height: 200px;
+        height: 280px;
         object-fit: cover;
       }
 
-      .company-info {
-        margin-top: 12px;
-
-        .company-desc {
-          color: #666;
-          font-size: 14px;
-          margin-bottom: 12px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .company-meta {
-          color: #999;
-          font-size: 14px;
-
-          > div {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-
-            .anticon {
-              margin-right: 8px;
-            }
-          }
-        }
+      :deep(.ant-card-meta-title) {
+        font-size: 16px;
+        margin-bottom: 8px;
+        text-align: left;
       }
     }
   }
@@ -293,6 +267,22 @@ onMounted(() => {
 @media (max-width: 768px) {
   .company-list {
     padding: 16px;
+  }
+}
+
+.company-info {
+  .stats {
+    display: flex;
+    justify-content: space-between;
+    color: #666;
+    font-size: 14px;
+    margin-top: 8px;
+
+    span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
   }
 }
 </style> 

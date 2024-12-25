@@ -10,6 +10,7 @@ import com.example.miracle.modules.company.entity.CompanyUser;
 import com.example.miracle.modules.platform.mapper.CompanyMapper;
 import com.example.miracle.modules.platform.service.CompanyService;
 import com.example.miracle.modules.company.service.CompanyUserService;
+import com.example.miracle.modules.website.dto.CompanyDTO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,15 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
     }
 
     @Override
+    public MultiResponse<CompanyDTO> pageQueryDTO(CompanyPageQuery query) {
+        // 使用Mapper进行分页查询
+        Page<CompanyDTO> page = this.baseMapper.selectCompanyDTOPage(new Page<>(query.getPageNum(), query.getPageSize()), query);
+
+        // 返回结果
+        return MultiResponse.of(page.getRecords(), (int) page.getTotal());
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean save(Company company) {
         // 保存公司信息
@@ -48,7 +58,6 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
 
         if (result) {
             // 创建公司管理员
-
             CompanyUser companyUser = new CompanyUser();
             companyUser.setCompanyId(company.getId());
             companyUser.setUsername(company.getContactPhone());

@@ -25,4 +25,14 @@ public class CompanyPageQuery extends PageQuery {
      * 状态
      */
     private Integer status;
+
+    /**
+     * 排序字段：productCount-产品数 intentionCount-意向数
+     */
+    private String orderField;
+
+    /**
+     * 是否升序
+     */
+    private Boolean asc;
 } 
