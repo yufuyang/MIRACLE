@@ -1,117 +1,103 @@
 <template>
   <div class="activity-list">
-    <!-- 搜索筛选区域 -->
+    <!-- 搜索区域 -->
     <div class="filter-section">
       <a-form layout="inline" :model="searchForm">
         <a-form-item label="企业名称">
           <a-input
             v-model:value="searchForm.companyName"
             placeholder="请输入企业名称"
-            allowClear
+            allow-clear
           />
         </a-form-item>
         <a-form-item label="活动状态">
           <a-select
             v-model:value="searchForm.status"
             placeholder="请选择活动状态"
-            style="width: 160px"
-            allowClear
+            style="width: 120px"
+            allow-clear
           >
-            <a-select-option value="即将开始">即将开始</a-select-option>
-            <a-select-option value="报名中">报名中</a-select-option>
-            <a-select-option value="已结束">已结束</a-select-option>
+            <a-select-option value="0">未开始</a-select-option>
+            <a-select-option value="1">进行中</a-select-option>
+            <a-select-option value="2">已结束</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item>
-          <a-button type="primary" @click="onSearch">查询</a-button>
-          <a-button style="margin-left: 8px" @click="onReset">重置</a-button>
+          <a-space>
+            <a-button type="primary" @click="onSearch">
+              <template #icon><search-outlined /></template>
+              搜索
+            </a-button>
+            <a-button @click="onReset">
+              <template #icon><redo-outlined /></template>
+              重置
+            </a-button>
+          </a-space>
         </a-form-item>
       </a-form>
     </div>
 
     <!-- 活动列表 -->
     <div class="activity-grid">
-      <a-row :gutter="[24, 24]">
-        <template v-if="activities.length > 0">
-          <a-col :span="8" v-for="activity in activities" :key="activity.id">
-            <a-card hoverable class="activity-card" @click="goToDetail(activity.id)">
-              <template #cover>
-                <div class="activity-cover">
-                  <img :alt="activity.title" :src="activity.imageUrl || defaultImage" />
-                  <div class="activity-status" :class="activity.status">
-                    {{ activity.status }}
-                  </div>
-                </div>
-              </template>
-              <a-card-meta :title="activity.title">
-                <template #description>
-                  <div class="activity-info">
-                    <div class="activity-desc">{{ activity.description }}</div>
-                    <div class="activity-meta">
-                      <div class="company-name">
-                        <team-outlined /> {{ activity.companyName }}
-                      </div>
+      <a-spin :spinning="loading">
+        <a-row :gutter="[24, 24]">
+          <template v-if="activities.length > 0">
+            <a-col :xs="24" :sm="12" :md="8" v-for="activity in activities" :key="activity.id">
+              <a-card hoverable class="activity-card" @click="goToDetail(activity.id)">
+                <template #cover>
+                  <a-image
+                    :src="activity.coverImage || defaultImage"
+                    :alt="activity.title"
+                    :preview="false"
+                    style="height: 200px; object-fit: cover"
+                  />
+                </template>
+                <a-card-meta :title="activity.title">
+                  <template #description>
+                    <div class="activity-info">
                       <div class="activity-time">
-                        <calendar-outlined /> {{ activity.startTime }}
+                        <calendar-outlined />
+                        <div class="time-range">
+                          <div>开始：{{ formatDate(activity.startTime) }}</div>
+                          <div>结束：{{ formatDate(activity.endTime) }}</div>
+                        </div>
                       </div>
-                      <div class="activity-location">
-                        <environment-outlined /> {{ activity.location }}
+                      <div class="activity-company" v-if="activity.companyName">
+                        <team-outlined />
+                        <span>{{ activity.companyName }}</span>
                       </div>
-                    </div>
-                    <a-button 
-                      type="primary" 
-                      class="register-btn"
-                      :disabled="activity.status === '已结束'"
-                      @click.stop="handleRegister(activity)"
-                    >
-                      {{ getButtonText(activity.status) }}
-                    </a-button>
-                  </div>
-                </template>
-              </a-card-meta>
-            </a-card>
-          </a-col>
-        </template>
-        <template v-else>
-          <a-col :span="8" v-for="i in 6" :key="i">
-            <a-card class="activity-card empty-card">
-              <template #cover>
-                <div class="activity-cover">
-                  <a-skeleton-image :active="true" />
-                </div>
-              </template>
-              <a-card-meta>
-                <template #title>
-                  <a-skeleton :active="true" :paragraph="false" />
-                </template>
-                <template #description>
-                  <div class="activity-info">
-                    <div class="activity-desc">
-                      <a-skeleton :active="true" :paragraph="{ rows: 2 }" :title="false" />
-                    </div>
-                    <div class="activity-meta">
-                      <div class="company-name">
-                        <a-skeleton :active="true" :paragraph="false" />
+                      <div class="activity-location" v-if="activity.address">
+                        <environment-outlined />
+                        <span>{{ activity.address }}</span>
                       </div>
-                      <div class="activity-time">
-                        <a-skeleton :active="true" :paragraph="false" />
-                      </div>
-                      <div class="activity-location">
-                        <a-skeleton :active="true" :paragraph="false" />
+                      <div class="activity-stats">
+                        <div class="stats-group">
+                          <span class="stat-item">
+                            <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
+                          </span>
+                          <span class="stat-item">
+                            <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
+                          </span>
+                        </div>
+                        <a-tag :color="getStatusColor(activity.status)">
+                          {{ getStatusText(activity.status) }}
+                        </a-tag>
                       </div>
                     </div>
-                    <a-skeleton.button :active="true" size="large" block />
-                  </div>
-                </template>
-              </a-card-meta>
-            </a-card>
-          </a-col>
-        </template>
-      </a-row>
+                  </template>
+                </a-card-meta>
+              </a-card>
+            </a-col>
+          </template>
+          <template v-else>
+            <a-empty description="暂无活动" />
+          </template>
+        </a-row>
+      </a-spin>
     </div>
 
     <!-- 分页 -->
-    <div class="pagination">
+    <div class="pagination" v-if="total > 0">
       <a-pagination
         v-model:current="searchForm.pageNum"
         v-model:pageSize="searchForm.pageSize"
@@ -125,19 +111,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { TeamOutlined, CalendarOutlined, EnvironmentOutlined } from '@ant-design/icons-vue'
-import { message } from 'ant-design-vue'
+import { 
+  SearchOutlined, 
+  RedoOutlined,
+  TeamOutlined, 
+  CalendarOutlined, 
+  EnvironmentOutlined,
+  EyeOutlined,
+  UserOutlined 
+} from '@ant-design/icons-vue'
+import dayjs from 'dayjs'
 import defaultImage from '@/assets/images/default.jpg'
-import { getActivityList, registerActivity } from '@/api/activity'
+import { getActivityList } from '@/api/activity'
 
 const router = useRouter()
 
 // 搜索表单
 const searchForm = reactive({
   pageNum: 1,
-  pageSize: 9,
+  pageSize: 12,
   companyName: '',
   status: undefined
 })
@@ -152,8 +146,10 @@ const loadActivities = async () => {
   loading.value = true
   try {
     const res = await getActivityList(searchForm)
-    activities.value = res.data.records || []
-    total.value = res.data.total || 0
+    if (res.success) {
+      activities.value = res.data || []
+      total.value = res.total || 0
+    }
   } catch (error) {
     console.error('获取活动列表失败:', error)
   } finally {
@@ -161,32 +157,30 @@ const loadActivities = async () => {
   }
 }
 
-// 获取按钮文字
-const getButtonText = (status) => {
-  switch (status) {
-    case '即将开始':
-      return '预约提醒'
-    case '报名中':
-      return '立即报名'
-    case '已结束':
-      return '活动结束'
-    default:
-      return '立即报名'
+// 获取活动状态文本
+const getStatusText = (status) => {
+  const statusMap = {
+    0: '未开始',
+    1: '进行中',
+    2: '已结束'
   }
+  return statusMap[status] || '未知'
 }
 
-// 处理报名
-const handleRegister = async (activity) => {
-  try {
-    await registerActivity({
-      activityId: activity.id
-    })
-    message.success('报名成功')
-    loadActivities()
-  } catch (error) {
-    console.error('报名失败:', error)
-    message.error(error.response?.data?.message || '报名失败')
+// 获取活动状态颜色
+const getStatusColor = (status) => {
+  const colorMap = {
+    0: 'blue',
+    1: 'green',
+    2: 'gray'
   }
+  return colorMap[status] || 'default'
+}
+
+// 格式化日期
+const formatDate = (date) => {
+  if (!date) return '-'
+  return dayjs(date).format('YYYY-MM-DD HH:mm')
 }
 
 // 搜索
@@ -199,7 +193,8 @@ const onSearch = () => {
 const onReset = () => {
   searchForm.companyName = ''
   searchForm.status = undefined
-  onSearch()
+  searchForm.pageNum = 1
+  loadActivities()
 }
 
 // 分页变化
@@ -230,114 +225,77 @@ onMounted(() => {
     margin-bottom: 24px;
     padding: 24px;
     background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
   }
 
   .activity-grid {
+    margin-bottom: 24px;
+
     .activity-card {
       height: 100%;
       transition: all 0.3s;
 
-      &:hover:not(.empty-card) {
+      &:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       }
 
-      &.empty-card {
-        cursor: default;
-        
-        .activity-cover {
-          background: #fafafa;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          
-          :deep(.ant-skeleton-image) {
-            width: 100%;
-            height: 200px;
-            background: #f5f5f5;
-          }
-        }
-
-        :deep(.ant-skeleton) {
-          .ant-skeleton-title {
-            margin: 0;
-          }
-        }
-      }
-
-      .activity-cover {
-        position: relative;
-        height: 200px;
+      :deep(.ant-card-meta-title) {
+        font-size: 16px;
+        margin-bottom: 12px;
+        white-space: nowrap;
         overflow: hidden;
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .activity-status {
-          position: absolute;
-          top: 16px;
-          right: 16px;
-          padding: 4px 12px;
-          border-radius: 12px;
-          font-size: 12px;
-          color: #fff;
-
-          &.即将开始 {
-            background: #faad14;
-          }
-
-          &.报名中 {
-            background: #52c41a;
-          }
-
-          &.已结束 {
-            background: #8c8c8c;
-          }
-        }
+        text-overflow: ellipsis;
       }
 
       .activity-info {
-        margin-top: 16px;
-
-        .activity-desc {
+        .activity-time,
+        .activity-company,
+        .activity-location {
+          margin-bottom: 12px;
           color: #666;
           font-size: 14px;
-          margin-bottom: 16px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
+          display: flex;
+          align-items: flex-start;
+          gap: 8px;
 
-        .activity-meta {
-          margin-bottom: 16px;
-          color: #666;
-          font-size: 14px;
+          .anticon {
+            color: #1890ff;
+            margin-top: 3px;
+          }
 
-          > div {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-
-            .anticon {
-              margin-right: 8px;
+          .time-range {
+            flex: 1;
+            div {
+              line-height: 1.6;
             }
           }
         }
 
-        .register-btn {
-          width: 100%;
-          border-radius: 4px;
+        .activity-stats {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: 12px;
+          padding-top: 12px;
+          border-top: 1px solid #f0f0f0;
 
-          &[disabled] {
-            color: rgba(0, 0, 0, 0.25);
-            background: #f5f5f5;
-            border-color: #d9d9d9;
+          .stats-group {
+            display: flex;
+            gap: 16px;
+          }
+
+          .stat-item {
+            color: #666;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+
+            .anticon {
+              color: #1890ff;
+            }
           }
         }
       }
@@ -345,8 +303,8 @@ onMounted(() => {
   }
 
   .pagination {
-    margin-top: 40px;
     text-align: center;
+    margin-top: 24px;
   }
 }
 
@@ -354,11 +312,11 @@ onMounted(() => {
   .activity-list {
     padding: 16px;
 
-    .activity-grid {
-      .activity-card {
-        .activity-cover {
-          height: 160px;
-        }
+    .filter-section {
+      padding: 16px;
+      
+      :deep(.ant-form-item) {
+        margin-bottom: 16px;
       }
     }
   }

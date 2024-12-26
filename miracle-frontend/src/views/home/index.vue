@@ -51,13 +51,12 @@
                     <div class="activity-info">
                       <div class="activity-stats">
                         <span class="stat-item">
-                          <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
+                          <eye-outlined /> {{ activity.viewCount || 0 }}
                         </span>
                         <span class="stat-item">
-                          <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
+                          <user-outlined /> {{ activity.registerCount || 0 }}
                         </span>
                       </div>
-                      <div class="activity-time">{{ formatDate(activity.startTime) }}</div>
                     </div>
                   </template>
                 </a-card-meta>
@@ -553,11 +552,6 @@ onMounted(() => {
               color: #1890ff;
             }
           }
-        }
-
-        .activity-time {
-          font-size: 12px;
-          color: #666;
         }
       }
     }
