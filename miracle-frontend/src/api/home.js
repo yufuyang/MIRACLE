@@ -1,21 +1,18 @@
 import request from '@/utils/request'
 
-// 获取首页轮播图
-export function getBanners() {
+// 获取热门产品（用于轮播图）
+export function getFeaturedProducts() {
   return request({
-    url: '/website/home/banners',
+    url: '/website/home/hot-products',
     method: 'get'
   })
 }
 
-// 获取热门产品
-export function getHotProducts() {
+// 获取热门活动
+export function getHotActivities() {
   return request({
-    url: '/website/home/hot-products',
-    method: 'get',
-    params: {
-      pageSize: 8
-    }
+    url: '/website/home/banners',
+    method: 'get'
   })
 }
 
@@ -23,9 +20,6 @@ export function getHotProducts() {
 export function getFeaturedCompanies() {
   return request({
     url: '/website/home/featured-companies',
-    method: 'get',
-    params: {
-      pageSize: 8
-    }
+    method: 'get'
   })
 } 

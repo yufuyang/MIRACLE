@@ -1,14 +1,18 @@
 <template>
   <div class="home">
-    <!-- 轮播图 -->
+    <!-- 轮播图（展示产品） -->
     <div class="banner-section">
       <a-carousel autoplay>
-        <template v-if="banners && banners.length > 0">
-          <div class="banner-item" v-for="banner in banners" :key="banner.id" @click="goToActivity(banner.id)">
-            <img :src="banner.coverImage" :alt="banner.title" />
+        <template v-if="featuredProducts && featuredProducts.length > 0">
+          <div 
+            class="banner-item" 
+            v-for="product in featuredProducts.slice(0, 8)" 
+            :key="product.id" 
+            @click="goToProduct(product.id)"
+          >
+            <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
             <div class="banner-content">
-              <h3>{{ banner.title }}</h3>
-              <p>{{ banner.description }}</p>
+              <h3>{{ product.productName }}</h3>
             </div>
           </div>
         </template>
@@ -16,44 +20,44 @@
           <div class="banner-item">
             <div class="banner-placeholder">
               <picture-outlined />
-              <span>暂无活动</span>
+              <span>暂无产品</span>
             </div>
           </div>
         </template>
       </a-carousel>
     </div>
 
-    <!-- 热门产品 -->
+    <!-- 热门活动 -->
     <section class="section">
       <div class="section-header">
-        <h2 class="section-title">热门产品</h2>
-        <a class="more-link" @click="goToProduct()">查看全部 ></a>
+        <h2 class="section-title">热门活动</h2>
+        <a class="more-link" @click="goToActivity()">查看全部 ></a>
       </div>
-      <div class="product-grid">
+      <div class="activity-grid">
         <a-row :gutter="[24, 24]">
-          <template v-if="hotProducts.length > 0">
-            <a-col :span="6" v-for="product in hotProducts" :key="product.id">
-              <a-card hoverable class="product-card" @click="goToProduct(product.id)">
+          <template v-if="activities.length > 0">
+            <a-col :span="6" v-for="activity in activities.slice(0, 8)" :key="activity.id">
+              <a-card hoverable class="activity-card" @click="goToActivity(activity.id)">
                 <template #cover>
                   <a-image
-                    :src="product.imageUrl || defaultImage"
-                    :alt="product.productName"
+                    :src="activity.coverImage || defaultImage"
+                    :alt="activity.title"
                     :preview="false"
                     style="height: 200px; object-fit: cover"
                   />
                 </template>
-                <a-card-meta :title="product.productName">
+                <a-card-meta :title="activity.title">
                   <template #description>
-                    <div class="product-info">
-                      <div class="product-stats">
+                    <div class="activity-info">
+                      <div class="activity-stats">
                         <span class="stat-item">
-                          <eye-outlined /> 浏览数：{{ product.viewCount || 0 }}
+                          <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
                         </span>
                         <span class="stat-item">
-                          <heart-outlined /> 意向数：{{ product.intentionCount || 0 }}
+                          <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
                         </span>
                       </div>
-                      <div class="product-company">{{ product.companyName }}</div>
+                      <div class="activity-time">{{ formatDate(activity.startTime) }}</div>
                     </div>
                   </template>
                 </a-card-meta>
@@ -62,7 +66,7 @@
           </template>
           <template v-else>
             <a-col :span="6" v-for="i in 8" :key="i">
-              <a-card class="product-card empty-card">
+              <a-card class="activity-card empty-card">
                 <template #cover>
                   <a-skeleton-image :active="true" />
                 </template>
@@ -71,12 +75,9 @@
                     <a-skeleton :active="true" :paragraph="false" />
                   </template>
                   <template #description>
-                    <div class="product-info">
-                      <div class="product-desc">
+                    <div class="activity-info">
+                      <div class="activity-desc">
                         <a-skeleton :active="true" :paragraph="{ rows: 2 }" :title="false" />
-                      </div>
-                      <div class="product-company">
-                        <a-skeleton :active="true" :paragraph="false" />
                       </div>
                     </div>
                   </template>
@@ -97,7 +98,7 @@
       <div class="company-grid">
         <a-row :gutter="[24, 24]">
           <template v-if="featuredCompanies.length > 0">
-            <a-col :span="6" v-for="company in featuredCompanies" :key="company.id">
+            <a-col :span="6" v-for="company in featuredCompanies.slice(0, 8)" :key="company.id">
               <a-card hoverable class="company-card" @click="goToCompany(company.id)">
                 <template #cover>
                   <img :alt="company.companyName" :src="company.logoUrl || defaultImage" />
@@ -162,57 +163,79 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { EnvironmentOutlined, PictureOutlined, EyeOutlined, HeartOutlined, ShopOutlined } from '@ant-design/icons-vue'
+import { 
+  EnvironmentOutlined, 
+  PictureOutlined, 
+  EyeOutlined, 
+  HeartOutlined, 
+  UserOutlined, 
+  ShopOutlined 
+} from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
-import { getBanners, getHotProducts, getFeaturedCompanies } from '@/api/home'
+import { getFeaturedProducts, getHotActivities, getFeaturedCompanies } from '@/api/home'
+import dayjs from 'dayjs'
 
 const router = useRouter()
-const banners = ref([])
+const featuredProducts = ref([])
+const activities = ref([])
+const featuredCompanies = ref([])
 
 // 判断是否已登录
 const isLoggedIn = computed(() => {
   return !!localStorage.getItem('token')
 })
 
-// 数据
-const hotProducts = ref([])
-const featuredCompanies = ref([])
-
 // 加载首页数据
 const loadHomeData = async () => {
   try {
     // 并行加载所有数据
     const [
-      bannersRes,
       productsRes,
+      activitiesRes,
       companiesRes
     ] = await Promise.all([
-      getBanners(),
-      getHotProducts(),
+      getFeaturedProducts(),
+      getHotActivities(),
       getFeaturedCompanies()
     ])
 
-    console.log('轮播图数据:', bannersRes)
-    banners.value = bannersRes.data || []
-    console.log('处理后的轮播图数据:', banners.value)
-    hotProducts.value = productsRes.data || []
+    featuredProducts.value = productsRes.data || []
+    activities.value = activitiesRes.data || []
     featuredCompanies.value = companiesRes.data || []
   } catch (error) {
     console.error('获取首页数据失败:', error)
   }
 }
 
+// 格式化日期
+const formatDate = (date) => {
+  if (!date) return '-'
+  return dayjs(date).format('YYYY-MM-DD HH:mm')
+}
+
 // 跳转函数
 const goToActivity = (id) => {
-  router.push(`/activity/detail/${id}`)
+  if (id) {
+    router.push(`/activity/${id}`)
+  } else {
+    router.push('/activity')
+  }
 }
 
 const goToProduct = (id) => {
-  router.push(`/product/${id}`)
+  if (id) {
+    router.push(`/product/${id}`)
+  } else {
+    router.push('/product')
+  }
 }
 
 const goToCompany = (id) => {
-  router.push(`/company/${id}`)
+  if (id) {
+    router.push(`/company/${id}`)
+  } else {
+    router.push('/company')
+  }
 }
 
 const goToRegister = () => {
@@ -237,11 +260,36 @@ onMounted(() => {
       margin: 0 auto;
       
       .banner-item {
-        height: 300px;
+        height: 600px;
         overflow: hidden;
         position: relative;
         border-radius: 8px;
         cursor: pointer;
+        
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .banner-content {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          padding: 40px;
+          background: linear-gradient(to top, rgba(0,0,0,0.9), rgba(0,0,0,0));
+          
+          h3 {
+            color: #fff;
+            font-size: 32px;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.6);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+        }
         
         .banner-placeholder {
           width: 100%;
@@ -259,54 +307,34 @@ onMounted(() => {
             margin-bottom: 16px;
           }
         }
-
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .banner-content {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 20px;
-          background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
-          color: #fff;
-
-          h3 {
-            font-size: 24px;
-            margin-bottom: 8px;
-          }
-
-          p {
-            font-size: 14px;
-            margin: 0;
-            opacity: 0.8;
-          }
-        }
       }
     }
   }
 
   .section {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 0 auto 40px;
+    background: #fff;
     padding: 40px 0;
     position: relative;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 
     &:not(:last-child) {
-      margin-bottom: 40px;
-      
       &::after {
         content: '';
         position: absolute;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        height: 1px;
-        background: linear-gradient(to right, transparent, #e8e8e8, transparent);
+        left: 5%;
+        right: 5%;
+        bottom: -20px;
+        height: 2px;
+        background: linear-gradient(to right, 
+          transparent,
+          #e8e8e8 10%,
+          #d9d9d9 50%,
+          #e8e8e8 90%,
+          transparent
+        );
       }
     }
 
@@ -316,6 +344,41 @@ onMounted(() => {
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
+
+      .section-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #262626;
+        position: relative;
+        padding-left: 12px;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 4px;
+          height: 20px;
+          background: #1890ff;
+          border-radius: 2px;
+        }
+      }
+
+      .more-link {
+        color: #1890ff;
+        font-size: 14px;
+        cursor: pointer;
+
+        &:hover {
+          color: #40a9ff;
+        }
+      }
+    }
+
+    .activity-grid,
+    .company-grid {
+      padding: 0 24px;
     }
 
     .product-grid,
@@ -364,35 +427,51 @@ onMounted(() => {
     .company-card {
       cursor: pointer;
       transition: all 0.3s;
+      margin-bottom: 24px;
 
       &:hover {
         transform: translateY(-4px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
-      :deep(.ant-card-meta-title) {
-        font-size: 16px;
-        margin-bottom: 8px;
-        text-align: left;
+      :deep(.ant-card-cover) {
+        height: 200px;
+        overflow: hidden;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          padding: 0;
+        }
+      }
+
+      :deep(.ant-card-meta) {
+        padding: 16px;
+
+        .ant-card-meta-title {
+          font-size: 16px;
+          margin-bottom: 12px;
+          color: #262626;
+        }
       }
 
       .company-info {
-        .company-desc {
-          font-size: 14px;
+        p {
+          margin: 0 0 12px;
           color: #666;
-          margin-bottom: 8px;
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        .company-location {
-          font-size: 12px;
-          color: #999;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          gap: 4px;
 
           .anticon {
-            margin-right: 4px;
+            color: #1890ff;
+            font-size: 14px;
           }
         }
 
@@ -401,7 +480,6 @@ onMounted(() => {
           justify-content: space-between;
           color: #666;
           font-size: 14px;
-          margin-top: 8px;
 
           span {
             display: flex;
@@ -457,6 +535,33 @@ onMounted(() => {
       }
     }
   }
+
+  .activity-grid {
+    .activity-card {
+      .activity-info {
+        .activity-stats {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          
+          .stat-item {
+            color: #8c8c8c;
+            font-size: 14px;
+
+            .anticon {
+              margin-right: 4px;
+              color: #1890ff;
+            }
+          }
+        }
+
+        .activity-time {
+          font-size: 12px;
+          color: #666;
+        }
+      }
+    }
+  }
 }
 
 @media (max-width: 768px) {
@@ -464,13 +569,31 @@ onMounted(() => {
     .banner-section {
       :deep(.ant-carousel) {
         .banner-item {
-          height: 200px;
+          height: 400px;
+          
+          .banner-content {
+            padding: 30px;
+            
+            h3 {
+              font-size: 24px;
+            }
+          }
         }
       }
     }
 
     .section {
-      padding: 0 16px;
+      margin: 0 16px 40px;
+      padding: 30px 0;
+
+      .section-header {
+        padding: 0 16px;
+      }
+
+      .activity-grid,
+      .company-grid {
+        padding: 0 16px;
+      }
     }
 
     .join-section {
@@ -485,6 +608,7 @@ onMounted(() => {
           font-size: 14px;
         }
       }
+
     }
   }
 }
