@@ -34,6 +34,10 @@
           <phone-outlined />
           <span>联系电话：{{ company.contactPhone }}</span>
         </div>
+        <div class="contact-item">
+          <environment-outlined />
+          <span>地址：{{ company.province }} {{ company.city }} {{ company.address }}</span>
+        </div>
       </div>
     </div>
 
@@ -67,18 +71,22 @@
               <a-col :span="8" v-for="product in products" :key="product.id">
                 <a-card hoverable class="product-card" @click="goToProduct(product.id)">
                   <template #cover>
-                    <img :alt="product.productName" :src="product.imageUrl || defaultImage" />
+                    <img :alt="product.name" :src="product.coverImage || defaultImage" style="height: 200px; object-fit: cover;" />
                   </template>
-                  <a-card-meta :title="product.productName">
+                  <a-card-meta :title="product.name">
                     <template #description>
                       <div class="product-info">
                         <div class="product-stats">
-                          <span class="stat-item">
-                            <eye-outlined /> 浏览数：{{ product.viewCount || 0 }}
-                          </span>
-                          <span class="stat-item">
-                            <heart-outlined /> 意向数：{{ product.intentionCount || 0 }}
-                          </span>
+                          <div class="stat-group">
+                            <span class="stat-item">
+                              <eye-outlined /> 浏览数：{{ product.viewCount || 0 }}
+                            </span>
+                          </div>
+                          <div class="stat-group">
+                            <span class="stat-item">
+                              <heart-outlined /> 意向数：{{ product.intentionCount || 0 }}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </template>
@@ -86,14 +94,60 @@
                 </a-card>
               </a-col>
             </a-row>
-            <!-- 分页 -->
             <div class="pagination">
               <a-pagination
                 v-model:current="productPage"
                 :total="productTotal"
                 :pageSize="productPageSize"
+                @change="onProductPageChange"
                 show-size-changer
-                @change="onPageChange"
+                show-total
+              />
+            </div>
+          </div>
+        </a-tab-pane>
+
+        <!-- 公司活动 -->
+        <a-tab-pane key="4" tab="公司活动">
+          <div class="company-activities">
+            <a-row :gutter="[24, 24]">
+              <a-col :span="8" v-for="activity in activities" :key="activity.id">
+                <a-card hoverable class="activity-card" @click="goToActivity(activity.id)">
+                  <template #cover>
+                    <img :alt="activity.title" :src="activity.coverImage || defaultImage" style="height: 200px; object-fit: cover;" />
+                  </template>
+                  <a-card-meta :title="activity.title">
+                    <template #description>
+                      <div class="activity-info">
+                        <div class="activity-stats">
+                          <div class="stat-group">
+                            <span class="stat-item">
+                              <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
+                            </span>
+                          </div>
+                          <div class="stat-group">
+                            <span class="stat-item">
+                              <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
+                            </span>
+                          </div>
+                        </div>
+                        <a-tag :color="getStatusColor(activity.status)">
+                          {{ getStatusText(activity.status) }}
+                        </a-tag>
+                      </div>
+                    </template>
+                  </a-card-meta>
+                </a-card>
+              </a-col>
+            </a-row>
+            <div class="pagination">
+              <a-pagination
+                v-model:current="activityPage"
+                :total="activityTotal"
+                :pageSize="activityPageSize"
+                @change="onActivityPageChange"
+                show-size-changer
+                show-total
               />
             </div>
           </div>
@@ -112,11 +166,13 @@ import {
   HeartOutlined, 
   PhoneOutlined,
   UserOutlined,
-  EyeOutlined
+  EyeOutlined,
+  EnvironmentOutlined
 } from '@ant-design/icons-vue'
 import { getCompanyDetail } from '@/api/website/company'
 import { getCompanyProducts } from '@/api/website/companyProduct'
 import { getEnvironmentImages } from '@/api/website/environment'
+import { getCompanyActivities } from '@/api/website/activity'
 import defaultImage from '@/assets/images/default.jpg'
 
 const route = useRoute()
@@ -129,12 +185,15 @@ const productPage = ref(1)
 const productPageSize = ref(9)
 const productTotal = ref(0)
 const environmentImages = ref([])
-const companyId = ref(null)
+const activities = ref([])
+const activityPage = ref(1)
+const activityPageSize = ref(9)
+const activityTotal = ref(0)
 
 // 获取公司详情
 const loadCompanyDetail = async () => {
   try {
-    const res = await getCompanyDetail(companyId.value)
+    const res = await getCompanyDetail(route.params.id)
     company.value = {
       ...res.data,
       productCount: route.query.productCount,
@@ -149,14 +208,15 @@ const loadCompanyDetail = async () => {
 // 获取公司产品
 const loadCompanyProducts = async () => {
   try {
-    const params = {
-      companyId: companyId.value,
+    const res = await getCompanyProducts({
+      companyId: route.params.id,
       pageNum: productPage.value,
       pageSize: productPageSize.value
+    })
+    if (res.success) {
+      products.value = res.data || []
+      productTotal.value = res.total || 0
     }
-    const res = await getCompanyProducts(params)
-    products.value = res.data || []
-    productTotal.value = res.total || 0
   } catch (error) {
     console.error('获取公司产品失败:', error)
     message.error('获取公司产品失败')
@@ -166,14 +226,55 @@ const loadCompanyProducts = async () => {
 // 获取环境图片
 const loadEnvironmentImages = async () => {
   try {
-    const res = await getEnvironmentImages(companyId.value, 'company')
-    if (res.data) {
-      environmentImages.value = res.data
+    const params = {
+      ownerId: route.params.id,
+      ownerType: 'company'
     }
+    const res = await getEnvironmentImages(params)
+    environmentImages.value = res.data || []
   } catch (error) {
     console.error('获取环境图片失败:', error)
     message.error('获取环境图片失败')
   }
+}
+
+// 获取公司活动
+const loadCompanyActivities = async () => {
+  try {
+    const data = {
+      pageNum: activityPage.value,
+      pageSize: activityPageSize.value,
+      companyId: Number(route.params.id)
+    }
+    const res = await getCompanyActivities(data)
+    if (res.success) {
+      activities.value = res.data || []
+      activityTotal.value = res.total || 0
+    }
+  } catch (error) {
+    console.error('获取公司活动失败:', error)
+    message.error('获取公司活动失败')
+  }
+}
+
+// 获取活动状态文本
+const getStatusText = (status) => {
+  const statusMap = {
+    0: '未开始',
+    1: '进行中',
+    2: '已结束'
+  }
+  return statusMap[status] || '未知'
+}
+
+// 获取活动状态颜色
+const getStatusColor = (status) => {
+  const colorMap = {
+    0: 'blue',
+    1: 'green',
+    2: 'gray'
+  }
+  return colorMap[status] || 'default'
 }
 
 // 跳转到产品详情
@@ -181,22 +282,33 @@ const goToProduct = (productId) => {
   router.push(`/product/${productId}`)
 }
 
-// 分页变化
-const onPageChange = (page, pageSize) => {
+// 跳转到活动详情
+const goToActivity = (id) => {
+  router.push(`/activity/${id}`)
+}
+
+// 产品分页变化
+const onProductPageChange = (page, pageSize) => {
   productPage.value = page
   productPageSize.value = pageSize
   loadCompanyProducts()
 }
 
+// 活动分页变化
+const onActivityPageChange = (page, pageSize) => {
+  activityPage.value = page
+  activityPageSize.value = pageSize
+  loadCompanyActivities()
+}
+
 // 初始化
 onMounted(async () => {
-  const id = route.params.id
-  if (id) {
-    companyId.value = id
+  if (route.params.id) {
     await Promise.all([
       loadCompanyDetail(),
       loadCompanyProducts(),
-      loadEnvironmentImages()
+      loadEnvironmentImages(),
+      loadCompanyActivities()
     ])
   }
 })
@@ -362,17 +474,69 @@ onMounted(async () => {
         .product-info {
           .product-stats {
             display: flex;
-            gap: 16px;
+            justify-content: space-between;
+            align-items: center;
             color: #666;
             font-size: 14px;
 
-            .stat-item {
-              display: flex;
-              align-items: center;
-              gap: 4px;
+            .stat-group {
+              .stat-item {
+                display: flex;
+                align-items: center;
+                gap: 4px;
 
-              .anticon {
-                font-size: 16px;
+                .anticon {
+                  font-size: 16px;
+                  color: #1890ff;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .pagination {
+        margin-top: 24px;
+        text-align: center;
+      }
+    }
+
+    .company-activities {
+      .activity-card {
+        height: 100%;
+        transition: all 0.3s;
+
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        :deep(.ant-card-meta-title) {
+          font-size: 16px;
+          margin-bottom: 8px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .activity-info {
+          .activity-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            color: #666;
+            font-size: 14px;
+
+            .stat-group {
+              .stat-item {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+
+                .anticon {
+                  color: #1890ff;
+                }
               }
             }
           }

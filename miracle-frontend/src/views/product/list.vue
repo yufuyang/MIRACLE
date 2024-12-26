@@ -1,6 +1,6 @@
 <template>
   <div class="product-list">
-    <!-- 搜索区域 -->
+    <!-- 筛选区域 -->
     <div class="filter-section">
       <a-form layout="inline" :model="searchForm">
         <a-form-item label="产品名称">
@@ -8,32 +8,29 @@
             v-model:value="searchForm.productName"
             placeholder="请输入产品名称"
             allowClear
-            style="width: 200px"
           />
         </a-form-item>
         <a-form-item>
-          <a-button type="primary" @click="handleSearch">
-            <template #icon>
-              <search-outlined />
-            </template>
-            查询
-          </a-button>
-          <a-button style="margin-left: 8px" @click="handleReset">
-            <template #icon>
-              <redo-outlined />
-            </template>
-            重置
-          </a-button>
+          <a-button type="primary" @click="onSearch">查询</a-button>
+          <a-button style="margin-left: 8px" @click="onReset">重置</a-button>
         </a-form-item>
       </a-form>
     </div>
 
     <!-- 排序区域 -->
-    <div class="sort-tabs">
-      <a-radio-group v-model:value="searchForm.orderField" @change="handleSortChange">
-        <a-radio-button value="default">默认排序</a-radio-button>
-        <a-radio-button value="viewCount">浏览数</a-radio-button>
-        <a-radio-button value="intentionCount">意向数</a-radio-button>
+    <div class="sort-section">
+      <a-radio-group v-model:value="searchForm.orderField" @change="onSearch">
+        <a-radio-button value="">默认排序</a-radio-button>
+        <a-radio-button value="viewCount">
+          浏览数
+          <up-outlined v-if="searchForm.orderField === 'viewCount' && searchForm.asc" />
+          <down-outlined v-if="searchForm.orderField === 'viewCount' && !searchForm.asc" />
+        </a-radio-button>
+        <a-radio-button value="intentionCount">
+          意向数
+          <up-outlined v-if="searchForm.orderField === 'intentionCount' && searchForm.asc" />
+          <down-outlined v-if="searchForm.orderField === 'intentionCount' && !searchForm.asc" />
+        </a-radio-button>
       </a-radio-group>
     </div>
 
@@ -96,7 +93,9 @@ import {
   SearchOutlined,
   RedoOutlined,
   EyeOutlined,
-  HeartOutlined
+  HeartOutlined,
+  UpOutlined,
+  DownOutlined
 } from '@ant-design/icons-vue'
 import { getProductList } from '@/api/product'
 import { useRouter } from 'vue-router'
@@ -109,11 +108,11 @@ const defaultImage = 'https://via.placeholder.com/200x200'
 // 搜索表单
 const searchForm = reactive({
   productName: '',
-  orderField: 'default', // 默认排序
-  asc: false // 默���降序
+  orderField: '',  // 改为空字符串作为默认排序
+  asc: true  // 默认升序
 })
 
-// 分页配置
+// ��页配置
 const pagination = reactive({
   current: 1,
   pageSize: 12,
@@ -161,17 +160,21 @@ const fetchCategories = async () => {
 }
 
 // 搜索
-const handleSearch = () => {
+const onSearch = () => {
+  if (searchForm.orderField) {
+    searchForm.asc = !searchForm.asc
+  }
   pagination.current = 1
   fetchProducts()
 }
 
 // 重置
-const handleReset = () => {
+const onReset = () => {
   searchForm.productName = ''
-  searchForm.orderField = 'default'
-  searchForm.asc = false
-  handleSearch()
+  searchForm.orderField = ''
+  searchForm.asc = true
+  pagination.current = 1
+  fetchProducts()
 }
 
 // 表格变化
@@ -205,18 +208,18 @@ onMounted(() => {
   margin: 0 auto;
 
   .filter-section {
-    margin-bottom: 24px;
-    padding: 24px;
     background: #fff;
-    border-radius: 4px;
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
-  .sort-tabs {
+  .sort-section {
     margin-bottom: 24px;
-    padding: 16px 24px;
     background: #fff;
-    border-radius: 4px;
+    padding: 16px 24px;
+    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 

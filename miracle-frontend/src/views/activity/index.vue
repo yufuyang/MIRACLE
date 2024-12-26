@@ -1,110 +1,58 @@
 <template>
   <div class="activity-list">
     <!-- 搜索区域 -->
-    <div class="filter-section">
-      <a-form layout="inline" :model="searchForm">
-        <a-form-item label="企业名称">
-          <a-input
-            v-model:value="searchForm.companyName"
-            placeholder="请输入企业名称"
-            allow-clear
-          />
-        </a-form-item>
-        <a-form-item label="活动状态">
-          <a-select
-            v-model:value="searchForm.status"
-            placeholder="请选择活动状态"
-            style="width: 120px"
-            allow-clear
-          >
-            <a-select-option value="0">未开始</a-select-option>
-            <a-select-option value="1">进行中</a-select-option>
-            <a-select-option value="2">已结束</a-select-option>
-          </a-select>
-        </a-form-item>
-        <a-form-item>
-          <a-space>
-            <a-button type="primary" @click="onSearch">
-              <template #icon><search-outlined /></template>
-              搜索
-            </a-button>
-            <a-button @click="onReset">
-              <template #icon><redo-outlined /></template>
-              重置
-            </a-button>
-          </a-space>
-        </a-form-item>
-      </a-form>
+    <div class="search-area">
+      <div class="search-item">
+        <span class="label">活动状态：</span>
+        <a-select v-model:value="searchForm.status" placeholder="请选择状态" allowClear>
+          <a-select-option :value="0">未开始</a-select-option>
+          <a-select-option :value="1">进行中</a-select-option>
+          <a-select-option :value="2">已结束</a-select-option>
+        </a-select>
+      </div>
+      <a-button type="primary" @click="onSearch">查询</a-button>
+      <a-button @click="onReset">重置</a-button>
     </div>
 
     <!-- 活动列表 -->
     <div class="activity-grid">
-      <a-spin :spinning="loading">
-        <a-row :gutter="[24, 24]">
-          <template v-if="activities.length > 0">
-            <a-col :xs="24" :sm="12" :md="8" v-for="activity in activities" :key="activity.id">
-              <a-card hoverable class="activity-card" @click="goToDetail(activity.id)">
-                <template #cover>
-                  <a-image
-                    :src="activity.coverImage || defaultImage"
-                    :alt="activity.title"
-                    :preview="false"
-                    style="height: 200px; object-fit: cover"
-                  />
-                </template>
-                <a-card-meta :title="activity.title">
-                  <template #description>
-                    <div class="activity-info">
-                      <div class="activity-time">
-                        <calendar-outlined />
-                        <div class="time-range">
-                          <div>开始：{{ formatDate(activity.startTime) }}</div>
-                          <div>结束：{{ formatDate(activity.endTime) }}</div>
-                        </div>
-                      </div>
-                      <div class="activity-company" v-if="activity.companyName">
-                        <team-outlined />
-                        <span>{{ activity.companyName }}</span>
-                      </div>
-                      <div class="activity-location" v-if="activity.address">
-                        <environment-outlined />
-                        <span>{{ activity.address }}</span>
-                      </div>
-                      <div class="activity-stats">
-                        <div class="stats-group">
-                          <span class="stat-item">
-                            <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
-                          </span>
-                          <span class="stat-item">
-                            <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
-                          </span>
-                        </div>
-                        <a-tag :color="getStatusColor(activity.status)">
-                          {{ getStatusText(activity.status) }}
-                        </a-tag>
-                      </div>
-                    </div>
-                  </template>
-                </a-card-meta>
-              </a-card>
-            </a-col>
-          </template>
-          <template v-else>
-            <a-empty description="暂无活动" />
-          </template>
-        </a-row>
-      </a-spin>
+      <a-row :gutter="[24, 24]">
+        <a-col :span="8" v-for="activity in activities" :key="activity.id">
+          <a-card hoverable class="activity-card" @click="goToDetail(activity.id)">
+            <template #cover>
+              <img :alt="activity.title" :src="activity.coverImage || defaultImage" style="height: 200px; object-fit: cover;" />
+            </template>
+            <a-card-meta :title="activity.title">
+              <template #description>
+                <div class="activity-info">
+                  <div class="activity-stats">
+                    <span class="stat-item">
+                      <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
+                    </span>
+                    <span class="stat-item">
+                      <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
+                    </span>
+                  </div>
+                  <a-tag :color="getStatusColor(activity.status)">
+                    {{ getStatusText(activity.status) }}
+                  </a-tag>
+                </div>
+              </template>
+            </a-card-meta>
+          </a-card>
+        </a-col>
+      </a-row>
     </div>
 
     <!-- 分页 -->
-    <div class="pagination" v-if="total > 0">
+    <div class="pagination">
       <a-pagination
-        v-model:current="searchForm.pageNum"
-        v-model:pageSize="searchForm.pageSize"
+        v-model:current="page"
         :total="total"
+        :pageSize="pageSize"
+        @change="handlePageChange"
         show-size-changer
-        show-quick-jumper
-        @change="onPageChange"
+        show-total
       />
     </div>
   </div>
@@ -132,7 +80,6 @@ const router = useRouter()
 const searchForm = reactive({
   pageNum: 1,
   pageSize: 12,
-  companyName: '',
   status: undefined
 })
 
@@ -191,7 +138,6 @@ const onSearch = () => {
 
 // 重置
 const onReset = () => {
-  searchForm.companyName = ''
   searchForm.status = undefined
   searchForm.pageNum = 1
   loadActivities()
@@ -221,12 +167,33 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
 
-  .filter-section {
-    margin-bottom: 24px;
-    padding: 24px;
+  .search-area {
     background: #fff;
+    padding: 24px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .search-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .label {
+        white-space: nowrap;
+        color: #666;
+      }
+
+      .ant-input {
+        width: 200px;
+      }
+
+      .ant-select {
+        width: 200px;
+      }
+    }
   }
 
   .activity-grid {

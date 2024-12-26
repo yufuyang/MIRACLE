@@ -1,31 +1,20 @@
 <template>
   <div class="company-list">
-    <!-- 筛选区域 -->
-    <div class="filter-section">
-      <a-form layout="inline" :model="searchForm">
-        <a-form-item label="企业名称">
-          <a-input
-            v-model:value="searchForm.companyName"
-            placeholder="请输入企业名称"
-            allowClear
-          />
-        </a-form-item>
-        <a-form-item label="所在地区">
-          <a-input
-            v-model:value="searchForm.region"
-            placeholder="请输入地区"
-            allowClear
-          />
-        </a-form-item>
-        <a-form-item>
-          <a-button type="primary" @click="onSearch">查询</a-button>
-          <a-button style="margin-left: 8px" @click="onReset">重置</a-button>
-        </a-form-item>
-      </a-form>
+    <!-- 搜索区域 -->
+    <div class="search-area">
+      企业名称：<a-input v-model:value="searchForm.companyName" placeholder="请输入企业名称" style="width: 200px" allowClear />
+      <a-button type="primary" @click="onSearch">
+        <template #icon><search-outlined /></template>
+        查询
+      </a-button>
+      <a-button @click="onReset">
+        <template #icon><redo-outlined /></template>
+        重置
+      </a-button>
     </div>
 
     <!-- 排序区域 -->
-    <div class="sort-section">
+    <div class="sort-buttons">
       <a-radio-group v-model:value="searchForm.orderField" @change="onSearch">
         <a-radio-button value="">默认排序</a-radio-button>
         <a-radio-button value="productCount">
@@ -121,7 +110,7 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined, EnvironmentOutlined, ApartmentOutlined, TeamOutlined, PhoneOutlined, ShopOutlined } from '@ant-design/icons-vue'
+import { EyeOutlined, HeartOutlined, UpOutlined, DownOutlined, EnvironmentOutlined, ApartmentOutlined, TeamOutlined, PhoneOutlined, ShopOutlined, SearchOutlined, RedoOutlined } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
 import { getCompanyList } from '@/api/website/company'
 
@@ -132,7 +121,6 @@ const searchForm = reactive({
   pageNum: 1,
   pageSize: 12,
   companyName: '',
-  region: '',
   orderField: '',
   asc: true
 })
@@ -158,6 +146,9 @@ const loadCompanies = async () => {
 
 // 搜索
 const onSearch = () => {
+  if (searchForm.orderField) {
+    searchForm.asc = !searchForm.asc
+  }
   searchForm.pageNum = 1
   loadCompanies()
 }
@@ -165,10 +156,10 @@ const onSearch = () => {
 // 重置
 const onReset = () => {
   searchForm.companyName = ''
-  searchForm.region = ''
   searchForm.orderField = ''
   searchForm.asc = true
-  onSearch()
+  searchForm.pageNum = 1
+  loadCompanies()
 }
 
 // 排序
@@ -212,16 +203,27 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
 
-  .filter-section {
-    margin-bottom: 24px;
-    padding: 24px;
+  .search-area {
     background: #fff;
-    border-radius: 4px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    padding: 24px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    .ant-btn {
+      display: flex;
+      align-items: center;
+    }
   }
 
-  .sort-section {
+  .sort-buttons {
     margin-bottom: 24px;
+    background: #fff;
+    padding: 16px 24px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .company-grid {

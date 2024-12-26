@@ -51,10 +51,10 @@
                     <div class="activity-info">
                       <div class="activity-stats">
                         <span class="stat-item">
-                          <eye-outlined /> {{ activity.viewCount || 0 }}
+                          <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
                         </span>
                         <span class="stat-item">
-                          <user-outlined /> {{ activity.registerCount || 0 }}
+                          <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
                         </span>
                       </div>
                     </div>
@@ -537,18 +537,36 @@ onMounted(() => {
 
   .activity-grid {
     .activity-card {
+      height: 100%;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+
+      :deep(.ant-card-meta-title) {
+        font-size: 16px;
+        margin-bottom: 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
       .activity-info {
         .activity-stats {
           display: flex;
           justify-content: space-between;
-          margin-bottom: 8px;
-          
+          align-items: center;
+          color: #666;
+          font-size: 14px;
+
           .stat-item {
-            color: #8c8c8c;
-            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
 
             .anticon {
-              margin-right: 4px;
               color: #1890ff;
             }
           }
@@ -613,6 +631,44 @@ onMounted(() => {
   }
   100% {
     background-position: 0 50%;
+  }
+}
+
+.activity-card {
+  height: 100%;
+  transition: all 0.3s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  :deep(.ant-card-meta-title) {
+    font-size: 16px;
+    margin-bottom: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .activity-info {
+    .activity-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #666;
+      font-size: 14px;
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+
+        .anticon {
+          color: #1890ff;
+        }
+      }
+    }
   }
 }
 </style>
