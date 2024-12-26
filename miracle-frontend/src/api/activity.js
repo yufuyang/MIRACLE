@@ -29,7 +29,7 @@ export function createActivity(data) {
 // 企业端 - 更新活动
 export function updateActivity(data) {
   return request({
-    url: `/company/activity/${data.id}`,
+    url: `/company/activity`,
     method: 'put',
     data
   })

@@ -62,7 +62,7 @@ const routes = [
         path: 'activity',
         name: 'Activity',
         component: () => import('@/views/activity/index.vue'),
-        meta: { title: '活动' }
+        meta: { title: '活动列表' }
       },
       {
         path: 'activity/:id',
@@ -128,8 +128,8 @@ const routes = [
       {
         path: 'activity/edit/:id',
         name: 'ActivityEdit',
-        component: () => import('@/views/workspace/activity/components/ActivityFormModal.vue'),
-        meta: { title: '编辑活动' }
+        component: () => import('@/views/workspace/activity/edit.vue'),
+        meta: { title: '编辑活动', showSidebar: true }
       },
       {
         path: 'activity/stats',

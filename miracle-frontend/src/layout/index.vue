@@ -178,7 +178,7 @@ const route = useRoute()
 // 用���信息
 const userInfo = ref(null)
 
-// 顶部����航栏中的菜单项
+//
 const menuItems = [
   {
     key: 'product',

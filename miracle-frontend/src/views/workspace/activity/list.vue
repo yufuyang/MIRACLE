@@ -201,7 +201,7 @@ import {
   LeftOutlined,
   RightOutlined
 } from '@ant-design/icons-vue'
-import { getCompanyActivityList, deleteActivity } from '@/api/activity'
+import { getActivityList, deleteActivity } from '@/api/activity'
 import ActivityFormModal from './components/ActivityFormModal.vue'
 
 const router = useRouter()
@@ -362,7 +362,7 @@ const calendar = computed(() => {
     }
   }
   
-  // 填充最后一周
+  // 填充��后一周
   if (week.some(d => d !== null)) {
     days.push(week)
   }
@@ -452,11 +452,11 @@ const fetchActivities = async () => {
       endTime: searchForm.value.endTime
     }
     console.log('请求参数:', params)
-    const res = await getCompanyActivityList(params)
+    const res = await getActivityList(params)
     console.log('返回数据:', res)
     if (res.code === 200) {
-      activities.value = res.data || []
-      pagination.value.total = res.total || 0
+      activities.value = Array.isArray(res.data) ? res.data : (res.data?.list || [])
+      pagination.value.total = res.total || res.data?.total || 0
       console.log('活动列表:', activities.value)
     }
   } catch (error) {

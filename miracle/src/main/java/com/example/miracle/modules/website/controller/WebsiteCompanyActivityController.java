@@ -1,10 +1,8 @@
 package com.example.miracle.modules.website.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
-import com.example.miracle.common.exception.BusinessException;
 import com.example.miracle.modules.company.dto.ActivityDTO;
 import com.example.miracle.modules.company.dto.query.ActivityPageQry;
 import com.example.miracle.modules.company.entity.Activity;
@@ -15,19 +13,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
 /**
  * 活动控制器
  */
 @RestController
 @RequestMapping("/website/activity")
 @RequiredArgsConstructor
-public class WebsiteActivityController {
+public class WebsiteCompanyActivityController {
 
     private final ActivityService activityService;
     private final ActivityStatsService activityStatsService;
