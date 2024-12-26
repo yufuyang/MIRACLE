@@ -58,31 +58,32 @@
       </a-card>
 
       <!-- 数据统计 -->
-      <a-card title="数据统计" style="margin-bottom: 24px">
+      <div class="stats-section">
+        <div class="stats-title">数据统计</div>
         <div class="stats-list">
-          <div class="stat-item">
+          <div class="stats-item">
             <eye-outlined />
-            <div class="stat-info">
-              <div class="label">浏览量</div>
-              <div class="value">{{ product?.viewCount || 0 }}</div>
+            <div class="stats-content">
+              <div class="stats-label">浏览量</div>
+              <div class="stats-value">{{ stats.viewCount || 0 }}</div>
             </div>
           </div>
-          <div class="stat-item">
+          <div class="stats-item">
             <heart-outlined />
-            <div class="stat-info">
-              <div class="label">意向数</div>
-              <div class="value">{{ product?.intentionCount || 0 }}</div>
+            <div class="stats-content">
+              <div class="stats-label">意向数</div>
+              <div class="stats-value">{{ stats.intentionCount || 0 }}</div>
             </div>
           </div>
-          <div class="stat-item">
+          <div class="stats-item">
             <clock-circle-outlined />
-            <div class="stat-info">
-              <div class="label">在线时长</div>
-              <div class="value">{{ formatDuration(product?.createTime) }}</div>
+            <div class="stats-content">
+              <div class="stats-label">在线时长</div>
+              <div class="stats-value">{{ formatDuration(product.createTime) }}</div>
             </div>
           </div>
         </div>
-      </a-card>
+      </div>
 
       <!-- 公司信息 -->
       <a-card title="公司信息">
@@ -145,7 +146,8 @@ import {
   PhoneOutlined,
   UserOutlined
 } from '@ant-design/icons-vue'
-import { getProductDetail, getProductImages, getProductCategories, addIntention } from '@/api/product'
+import { getProductDetail, getProductImages, addIntention } from '@/api/product'
+import { getProductCategory, getProductStats } from '@/api/website/companyProduct'
 import { getCompanyDetail } from '@/api/company'
 import { getUserDetail } from '@/api/user'
 import dayjs from 'dayjs'
@@ -161,7 +163,7 @@ const defaultImage = 'https://via.placeholder.com/200x200'
 // 用户数据
 const userInfo = ref({})
 
-// 判断是否已���录
+// 判断是否已登录
 const isLoggedIn = computed(() => {
   return !!localStorage.getItem('token')
 })
@@ -186,7 +188,7 @@ const showIntentionButton = computed(() => {
 // 产品数据
 const product = ref({})
 const productImages = ref([])
-const categories = ref([])
+const category = ref(null)
 
 // 公司数据
 const company = ref({})
@@ -201,6 +203,13 @@ const intentionForm = reactive({
 const rules = {
   remark: [{ required: true, message: '请输入意向备注', trigger: 'blur' }]
 }
+
+// 数据
+const stats = ref({
+  viewCount: 0,
+  intentionCount: 0,
+  onlineDays: 1
+})
 
 // 获取用户信息
 const loadUserInfo = async () => {
@@ -238,31 +247,28 @@ const loadProductImages = async () => {
   }
 }
 
-// 获取分类列表
-const loadCategories = async () => {
-  try {
-    const res = await getProductCategories({})
-    categories.value = res.data || []
-  } catch (error) {
-    console.error('获取分类列表失败:', error)
-    message.error('获取分类列表失败')
-  }
-}
-
 // 获取分类名称
 const getCategoryName = (categoryId) => {
-  const findCategory = (id) => categories.value.find(c => c.id === id)
-  const category = findCategory(categoryId)
-  if (!category) return '-'
-  
-  if (category.parentId) {
-    const parentCategory = findCategory(category.parentId)
-    return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
-  }
-  return category.categoryName
+  if (!categoryId) return '-'
+  if (!category.value) return '-'
+  return category.value.categoryName || '-'
 }
 
-// 格式化日期
+// 获取分类信息
+const loadCategory = async (categoryId) => {
+  if (!categoryId) return
+  try {
+    const res = await getProductCategory(categoryId)
+    if (res.data) {
+      category.value = res.data
+    }
+  } catch (error) {
+    console.error('获取分类信息失败:', error)
+    message.error('获取分类信息失败')
+  }
+}
+
+// 格式日期
 const formatDate = (date) => {
   if (!date) return '-'
   return dayjs(date).format('YYYY-MM-DD HH:mm:ss')
@@ -322,21 +328,25 @@ const submitIntention = () => {
   })
 }
 
-// 添加一个格式化时长的方法
+// 格式化时长
 const formatDuration = (startTime) => {
   if (!startTime) return '-'
   const start = dayjs(startTime)
   const now = dayjs()
   const days = now.diff(start, 'day')
-  const months = now.diff(start, 'month')
-  const years = now.diff(start, 'year')
   
-  if (years > 0) {
-    return `${years}年${months % 12}月`
-  } else if (months > 0) {
-    return `${months}月${days % 30}天`
-  } else {
+  if (days === 0) {
+    return '今天'
+  } else if (days < 30) {
     return `${days}天`
+  } else if (days < 365) {
+    const months = Math.floor(days / 30)
+    const remainingDays = days % 30
+    return remainingDays > 0 ? `${months}个月${remainingDays}天` : `${months}个月`
+  } else {
+    const years = Math.floor(days / 365)
+    const remainingMonths = Math.floor((days % 365) / 30)
+    return remainingMonths > 0 ? `${years}年${remainingMonths}个月` : `${years}年`
   }
 }
 
@@ -351,18 +361,46 @@ const loadCompanyDetail = async () => {
   }
 }
 
+// 获取统计数据
+const loadStats = async () => {
+  try {
+    const res = await getProductStats(route.params.id)
+    if (res.data) {
+      stats.value = {
+        viewCount: res.data.viewCount || 0,
+        intentionCount: res.data.intentionCount || 0,
+        onlineDays: res.data.onlineDays || 1
+      }
+    }
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
+    message.error('获取统计数据失败')
+  }
+}
+
 // 初始化
-onMounted(() => {
-  loadCategories()
-  loadProductDetail()
-  loadProductImages()
-  loadUserInfo()
+onMounted(async () => {
+  const id = route.params.id
+  if (id) {
+    await Promise.all([
+      loadProductDetail(),
+      loadProductImages(),
+      loadStats()
+    ])
+  }
 })
 
 // 监听产品数据变化，获取公司详情
 watch(() => product.value?.companyId, (newVal) => {
   if (newVal) {
     loadCompanyDetail()
+  }
+})
+
+// 监听产品分类ID变化
+watch(() => product.value?.categoryId, (newVal) => {
+  if (newVal) {
+    loadCategory(newVal)
   }
 })
 </script>
@@ -480,37 +518,46 @@ watch(() => product.value?.companyId, (newVal) => {
     }
   }
 
-  .stats-list {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
+  .stats-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
-    .stat-item {
+    .stats-title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #333;
+    }
+
+    .stats-list {
       display: flex;
-      align-items: center;
-      padding: 16px;
-      background: #fafafa;
-      border-radius: 4px;
+      gap: 48px;
 
-      .anticon {
-        font-size: 24px;
-        color: #1890ff;
-        margin-right: 16px;
-      }
+      .stats-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
 
-      .stat-info {
-        flex: 1;
-
-        .label {
-          font-size: 14px;
-          color: #8c8c8c;
-          margin-bottom: 4px;
+        .anticon {
+          font-size: 24px;
+          color: #1890ff;
         }
 
-        .value {
-          font-size: 24px;
-          font-weight: 500;
-          color: #262626;
+        .stats-content {
+          .stats-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+          }
+
+          .stats-value {
+            font-size: 20px;
+            font-weight: 500;
+            color: #333;
+          }
         }
       }
     }
