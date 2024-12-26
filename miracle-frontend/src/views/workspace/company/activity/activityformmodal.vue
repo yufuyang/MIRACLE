@@ -1,43 +1,43 @@
 <template>
   <a-modal
-    :title="activity ? '编辑活动' : '新建活动'"
-    :visible="visible"
-    :confirm-loading="loading"
-    :width="800"
-    @ok="handleSubmit"
-    @cancel="handleCancel"
+      :title="activity ? '编辑活动' : '新建活动'"
+      :visible="visible"
+      :confirm-loading="loading"
+      :width="800"
+      @ok="handleSubmit"
+      @cancel="handleCancel"
   >
     <a-form
-      ref="formRef"
-      :model="formData"
-      :rules="rules"
-      :label-col="{ span: 4 }"
-      :wrapper-col="{ span: 18 }"
+        ref="formRef"
+        :model="formData"
+        :rules="rules"
+        :label-col="{ span: 4 }"
+        :wrapper-col="{ span: 18 }"
     >
       <!-- 活动名称 -->
       <a-form-item label="活动名称" name="title">
         <a-input
-          v-model:value="formData.title"
-          placeholder="请输入活动名称"
-          :maxLength="50"
-          show-count
+            v-model:value="formData.title"
+            placeholder="请输入活动名称"
+            :maxLength="50"
+            show-count
         />
       </a-form-item>
 
       <!-- 活动封面 -->
       <a-form-item label="活动封面" name="coverImage">
         <a-upload
-          v-model:file-list="fileList"
-          list-type="picture-card"
-          :show-upload-list="false"
-          :before-upload="beforeUpload"
-          :customRequest="handleUpload"
+            v-model:file-list="fileList"
+            list-type="picture-card"
+            :show-upload-list="false"
+            :before-upload="beforeUpload"
+            :customRequest="handleUpload"
         >
           <img
-            v-if="formData.coverImage"
-            :src="formData.coverImage"
-            alt="活动封面"
-            style="width: 100%"
+              v-if="formData.coverImage"
+              :src="formData.coverImage"
+              alt="活动封面"
+              style="width: 100%"
           />
           <div v-else>
             <plus-outlined />
@@ -51,29 +51,29 @@
       <a-form-item label="活动时间">
         <div class="time-range-wrapper">
           <a-input
-            v-model:value="formData.startTime"
-            placeholder="请选择开始时间"
-            readonly
-            @click="() => showTimePicker('start')"
+              v-model:value="formData.startTime"
+              placeholder="请选择开始时间"
+              readonly
+              @click="() => showTimePicker('start')"
           />
           <span class="time-separator">~</span>
           <a-input
-            v-model:value="formData.endTime"
-            placeholder="请选择结束时间"
-            readonly
-            @click="() => showTimePicker('end')"
+              v-model:value="formData.endTime"
+              placeholder="请选择结束时间"
+              readonly
+              @click="() => showTimePicker('end')"
           />
         </div>
       </a-form-item>
 
       <!-- 时间选择弹窗 -->
       <a-modal
-        v-model:visible="timePickerVisible"
-        :title="timePickerTitle"
-        :width="300"
-        :footer="null"
-        :mask-closable="false"
-        class="time-picker-modal"
+          v-model:visible="timePickerVisible"
+          :title="timePickerTitle"
+          :width="300"
+          :footer="null"
+          :mask-closable="false"
+          class="time-picker-modal"
       >
         <div class="time-picker-content">
           <div class="time-picker-header">
@@ -98,21 +98,21 @@
           </div>
           <div class="calendar-body">
             <div
-              v-for="(week, weekIndex) in calendar"
-              :key="weekIndex"
-              class="calendar-row"
+                v-for="(week, weekIndex) in calendar"
+                :key="weekIndex"
+                class="calendar-row"
             >
               <div
-                v-for="(day, dayIndex) in week"
-                :key="dayIndex"
-                class="calendar-cell"
-                :class="{
+                  v-for="(day, dayIndex) in week"
+                  :key="dayIndex"
+                  class="calendar-cell"
+                  :class="{
                   'disabled': isDisabledDate(day),
                   'selected': isSelectedDate(day),
                   'today': isToday(day),
                   'empty': !day
                 }"
-                @click="selectDate(day)"
+                  @click="selectDate(day)"
               >
                 {{ day ? day.date() : '' }}
               </div>
@@ -120,11 +120,11 @@
           </div>
           <div class="time-selector">
             <a-time-picker
-              v-model:value="selectedTime"
-              format="HH:mm"
-              :minute-step="1"
-              placeholder="请选择时间"
-              style="width: 100%"
+                v-model:value="selectedTime"
+                format="HH:mm"
+                :minute-step="1"
+                placeholder="请选择时间"
+                style="width: 100%"
             />
           </div>
           <div class="modal-footer">
@@ -137,12 +137,12 @@
       <!-- 活动描述 -->
       <a-form-item label="活动描述" name="description">
         <a-textarea
-          v-model:value="formData.description"
-          :rows="4"
-          placeholder="请输入活动描述"
-          :maxLength="500"
-          show-count
-          allow-clear
+            v-model:value="formData.description"
+            :rows="4"
+            placeholder="请输入活动描述"
+            :maxLength="500"
+            show-count
+            allow-clear
         />
       </a-form-item>
     </a-form>
@@ -218,41 +218,41 @@ const rules = {
 
 // 监听活动数据变化
 watch(
-  () => props.activity,
-  (activity) => {
-    if (activity) {
-      formData.value = {
-        title: activity.title,
-        description: activity.description,
-        coverImage: activity.coverImage,
-        startTime: activity.startTime ? dayjs(activity.startTime).format('YYYY-MM-DDTHH:mm:ss') : null,
-        endTime: activity.endTime ? dayjs(activity.endTime).format('YYYY-MM-DDTHH:mm:ss') : null
-      }
-      // 如果有封面图片，设置 fileList
-      if (activity.coverImage) {
-        fileList.value = [
-          {
-            uid: '-1',
-            name: 'cover',
-            status: 'done',
-            url: activity.coverImage
-          }
-        ]
+    () => props.activity,
+    (activity) => {
+      if (activity) {
+        formData.value = {
+          title: activity.title,
+          description: activity.description,
+          coverImage: activity.coverImage,
+          startTime: activity.startTime ? dayjs(activity.startTime).format('YYYY-MM-DDTHH:mm:ss') : null,
+          endTime: activity.endTime ? dayjs(activity.endTime).format('YYYY-MM-DDTHH:mm:ss') : null
+        }
+        // 如果有封面图片，设置 fileList
+        if (activity.coverImage) {
+          fileList.value = [
+            {
+              uid: '-1',
+              name: 'cover',
+              status: 'done',
+              url: activity.coverImage
+            }
+          ]
+        } else {
+          fileList.value = []
+        }
       } else {
+        formData.value = {
+          title: '',
+          description: '',
+          coverImage: '',
+          startTime: null,
+          endTime: null
+        }
         fileList.value = []
       }
-    } else {
-      formData.value = {
-        title: '',
-        description: '',
-        coverImage: '',
-        startTime: null,
-        endTime: null
-      }
-      fileList.value = []
-    }
-  },
-  { immediate: true }
+    },
+    { immediate: true }
 )
 
 // 禁用过去的日期
@@ -361,12 +361,12 @@ const calendar = computed(() => {
   const firstWeekday = firstDay.day()
   const days = []
   let week = Array(7).fill(null)
-  
+
   // 填充第一周之前的空白
   for (let i = 0; i < firstWeekday; i++) {
     week[i] = null
   }
-  
+
   // 填充日期
   for (let date = firstDay; date.isBefore(lastDay) || date.isSame(lastDay); date = date.add(1, 'day')) {
     week[date.day()] = date
@@ -375,12 +375,12 @@ const calendar = computed(() => {
       week = Array(7).fill(null)
     }
   }
-  
+
   // 填充最后一周
   if (week.some(d => d !== null)) {
     days.push(week)
   }
-  
+
   return days
 })
 
@@ -520,7 +520,7 @@ const confirmTime = () => {
 
 :deep(.calendar-popover) {
   padding: 0;
-  
+
   .ant-popover-inner {
     padding: 0;
   }
@@ -617,4 +617,4 @@ const confirmTime = () => {
     gap: 8px;
   }
 }
-</style> 
+</style>

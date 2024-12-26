@@ -32,14 +32,14 @@
                       </div>
                       <div class="activity-stats">
                         <span class="stat-item">
-                          <eye-outlined /> 浏览：{{ activity.viewCount || 0 }}
+                          <eye-outlined /> 浏览数：{{ activity.viewCount || 0 }}
                         </span>
                         <span class="stat-item">
-                          <user-outlined /> 报名：{{ activity.registerCount || 0 }}
+                          <user-outlined /> 报名数：{{ activity.registerCount || 0 }}
                         </span>
-                      </div>
-                      <div class="activity-description" v-if="activity.description">
-                        {{ activity.description }}
+                        <a-tag :color="getStatusColor(activity.status)">
+                          {{ getStatusText(activity.status) }}
+                        </a-tag>
                       </div>
                     </div>
                   </template>
@@ -66,26 +66,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
 import { 
   EyeOutlined,
   UserOutlined,
-  CalendarOutlined
+  CalendarOutlined,
+  TeamOutlined
 } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
 import { getActivityList } from '@/api/website/activity'
 
-console.log('活动列表组件开始加载')
+console.log('前台活动列表组件开始加载')
 
 const router = useRouter()
+
+// 获取活动状态文本
+const getStatusText = (status) => {
+  const statusMap = {
+    0: '未开始',
+    1: '进行中',
+    2: '已结束'
+  }
+  return statusMap[status] || '未知'
+}
+
+// 获取活动状态颜色
+const getStatusColor = (status) => {
+  const colorMap = {
+    0: 'blue',
+    1: 'green',
+    2: 'gray'
+  }
+  return colorMap[status] || 'default'
+}
 
 // 搜索表单
 const searchForm = reactive({
   pageNum: 1,
   pageSize: 10,
-  status: undefined,
-  needTotalCount: true
+  status: undefined
 })
 
 // 数据
@@ -106,16 +127,28 @@ const loadActivities = async () => {
     const res = await getActivityList(params)
     console.log('活动列表返回:', res)
     if (res.code === 200) {
-      activities.value = Array.isArray(res.data) ? res.data : (res.data?.list || [])
-      total.value = res.total || res.data?.total || 0
+      if (Array.isArray(res.data)) {
+        activities.value = res.data
+        total.value = res.total || 0
+      } else if (res.data && typeof res.data === 'object') {
+        activities.value = res.data.list || []
+        total.value = res.data.total || 0
+      } else {
+        activities.value = []
+        total.value = 0
+      }
       console.log('处理后的活动列表:', activities.value)
+      console.log('总数:', total.value)
+      if (activities.value.length === 0) {
+        message.info('暂无活动数据')
+      }
     } else {
       console.error('请求失败:', res)
       message.error(res.message || '获取活动列表失败')
     }
   } catch (error) {
     console.error('获取活动列表失败:', error)
-    message.error('获取活动列表失败')
+    message.error(error.message || '获取活动列表失败')
   } finally {
     loading.value = false
   }
@@ -123,12 +156,14 @@ const loadActivities = async () => {
 
 // 搜索
 const onSearch = () => {
+  console.log('执行搜索')
   searchForm.pageNum = 1
   loadActivities()
 }
 
 // 重置
 const onReset = () => {
+  console.log('执行重置')
   searchForm.status = undefined
   searchForm.pageNum = 1
   loadActivities()
@@ -136,6 +171,7 @@ const onReset = () => {
 
 // 分页变化
 const onPageChange = (page, pageSize) => {
+  console.log('分页变化:', { page, pageSize })
   searchForm.pageNum = page
   searchForm.pageSize = pageSize
   loadActivities()
@@ -143,7 +179,11 @@ const onPageChange = (page, pageSize) => {
 
 // 跳转到详情页
 const goToDetail = (id) => {
-  router.push(`/activity/${id}`)
+  console.log('跳转到详情页:', id)
+  router.push({
+    name: 'WebsiteActivityDetail',
+    params: { id }
+  })
 }
 
 // 格式化时间
@@ -154,14 +194,16 @@ const formatDateTime = (time) => {
 
 // 初始化
 onMounted(() => {
-  console.log('活动列表组件加载完成，开始获取活动列表')
-  loadActivities()
+  console.log('前台活动列表组件加载完成，开始获取活动列表')
+  nextTick(() => {
+    loadActivities()
+  })
 })
 
 // 添加错误处理
-window.onerror = function(message, source, lineno, colno, error) {
-  console.error('全局错误:', { message, source, lineno, colno, error })
-}
+window.addEventListener('error', (event) => {
+  console.error('全局错误:', event)
+})
 </script>
 
 <style scoped lang="less">
@@ -249,10 +291,11 @@ window.onerror = function(message, source, lineno, colno, error) {
               font-size: 14px;
               display: flex;
               align-items: center;
-              gap: 4px;
+              gap: 8px;
 
               .anticon {
                 color: #1890ff;
+                margin-left: 8px;
               }
             }
           }

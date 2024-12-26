@@ -20,7 +20,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { message } from 'ant-design-vue'
-import ActivityFormModal from './components/ActivityFormModal.vue'
+import ActivityFormModal from './activityformmodal.vue'
 import { getActivityDetail } from '@/api/activity'
 
 const router = useRouter()

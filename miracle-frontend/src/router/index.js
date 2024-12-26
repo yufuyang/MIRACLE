@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Layout from '@/layout/index.vue'
+import WebsiteLayout from '@/layout/website/index.vue'
+import WorkspaceLayout from '@/layout/workspace/index.vue'
 import EmptyLayout from '@/layout/empty.vue'
 
 const routes = [
@@ -13,14 +14,15 @@ const routes = [
     name: 'register',
     component: () => import('@/views/register/index.vue')
   },
+  // 前台路由
   {
     path: '/',
-    component: Layout,
+    component: WebsiteLayout,
     children: [
       {
         path: '',
         name: 'Home',
-        component: () => import('@/views/home/index.vue')
+        component: () => import('@/views/website/home/index.vue')
       },
       {
         path: 'product',
@@ -30,13 +32,13 @@ const routes = [
           {
             path: '',
             name: 'ProductList',
-            component: () => import('@/views/product/list.vue'),
+            component: () => import('@/views/website/product/list.vue'),
             meta: { title: '产品列表' }
           },
           {
             path: ':id',
             name: 'ProductDetail',
-            component: () => import('@/views/product/detail.vue'),
+            component: () => import('@/views/website/product/detail.vue'),
             meta: { title: '产品详情' }
           }
         ]
@@ -49,32 +51,40 @@ const routes = [
           {
             path: '',
             name: 'CompanyList',
-            component: () => import('@/views/company/list.vue')
+            component: () => import('@/views/website/company/list.vue')
           },
           {
             path: ':id',
             name: 'CompanyDetail',
-            component: () => import('@/views/company/detail.vue')
+            component: () => import('@/views/website/company/detail.vue')
           }
         ]
       },
       {
         path: 'activity',
-        name: 'Activity',
-        component: () => import('@/views/activity/index.vue'),
-        meta: { title: '活动列表' }
-      },
-      {
-        path: 'activity/:id',
-        name: 'ActivityDetail',
-        component: () => import('@/views/activity/detail.vue'),
-        meta: { title: '活动详情' }
+        name: 'WebsiteActivity',
+        component: EmptyLayout,
+        children: [
+          {
+            path: '',
+            name: 'WebsiteActivityList',
+            component: () => import('@/views/website/activity/list.vue'),
+            meta: { title: '活动列表' }
+          },
+          {
+            path: ':id',
+            name: 'WebsiteActivityDetail',
+            component: () => import('@/views/website/activity/detail.vue'),
+            meta: { title: '活动详情' }
+          }
+        ]
       }
     ]
   },
+  // 工作台
   {
     path: '/workspace',
-    component: Layout,
+    component: WorkspaceLayout,
     meta: { requiresAuth: true, showSidebar: true },
     children: [
       {
@@ -96,45 +106,45 @@ const routes = [
           {
             path: 'list',
             name: 'CompanyProductList',
-            component: () => import('@/views/company/product/list.vue'),
+            component: () => import('@/views/workspace/company/product/list.vue'),
             meta: { title: '产品列表' }
           },
           {
             path: 'detail/:id',
             name: 'CompanyProductDetail',
-            component: () => import('@/views/company/product/detail.vue'),
+            component: () => import('@/views/workspace/company/product/detail.vue'),
             meta: { title: '产品详情' }
           },
           {
             path: 'category',
             name: 'CompanyProductCategory',
-            component: () => import('@/views/company/product/category.vue'),
+            component: () => import('@/views/workspace/company/product/category.vue'),
             meta: { title: '产品分类' }
           }
         ]
       },
       {
         path: 'activity/list',
-        name: 'ActivityList',
-        component: () => import('@/views/workspace/activity/list.vue'),
+        name: 'WorkspaceActivityList',
+        component: () => import('@/views/workspace/company/activity/list.vue'),
         meta: { title: '活动列表' }
       },
       {
         path: 'activity/detail/:id',
-        name: 'ActivityDetail',
-        component: () => import('@/views/workspace/activity/detail.vue'),
+        name: 'WorkspaceActivityDetail',
+        component: () => import('@/views/workspace/company/activity/detail.vue'),
         meta: { title: '活动详情' }
       },
       {
         path: 'activity/edit/:id',
         name: 'ActivityEdit',
-        component: () => import('@/views/workspace/activity/edit.vue'),
+        component: () => import('@/views/workspace/company/activity/edit.vue'),
         meta: { title: '编辑活动', showSidebar: true }
       },
       {
         path: 'activity/stats',
         name: 'ActivityStats',
-        component: () => import('@/views/workspace/activity/stats.vue'),
+        component: () => import('@/views/workspace/company/activity/stats.vue'),
         meta: { title: '活动统计' }
       },
       {
@@ -222,7 +232,7 @@ const routes = [
   },
   {
     path: '/company',
-    component: Layout,
+    component: WebsiteLayout,
     meta: { requiresAuth: true, showSidebar: true },
     children: [
       {

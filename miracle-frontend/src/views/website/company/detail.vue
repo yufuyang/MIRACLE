@@ -71,9 +71,13 @@
               <a-col :span="8" v-for="product in products" :key="product.id">
                 <a-card hoverable class="product-card" @click="goToProduct(product.id)">
                   <template #cover>
-                    <img :alt="product.name" :src="product.coverImage || defaultImage" style="height: 200px; object-fit: cover;" />
+                    <img 
+                      :alt="product.productName" 
+                      :src="product.imageUrl || defaultImage" 
+                      style="height: 200px; object-fit: cover;" 
+                    />
                   </template>
-                  <a-card-meta :title="product.name">
+                  <a-card-meta :title="product.productName">
                     <template #description>
                       <div class="product-info">
                         <div class="product-stats">
@@ -161,9 +165,9 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
-import { 
-  ShopOutlined, 
-  HeartOutlined, 
+import {
+  ShopOutlined,
+  HeartOutlined,
   PhoneOutlined,
   UserOutlined,
   EyeOutlined,
@@ -172,7 +176,7 @@ import {
 import { getCompanyDetail } from '@/api/website/company'
 import { getCompanyProducts } from '@/api/website/companyProduct'
 import { getEnvironmentImages } from '@/api/website/environment'
-import { getCompanyActivities } from '@/api/website/activity'
+import { getActivityList } from '@/api/website/activity'
 import defaultImage from '@/assets/images/default.jpg'
 
 const route = useRoute()
@@ -246,7 +250,7 @@ const loadCompanyActivities = async () => {
       pageSize: activityPageSize.value,
       companyId: Number(route.params.id)
     }
-    const res = await getCompanyActivities(data)
+    const res = await getActivityList(data)
     if (res.success) {
       activities.value = res.data || []
       activityTotal.value = res.total || 0

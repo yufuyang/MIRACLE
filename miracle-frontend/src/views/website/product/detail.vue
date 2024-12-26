@@ -9,7 +9,6 @@
         <template #extra>
           <a-space>
             <a-button 
-              v-if="showIntentionButton"
               type="primary" 
               @click="handleIntention"
             >
@@ -64,7 +63,7 @@
           <div class="stats-item">
             <eye-outlined />
             <div class="stats-content">
-              <div class="stats-label">浏览量</div>
+              <div class="stats-label">浏��量</div>
               <div class="stats-value">{{ stats.viewCount || 0 }}</div>
             </div>
           </div>
@@ -136,7 +135,7 @@
 <script setup>
 import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { message } from 'ant-design-vue'
+import { message, Modal } from 'ant-design-vue'
 import {
   HeartOutlined,
   TeamOutlined,
@@ -151,9 +150,11 @@ import { getProductCategory, getProductStats } from '@/api/website/companyProduc
 import { getCompanyDetail } from '@/api/company'
 import { getUserDetail } from '@/api/user'
 import dayjs from 'dayjs'
+import { useUserStore } from '@/stores/user'
 
 const router = useRouter()
 const route = useRoute()
+const userStore = useUserStore()
 const currentImageIndex = ref(0)
 const loading = ref(false)
 
@@ -176,13 +177,6 @@ const isMerchant = computed(() => {
 // 判断是否为企业用户
 const isCompany = computed(() => {
   return userInfo.value?.role === 'COMPANY'
-})
-
-// 判断是否显示添加意向按钮
-const showIntentionButton = computed(() => {
-  if (!isLoggedIn.value) return true // 未登录时显示
-  if (isCompany.value) return false // 企业用户不显示
-  return true // 其他情况显示
 })
 
 // 产品数据
@@ -285,17 +279,31 @@ const handleThumbnailClick = (index) => {
 }
 
 // 处理添加意向
-const handleIntention = () => {
-  if (!isLoggedIn.value) {
-    router.push('/login')
+const handleIntention = async () => {
+  // 判断登录状态
+  if (!userStore.token) {
+    Modal.confirm({
+      title: '提示',
+      content: '请先登录后再添加意向',
+      okText: '去登录',
+      cancelText: '取消',
+      onOk: () => {
+        router.push({
+          path: '/login',
+          query: { redirect: route.fullPath }
+        })
+      }
+    })
     return
   }
-  
-  if (userInfo.value?.role !== 'MERCHANT') {
-    message.warning('只有商户用户才能添加意向')
+
+  // 判断用户角色
+  if (userStore.userInfo?.role !== 'MERCHANT') {
+    message.warning('只有商户用户可以添加意向')
     return
   }
-  
+
+  // 打开意向弹窗
   intentionVisible.value = true
 }
 

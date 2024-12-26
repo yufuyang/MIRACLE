@@ -1,40 +1,27 @@
 <template>
-  <div class="company-list">
-    <!-- 搜索区域 -->
-    <div class="search-area">
-      企业名称：<a-input v-model:value="searchForm.companyName" placeholder="请输入企业名称" style="width: 200px" allowClear />
-      <a-button type="primary" @click="onSearch">
-        <template #icon><search-outlined /></template>
-        查询
-      </a-button>
-      <a-button @click="onReset">
-        <template #icon><redo-outlined /></template>
-        重置
-      </a-button>
-    </div>
+  <div class="company-page">
+    <div class="company-list">
+      <!-- 筛选区域 -->
+      <div class="filter-section">
+        <a-form layout="inline" :model="searchForm">
+          <a-form-item label="企业名称">
+            <a-input
+              v-model:value="searchForm.companyName"
+              placeholder="请输入企业名称"
+              allowClear
+            />
+          </a-form-item>
+          <a-form-item>
+            <a-button type="primary" @click="onSearch">查询</a-button>
+            <a-button style="margin-left: 8px" @click="onReset">重置</a-button>
+          </a-form-item>
+        </a-form>
+      </div>
 
-    <!-- 排序区域 -->
-    <div class="sort-buttons">
-      <a-radio-group v-model:value="searchForm.orderField" @change="onSearch">
-        <a-radio-button value="">默认排序</a-radio-button>
-        <a-radio-button value="productCount">
-          产品数
-          <up-outlined v-if="searchForm.orderField === 'productCount' && searchForm.asc" />
-          <down-outlined v-if="searchForm.orderField === 'productCount' && !searchForm.asc" />
-        </a-radio-button>
-        <a-radio-button value="intentionCount">
-          意向数
-          <up-outlined v-if="searchForm.orderField === 'intentionCount' && searchForm.asc" />
-          <down-outlined v-if="searchForm.orderField === 'intentionCount' && !searchForm.asc" />
-        </a-radio-button>
-      </a-radio-group>
-    </div>
-
-    <!-- 企业列表 -->
-    <div class="company-grid">
-      <a-row :gutter="[24, 24]">
-        <template v-if="companies.length > 0">
-          <a-col :span="6" v-for="company in companies" :key="company.id">
+      <!-- 企业列表 -->
+      <div class="company-grid">
+        <a-row :gutter="[24, 24]">
+          <a-col :xs="24" :sm="12" :md="8" v-for="company in companies" :key="company.id">
             <a-card hoverable class="company-card" @click="goToDetail(company)">
               <template #cover>
                 <img :alt="company.companyName" :src="company.logoUrl || defaultImage" />
@@ -56,53 +43,21 @@
               </a-card-meta>
             </a-card>
           </a-col>
-        </template>
-        <template v-else>
-          <a-col :span="6" v-for="i in 12" :key="i">
-            <a-card class="company-card empty-card">
-              <template #cover>
-                <a-skeleton-image :active="true" />
-              </template>
-              <a-card-meta>
-                <template #title>
-                  <a-skeleton :active="true" :paragraph="false" />
-                </template>
-                <template #description>
-                  <div class="company-info">
-                    <div class="company-desc">
-                      <a-skeleton :active="true" :paragraph="{ rows: 2 }" :title="false" />
-                    </div>
-                    <div class="company-meta">
-                      <div class="company-location">
-                        <a-skeleton :active="true" :paragraph="false" />
-                      </div>
-                      <div class="company-industry">
-                        <a-skeleton :active="true" :paragraph="false" />
-                      </div>
-                      <div class="company-size">
-                        <a-skeleton :active="true" :paragraph="false" />
-                      </div>
-                    </div>
-                  </div>
-                </template>
-              </a-card-meta>
-            </a-card>
-          </a-col>
-        </template>
-      </a-row>
-    </div>
+        </a-row>
+      </div>
 
-    <!-- 分页 -->
-    <div class="pagination">
-      <a-pagination
-        v-model:current="searchForm.pageNum"
-        :total="total"
-        :pageSize="searchForm.pageSize"
-        show-size-changer
-        show-quick-jumper
-        @change="onPageChange"
-        @showSizeChange="onShowSizeChange"
-      />
+      <!-- 分页 -->
+      <div class="pagination">
+        <a-pagination
+          v-model:current="searchForm.pageNum"
+          :total="total"
+          :pageSize="searchForm.pageSize"
+          show-size-changer
+          show-quick-jumper
+          @change="onPageChange"
+          @showSizeChange="onShowSizeChange"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -198,38 +153,40 @@ onMounted(() => {
 </script>
 
 <style scoped lang="less">
+.company-page {
+  min-height: calc(100vh - 64px);
+  background-color: #f0f2f5;
+}
+
 .company-list {
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
 
-  .search-area {
+  .filter-section {
     background: #fff;
     padding: 24px;
     border-radius: 8px;
     margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-
-    .ant-btn {
-      display: flex;
-      align-items: center;
-    }
-  }
-
-  .sort-buttons {
-    margin-bottom: 24px;
-    background: #fff;
-    padding: 16px 24px;
-    border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
   .company-grid {
+    margin-bottom: 24px;
+    background: #fff;
+    padding: 24px;
+    border-radius: 8px;
+
     .company-card {
-      height: 100%;
+      cursor: pointer;
       transition: all 0.3s;
+      background: #fff;
+      height: 100%;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
 
       &:hover:not(.empty-card) {
         transform: translateY(-4px);
@@ -267,8 +224,11 @@ onMounted(() => {
   }
 
   .pagination {
-    margin-top: 40px;
     text-align: center;
+    margin-top: 24px;
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
   }
 }
 

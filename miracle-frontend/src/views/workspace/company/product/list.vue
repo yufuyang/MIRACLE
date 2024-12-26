@@ -143,18 +143,6 @@
             </div>
           </a-upload>
         </a-form-item>
-        <a-form-item label="产品价格" name="price">
-          <a-input-number
-            v-model:value="formData.price"
-            placeholder="请输入产品价格"
-            :min="0"
-            :precision="2"
-            style="width: 100%"
-          />
-        </a-form-item>
-        <a-form-item label="计量单位" name="unit">
-          <a-input v-model:value="formData.unit" placeholder="请输入计量单位" />
-        </a-form-item>
         <a-form-item label="产品描述" name="description">
           <a-textarea
             v-model:value="formData.description"
@@ -221,21 +209,6 @@ const columns = [
       }
       return category.categoryName
     }
-  },
-  {
-    title: '价格',
-    dataIndex: 'price',
-    key: 'price',
-    width: 120,
-    align: 'right',
-    customRender: ({ text }) => text ? `¥${text}` : '-'
-  },
-  {
-    title: '单位',
-    dataIndex: 'unit',
-    key: 'unit',
-    width: 80,
-    align: 'center'
   },
   {
     title: '状态',
@@ -363,8 +336,6 @@ const formData = ref({
   productCode: '',
   categoryId: undefined,
   imageUrl: '',
-  price: undefined,
-  unit: '',
   description: ''
 })
 const fileList = ref([])
@@ -375,8 +346,7 @@ const formRules = {
   productCode: [{ required: true, message: '请输入产品编号' }],
   categoryId: [{ required: true, message: '请选择产品分类' }],
   imageUrl: [{ required: true, message: '请上传产品主图' }],
-  price: [{ required: true, message: '请输入产品价格' }],
-  unit: [{ required: true, message: '请输入计量单位' }]
+  description: [{ required: true, message: '请输入产品描述' }]
 }
 
 // 添加产品
@@ -388,8 +358,6 @@ const handleAdd = () => {
     productCode: '',
     categoryId: undefined,
     imageUrl: '',
-    price: undefined,
-    unit: '',
     description: '',
     status: null
   }

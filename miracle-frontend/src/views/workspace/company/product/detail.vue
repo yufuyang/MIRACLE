@@ -29,8 +29,7 @@
         <a-descriptions :column="2">
           <a-descriptions-item label="产品名称">{{ product?.productName }}</a-descriptions-item>
           <a-descriptions-item label="产品编号">{{ product?.productCode }}</a-descriptions-item>
-          <a-descriptions-item label="产品价格">{{ product?.price ? `¥${product?.price}` : '-' }}</a-descriptions-item>
-          <a-descriptions-item label="计量单位">{{ product?.unit || '-' }}</a-descriptions-item>
+          <a-descriptions-item label="产品分类">{{ getCategoryName(product?.categoryId) }}</a-descriptions-item>
           <a-descriptions-item label="创建时间">{{ product?.createTime }}</a-descriptions-item>
           <a-descriptions-item label="更新时间">{{ product?.updateTime }}</a-descriptions-item>
           <a-descriptions-item label="状态">
@@ -262,22 +261,10 @@
             </div>
           </a-upload>
         </a-form-item>
-        <a-form-item label="产品价格" name="price">
-          <a-input-number
-            v-model:value="formData.price"
-            placeholder="请输入产品价格"
-            :min="0"
-            :precision="2"
-            style="width: 100%"
-          />
-        </a-form-item>
-        <a-form-item label="计量单位" name="unit">
-          <a-input v-model:value="formData.unit" placeholder="请输入计量单位" />
-        </a-form-item>
         <a-form-item label="产品描述" name="description">
           <a-textarea
             v-model:value="formData.description"
-            placeholder="请输入产品描述"
+            placeholder="��输入产品描述"
             :rows="4"
           />
         </a-form-item>
@@ -301,6 +288,7 @@ const loading = ref(false)
 const imageLoading = ref(false)
 const product = ref(null)
 const productImages = ref([])
+const categories = ref([])
 const statusModalVisible = ref(false)
 
 // 添加编辑相关变量
@@ -313,8 +301,6 @@ const formData = ref({
   productCode: '',
   categoryId: undefined,
   imageUrl: '',
-  price: undefined,
-  unit: '',
   description: ''
 })
 const fileList = ref([])
@@ -326,8 +312,7 @@ const formRules = {
   productCode: [{ required: true, message: '请输入产品编号' }],
   categoryId: [{ required: true, message: '请选择产品分类' }],
   imageUrl: [{ required: true, message: '请上传产品主图' }],
-  price: [{ required: true, message: '请输入产品价格' }],
-  unit: [{ required: true, message: '请输入计量单位' }]
+  description: [{ required: true, message: '请输入产品描述' }]
 }
 
 // 添加生产步骤相关的变量和函数
@@ -350,7 +335,7 @@ const stepFormRules = {
   description: [{ required: true, message: '请输入步骤说明' }]
 }
 
-// 获取产品详情
+// ���取产品详情
 const fetchProduct = async () => {
   loading.value = true
   try {
@@ -467,8 +452,8 @@ const fetchCategories = async () => {
   try {
     const res = await getProductCategories()
     if (res.code === 200) {
-      // 构建树形数据
-      categoryTree.value = buildCategoryTree(res.data || [])
+      categories.value = res.data || []
+      categoryTree.value = buildCategoryTree(res.data)
     }
   } catch (error) {
     console.error('获取分类失败:', error)
@@ -481,7 +466,7 @@ const buildCategoryTree = (data) => {
   const tree = []
   const map = {}
 
-  // 先把所有节点存入map
+  // 先把所有节点入map
   data.forEach(item => {
     map[item.id] = { ...item, children: [] }
   })
@@ -538,7 +523,7 @@ const handleModalOk = async () => {
     
     // 确保主图已上传
     if (!fileList.value.length) {
-      message.error('请上传产品主图')
+      message.error('请��传产品主图')
       modalLoading.value = false
       return
     }
@@ -621,7 +606,7 @@ const getActionText = (status) => {
 
 const getActionDescription = (status) => {
   if (status === 1) {
-    return '下架后该产品将不会在前台展示，确定要继续吗��'
+    return '下架后该产品将不会在前台展示，确定要继续吗？'
   }
   return '上架后该产品将会在前台展示，确定要继续吗？'
 }
@@ -650,7 +635,7 @@ const handleDragEnd = async () => {
     }
   } catch (error) {
     console.error('更新排序失败:', error)
-    message.error('排序更新失败，请重试')
+    message.error('排序更新失���，请重试')
     await fetchProductImages()
   }
 }
@@ -761,6 +746,19 @@ const fetchProductSteps = async () => {
   } finally {
     stepsLoading.value = false
   }
+}
+
+// 获取分类名称
+const getCategoryName = (categoryId) => {
+  if (!categoryId) return '-'
+  const category = categories.value.find(c => c.id === categoryId)
+  if (!category) return '-'
+  
+  if (category.parentId) {
+    const parentCategory = categories.value.find(c => c.id === category.parentId)
+    return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
+  }
+  return category.categoryName
 }
 
 onMounted(() => {

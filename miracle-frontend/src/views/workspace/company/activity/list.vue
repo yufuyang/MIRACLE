@@ -202,8 +202,7 @@ import {
   RightOutlined
 } from '@ant-design/icons-vue'
 import { getActivityList, deleteActivity } from '@/api/activity'
-import ActivityFormModal from './components/ActivityFormModal.vue'
-
+import ActivityFormModal from './activityformmodal.vue'
 const router = useRouter()
 const defaultImage = 'https://via.placeholder.com/200x200'
 

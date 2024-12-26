@@ -25,6 +25,12 @@ const redirectToLogin = () => {
 // 请求拦截器
 service.interceptors.request.use(
   config => {
+    console.log('发起请求:', {
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      params: config.params
+    })
     const token = localStorage.getItem('token')
     if (token) {
       config.headers['Authorization'] = token
@@ -40,6 +46,11 @@ service.interceptors.request.use(
 // 响应拦截器
 service.interceptors.response.use(
   response => {
+    console.log('收到响应:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    })
     const res = response.data
     if (res.code === 401) {
       message.error('登录已过期，请重新登录')
@@ -49,7 +60,7 @@ service.interceptors.response.use(
     return res
   },
   error => {
-    console.error('响应错误:', error)
+    console.error('响应错误:', error.response || error)
     if (error.response) {
       switch (error.response.status) {
         case 401:
