@@ -60,13 +60,13 @@ export const useUserStore = defineStore('user', () => {
         const { token: newToken, ...info } = res.data
         // 设置token和基本用户信息
         setToken('Bearer ' + newToken)
-        updateUserInfo({ ...info, role: loginForm.role })
+        updateUserInfo(info)
         
         // 获取用户详情
         await fetchUserDetail()
         
         message.success('登录成功')
-        router.push('/')
+        router.push('/workspace/stats/overview')
         return true
       } else {
         message.error(res.msg || '登录失败')

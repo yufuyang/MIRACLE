@@ -178,7 +178,7 @@ const route = useRoute()
 // 用���信息
 const userInfo = ref(null)
 
-// 顶部���航栏中的菜单项
+// 顶部����航栏中的菜单项
 const menuItems = [
   {
     key: 'product',
@@ -246,7 +246,7 @@ const menuItems = [
   }
 ]
 
-// 判断当前路由是����配菜单项
+// 判断当前路由������配菜单项
 const isMenuActive = (item) => {
   const currentPath = route.path
   if (item.matchPath) {
@@ -339,10 +339,10 @@ onMounted(() => {
 // 判断是否为企业用户
 const isCompanyUser = computed(() => {
   const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}')
-  return userInfo.role === 'company'
+  return userInfo.role?.toUpperCase() === 'COMPANY'
 })
 
-// 处理菜���点���
+// 处理菜点
 const handleMenuClick = ({ key }) => {
   router.push(key)
 }
