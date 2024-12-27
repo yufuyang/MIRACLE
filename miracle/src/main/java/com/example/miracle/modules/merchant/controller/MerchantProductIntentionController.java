@@ -34,9 +34,7 @@ public class MerchantProductIntentionController {
         intentionService.save(intention);
 
         // 更新公司产品统计
-        companyProductStatsService.update(new LambdaUpdateWrapper<CompanyProductStats>()
-                .eq(CompanyProductStats::getProductId, intention.getProductId())
-                .setSql("intention_count = intention_count + 1"));
+        companyProductStatsService.incrementIntentCount(intention.getCompanyId(), intention.getProductId());
 
         return SingleResponse.buildSuccess();
     }
@@ -59,10 +57,8 @@ public class MerchantProductIntentionController {
                 .eq(MerchantProductIntention::getMerchantId, baseController.getMerchantId())
                 .eq(MerchantProductIntention::getProductId, intention.getProductId()));
 
-        // 更新公司产品统计
-        companyProductStatsService.update(new LambdaUpdateWrapper<CompanyProductStats>()
-                .eq(CompanyProductStats::getProductId, intention.getProductId())
-                .setSql("intention_count = intention_count - 1"));
+//        // 更新公司产品统计
+        companyProductStatsService.decrementIntentCount(intention.getProductId());
 
         return SingleResponse.buildSuccess();
     }

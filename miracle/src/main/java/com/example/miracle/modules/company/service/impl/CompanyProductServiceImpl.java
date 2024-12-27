@@ -70,13 +70,13 @@ public class CompanyProductServiceImpl extends ServiceImpl<CompanyProductMapper,
         companyProductImage.setIsMain(1);
         productImageService.save(companyProductImage);
 
-        // 初始化统计数据
-        CompanyProductStats companyProductStats = new CompanyProductStats();
-        companyProductStats.setProductId(companyProduct.getId());
-        companyProductStats.setCompanyId(companyProduct.getCompanyId());
-        companyProductStats.setIntentionCount(0);
-        companyProductStats.setViewCount(0);
-        companyProductStatsService.save(companyProductStats);
+//        // 初始化统计数据
+//        CompanyProductStats companyProductStats = new CompanyProductStats();
+//        companyProductStats.setProductId(companyProduct.getId());
+//        companyProductStats.setCompanyId(companyProduct.getCompanyId());
+//        companyProductStats.setIntentionCount(0);
+//        companyProductStats.setViewCount(0);
+//        companyProductStatsService.save(companyProductStats);
 
         return companyProduct;
     }

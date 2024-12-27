@@ -39,12 +39,9 @@ public class WebsiteCompanyProductController {
     @GetMapping("/{id}")
     public SingleResponse<CompanyProduct> getById(@PathVariable Long id) {
 
-        CompanyProductStats companyProductStats = companyProductStatsService.getOne(new LambdaQueryWrapper<CompanyProductStats>().eq(CompanyProductStats::getProductId, id));
+        CompanyProduct companyProduct = companyProductService.getById(id);
 
-        if (Objects.nonNull(companyProductStats)) {
-            companyProductStats.setViewCount(companyProductStats.getViewCount() + 1);
-            companyProductStatsService.updateById(companyProductStats);
-        }
+        companyProductStatsService.incrementViewCount(companyProduct.getCompanyId(), id);
 
         return SingleResponse.of(companyProductService.getById(id));
     }

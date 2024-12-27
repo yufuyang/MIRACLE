@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.example.miracle.common.base.BaseEntity;
 import lombok.Data;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
@@ -15,6 +16,9 @@ public class CompanyProductStats extends BaseEntity {
     private Long companyId;
 
     private Long productId;
+
+
+    private LocalDate statsDate;
 
     private Integer viewCount;
 
