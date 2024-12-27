@@ -44,11 +44,13 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
     /**
      * 更新产品统计数据
      */
-    @Update("INSERT INTO company_product_stats (company_id, product_id, stats_date, view_count, intention_count) " +
-            "VALUES (#{companyId}, #{productId}, #{statsDate}, #{viewCount}, #{intentionCount}) " +
+    @Update("INSERT INTO company_product_stats (company_id, product_id, stats_date, view_count, intention_count, create_time, update_time) " +
+            "VALUES (#{companyId}, #{productId}, #{statsDate}, #{viewCount}, #{intentionCount}, " +
+            "COALESCE(#{createTime}, NOW()), NOW()) " +
             "ON DUPLICATE KEY UPDATE " +
             "view_count = view_count + #{viewCount}, " +
-            "intention_count = intention_count + #{intentionCount}")
+            "intention_count = intention_count + #{intentionCount}, " +
+            "update_time = NOW()")
     int updateStats(CompanyProductStats stats);
 
 
