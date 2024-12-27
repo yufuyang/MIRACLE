@@ -78,14 +78,14 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
         ProductStatsDTO productStatsDTO = new ProductStatsDTO();
 
         // 获取今日数据
-        Map<String, Integer> todayStats = getBaseMapper().getTodayStats(companyId);
-        productStatsDTO.setTodayViews(todayStats.get("views").longValue());
-        productStatsDTO.setTodayIntentions(todayStats.get("intentions").longValue());
+        Map<String, Long> todayStats = getBaseMapper().getTodayStats(companyId);
+        productStatsDTO.setTodayViews(todayStats.get("views"));
+        productStatsDTO.setTodayIntentions(todayStats.get("intentions"));
 
         // 获取总计数据
-        Map<String, Integer> totalStats = getBaseMapper().getTotalStats(companyId);
-        productStatsDTO.setTotalViews(totalStats.get("views").longValue());
-        productStatsDTO.setTotalIntentions(totalStats.get("intentions").longValue());
+        Map<String, Long> totalStats = getBaseMapper().getTotalStats(companyId);
+        productStatsDTO.setTotalViews(totalStats.get("views"));
+        productStatsDTO.setTotalIntentions(totalStats.get("intentions"));
 
         return SingleResponse.of(productStatsDTO);
     }

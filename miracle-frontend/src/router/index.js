@@ -233,6 +233,12 @@ const routes = [
         name: 'WorkspaceProfile',
         component: () => import('@/views/workspace/profile/index.vue'),
         meta: { title: '个人资料' }
+      },
+      {
+        path: 'product/statistics',
+        component: () => import('@/views/workspace/company/product/statistics.vue'),
+        name: 'ProductStatistics',
+        meta: { title: '产品统计', icon: 'chart' }
       }
     ]
   },

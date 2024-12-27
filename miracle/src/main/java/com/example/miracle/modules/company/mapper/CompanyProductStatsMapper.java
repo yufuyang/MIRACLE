@@ -25,21 +25,21 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
     /**
      * 获取企业今日统计数据
      */
-    @Select("SELECT COALESCE(SUM(view_count), 0) as views, " +
-            "COALESCE(SUM(intention_count), 0) as intentions " +
+    @Select("SELECT CAST(COALESCE(SUM(view_count), 0) AS SIGNED) as views, " +
+            "CAST(COALESCE(SUM(intention_count), 0) AS SIGNED) as intentions " +
             "FROM company_product_stats " +
             "WHERE company_id = #{companyId} " +
             "AND stats_date = CURRENT_DATE")
-    Map<String, Integer> getTodayStats(@Param("companyId") Long companyId);
+    Map<String, Long> getTodayStats(@Param("companyId") Long companyId);
 
     /**
      * 获取企业总计统计数据
      */
-    @Select("SELECT COALESCE(SUM(view_count), 0) as views, " +
-            "COALESCE(SUM(intention_count), 0) as intentions " +
+    @Select("SELECT CAST(COALESCE(SUM(view_count), 0) AS SIGNED) as views, " +
+            "CAST(COALESCE(SUM(intention_count), 0) AS SIGNED) as intentions " +
             "FROM company_product_stats " +
             "WHERE company_id = #{companyId}")
-    Map<String, Integer> getTotalStats(@Param("companyId") Long companyId);
+    Map<String, Long> getTotalStats(@Param("companyId") Long companyId);
 
     /**
      * 更新产品统计数据
@@ -122,7 +122,7 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
             "ORDER BY " +
             "CASE WHEN #{rankType} = 'views' THEN s.view_count " +
             "     WHEN #{rankType} = 'intentions' THEN s.intention_count " +
-            "END DESC " )
+            "END DESC ")
     List<ProductDTO> getCompanyHotProducts(@Param("companyId") Long companyId, @Param("rankType") String rankType);
 
     /**
