@@ -55,6 +55,9 @@
             <a-menu-item key="product-category">
               <router-link to="/workspace/product/category">产品分类</router-link>
             </a-menu-item>
+            <a-menu-item key="product-statistics">
+              <router-link to="/workspace/product/statistics">产品统计</router-link>
+            </a-menu-item>
           </a-sub-menu>
 
           <a-sub-menu key="activity">
@@ -106,19 +109,6 @@
             </a-menu-item>
             <a-menu-item key="cooperation-stats">
               <router-link to="/workspace/cooperation/stats">合作统计</router-link>
-            </a-menu-item>
-          </a-sub-menu>
-
-          <a-sub-menu key="stats">
-            <template #icon>
-              <bar-chart-outlined />
-            </template>
-            <template #title>数据统计</template>
-            <a-menu-item key="stats-product">
-              <router-link to="/workspace/stats/product">产品统计</router-link>
-            </a-menu-item>
-            <a-menu-item key="stats-activity">
-              <router-link to="/workspace/stats/activity">活动统计</router-link>
             </a-menu-item>
           </a-sub-menu>
 

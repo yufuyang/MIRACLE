@@ -1,22 +1,14 @@
 <template>
-  <router-view></router-view>
+  <a-config-provider :locale="locale">
+    <router-view></router-view>
+  </a-config-provider>
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'
+import { ref } from 'vue'
+import zhCN from 'ant-design-vue/es/locale/zh_CN'
 
-const userStore = useUserStore()
-
-onMounted(async () => {
-  // 初始化用户状态
-  userStore.initUserState()
-  
-  // 如果已登录，获取用户详情
-  if (userStore.isLoggedIn()) {
-    await userStore.fetchUserDetail()
-  }
-})
+const locale = ref(zhCN)
 </script>
 
 <style>

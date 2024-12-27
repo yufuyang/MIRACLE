@@ -207,7 +207,7 @@ export function deleteProductStep(id) {
   })
 }
 
-// 更新步骤排序
+// 更新步���排序
 export function updateStepsSort(data) {
   return request({
     url: '/company/product/step/sort',
@@ -216,10 +216,27 @@ export function updateStepsSort(data) {
   })
 }
 
-// 获取热门商品
+// 获取产品统计数据
+export function getProductStatistics() {
+  return request({
+    url: '/company/product/stats',
+    method: 'get'
+  })
+}
+
+// 获取产品趋势数据
+export function getProductTrend(params) {
+  return request({
+    url: '/company/product/stats/trend',
+    method: 'get',
+    params
+  })
+}
+
+// 获取热门产品
 export function getHotProducts() {
   return request({
-    url: '/website/home/hot-products',
+    url: '/company/product/stats/hot',
     method: 'get'
   })
 } 

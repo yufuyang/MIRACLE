@@ -120,6 +120,12 @@ const routes = [
             name: 'CompanyProductCategory',
             component: () => import('@/views/workspace/company/product/category.vue'),
             meta: { title: '产品分类' }
+          },
+          {
+            path: 'statistics',
+            name: 'ProductStatistics',
+            component: () => import('@/views/workspace/company/product/statistics.vue'),
+            meta: { title: '产品统计' }
           }
         ]
       },
