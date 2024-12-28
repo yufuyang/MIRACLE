@@ -5,7 +5,7 @@ import router from '@/router'
 // 创建axios实例
 const service = axios.create({
   baseURL: '/miracle',
-  timeout: 10000
+  timeout: 300000
 })
 
 // 是否正在重定向到登录页面

@@ -40,7 +40,12 @@ public class CompanyProductController {
     public SingleResponse<CompanyProduct> save(@RequestBody CompanyProduct companyProduct) {
         Long companyId = baseController.getCompanyId();
         companyProduct.setCompanyId(companyId);
-        return SingleResponse.of(companyProductService.saveProduct(companyProduct));
+
+        companyProductService.saveProduct(companyProduct);
+
+        companyProductStatsService.incrementViewCount(companyProduct.getCompanyId(),companyProduct.getId());
+
+        return SingleResponse.buildSuccess();
     }
 
     /**

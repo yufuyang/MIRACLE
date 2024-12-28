@@ -181,31 +181,36 @@
               :label="stepForm.mediaType === 'image' ? '图片' : '视频'"
               name="mediaUrl"
             >
-              <a-upload
-                v-if="stepForm.mediaType === 'image'"
-                :file-list="stepMediaList"
-                :before-upload="beforeUpload"
-                :custom-request="handleStepMediaUpload"
-                list-type="picture-card"
-                :max-count="1"
-              >
-                <div v-if="stepMediaList.length < 1">
-                  <plus-outlined />
-                  <div style="margin-top: 8px">上传图片</div>
-                </div>
-              </a-upload>
-              <a-upload
-                v-else
-                :file-list="stepMediaList"
-                :before-upload="beforeVideoUpload"
-                :custom-request="handleStepMediaUpload"
-                :max-count="1"
-              >
-                <a-button v-if="stepMediaList.length < 1">
-                  <upload-outlined />
-                  <span>上传视频</span>
-                </a-button>
-              </a-upload>
+              <div class="step-media-upload">
+                <!-- 图片上传 -->
+                <a-upload
+                  v-if="stepForm.mediaType === 'image'"
+                  v-model:file-list="stepMediaList"
+                  :before-upload="beforeUpload"
+                  :custom-request="handleStepImageUpload"
+                  list-type="picture-card"
+                  :max-count="1"
+                >
+                  <div v-if="stepMediaList.length < 1">
+                    <plus-outlined />
+                    <div style="margin-top: 8px">上传图片</div>
+                  </div>
+                </a-upload>
+
+                <!-- 视频上传 -->
+                <a-upload
+                  v-else
+                  v-model:file-list="stepMediaList"
+                  :before-upload="beforeVideoUpload"
+                  :custom-request="handleStepVideoUpload"
+                  :max-count="1"
+                >
+                  <a-button v-if="stepMediaList.length < 1">
+                    <upload-outlined />
+                    <span>上传视频</span>
+                  </a-button>
+                </a-upload>
+              </div>
             </a-form-item>
           </a-form>
         </a-modal>
@@ -264,7 +269,7 @@
         <a-form-item label="产品描述" name="description">
           <a-textarea
             v-model:value="formData.description"
-            placeholder="��输入产品描述"
+            placeholder="请输入产品描述"
             :rows="4"
           />
         </a-form-item>
@@ -335,7 +340,7 @@ const stepFormRules = {
   description: [{ required: true, message: '请输入步骤说明' }]
 }
 
-// ���取产品详情
+// 获取产品详情
 const fetchProduct = async () => {
   loading.value = true
   try {
@@ -365,24 +370,28 @@ const fetchProductImages = async () => {
     }
   } catch (error) {
     console.error('获取产品图片失败:', error)
-    message.error('获取产品图片失败')
+    message.error('获���产品图片失败')
   } finally {
     imageLoading.value = false
   }
 }
 
-// 图片上传相关
+// 上传前校验
 const beforeUpload = (file) => {
+  // 检查文件类型
   const isImage = file.type.startsWith('image/')
   if (!isImage) {
     message.error('只能上传图片文件!')
     return false
   }
+  
+  // 检查文件大小（例如限制为2MB）
   const isLt2M = file.size / 1024 / 1024 < 2
   if (!isLt2M) {
     message.error('图片必须小于2MB!')
     return false
   }
+  
   return true
 }
 
@@ -523,7 +532,7 @@ const handleModalOk = async () => {
     
     // 确保主图已上传
     if (!fileList.value.length) {
-      message.error('请��传产品主图')
+      message.error('请上传产品主图')
       modalLoading.value = false
       return
     }
@@ -592,9 +601,9 @@ const getStatusText = (status) => {
 
 const getActionTitle = (status) => {
   if (status === 1) {
-    return '确定要下架该产品吗？下架后该产品将不会在前台展示。'
+    return '确定要下架该产品吗？下架后该产品将不会前台展示'
   }
-  return '确定要上架该产品吗？上架后该产品将会在前台展示。'
+  return '确定要上架该产品吗？上架后该产品将将会在前台展示。'
 }
 
 const getActionText = (status) => {
@@ -635,7 +644,7 @@ const handleDragEnd = async () => {
     }
   } catch (error) {
     console.error('更新排序失败:', error)
-    message.error('排序更新失���，请重试')
+    message.error('排序更新失败，请重试')
     await fetchProductImages()
   }
 }
@@ -688,7 +697,7 @@ const handleStepDragEnd = async () => {
     
     const res = await updateStepsSort(sortData)
     if (res.code === 200) {
-      message.success('排序更新成功')
+      message.success('排序更新��功')
     } else {
       message.error(res.msg || '排序更新失败')
       await fetchProductSteps()
@@ -759,6 +768,106 @@ const getCategoryName = (categoryId) => {
     return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
   }
   return category.categoryName
+}
+
+// 处理步骤图片上传
+const handleStepImageUpload = async ({ file, onSuccess, onError }) => {
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const res = await uploadImage(formData)
+    if (res.code === 200) {
+      // 更新步骤表单的媒体信息
+      stepForm.value.mediaUrl = res.data
+      stepForm.value.mediaType = 'image'
+      
+      // 更新文件列表，完全参考 customUpload 的处理方式
+      stepMediaList.value = [{
+        uid: '-1',
+        name: file.name,
+        status: 'done',
+        url: res.data
+      }]
+      
+      // 重要：强制更新组件
+      stepMediaList.value = [...stepMediaList.value]
+      
+      onSuccess()
+      message.success('上传成功')
+    } else {
+      onError()
+      message.error(res.msg || '上传失败')
+    }
+  } catch (error) {
+    onError()
+    message.error('上传失败')
+  }
+}
+
+// 视频上传前校验
+const beforeVideoUpload = (file) => {
+  // 检查文件类型
+  const isVideo = file.type.startsWith('video/')
+  if (!isVideo) {
+    message.error('只能上传视频文件!')
+    return false
+  }
+  
+  // 检查文件大小（限制为100MB）
+  const isLt100M = file.size / 1024 / 1024 < 100
+  if (!isLt100M) {
+    message.error('视频必须小于100MB!')
+    return false
+  }
+  
+  return true
+}
+
+// 处理步骤视频上传
+const handleStepVideoUpload = async ({ file, onSuccess, onError }) => {
+  let hide = null
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    // 显示上传中提示
+    hide = message.loading({
+      content: '视频上传中...',
+      duration: 0,
+      key: 'videoUpload'  // 添加唯一的 key
+    })
+    
+    const res = await uploadImage(formData)
+    if (res.code === 200) {
+      stepForm.value.mediaUrl = res.data
+      stepForm.value.mediaType = 'video'
+      
+      stepMediaList.value = [{
+        uid: '-1',
+        name: file.name,
+        status: 'done',
+        url: res.data
+      }]
+      
+      onSuccess()
+      message.success('上传成功')
+    } else {
+      onError()
+      message.error(res.msg || '上传失败')
+    }
+  } catch (error) {
+    console.error('视频上传失败:', error)
+    onError()
+    message.error('视频上传失败，请重试')
+  } finally {
+    // 确保关闭加载提示
+    if (hide) {
+      hide()
+    }
+    // 额外保证加载提示被关闭
+    message.destroy('videoUpload')
+  }
 }
 
 onMounted(() => {
