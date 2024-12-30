@@ -16,14 +16,7 @@ public class CompanyBaseController {
 
     private final BaseController baseController;
 
-    /**
-     * 新增公司
-     */
-    @PostMapping
-    public SingleResponse<Company> save(@RequestBody Company company) {
-        companyService.save(company);
-        return SingleResponse.of(company);
-    }
+
 
     /**
      * 修改公司信息

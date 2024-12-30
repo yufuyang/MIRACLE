@@ -62,7 +62,7 @@ export function getCompanyProducts(params) {
   })
 }
 
-// 添��公司产品
+// 添加公司产品
 export function addCompanyProduct(data) {
   return request({
     url: '/company/product',
@@ -207,7 +207,7 @@ export function deleteProductStep(id) {
   })
 }
 
-// 更新步���排序
+// 更新步骤排序
 export function updateStepsSort(data) {
   return request({
     url: '/company/product/step/sort',
@@ -237,6 +237,48 @@ export function getProductTrend(params) {
 export function getHotProducts() {
   return request({
     url: '/company/product/stats/hot',
+    method: 'get'
+  })
+}
+
+// 获取企业信息
+export function getCompanyInfo() {
+  return request({
+    url: '/company/base/info',
+    method: 'get'
+  })
+}
+
+// 更新企业信息
+export function updateCompanyInfo(data) {
+  return request({
+    url: '/company/base',
+    method: 'put',
+    data
+  })
+}
+
+// 保存企业环境图片
+export function saveCompanyEnvironmentImage(data) {
+  return request({
+    url: '/company/environment-image',
+    method: 'post',
+    data
+  })
+}
+
+// 删除企业环境图片
+export function deleteCompanyEnvironmentImage(id) {
+  return request({
+    url: `/company/environment-image/${id}`,
+    method: 'delete'
+  })
+}
+
+// 获取企业环境图片列表
+export function getCompanyEnvironmentImages() {
+  return request({
+    url: '/company/environment-image/list',
     method: 'get'
   })
 } 

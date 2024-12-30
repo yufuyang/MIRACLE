@@ -211,28 +211,10 @@ const routes = [
         ]
       },
       {
-        path: 'stats',
-        name: 'WorkspaceStats',
-        children: [
-          {
-            path: 'product',
-            name: 'ProductStats',
-            component: () => import('@/views/workspace/stats/product.vue'),
-            meta: { title: '产品统计' }
-          },
-          {
-            path: 'activity',
-            name: 'WorkspaceActivityStats',
-            component: () => import('@/views/workspace/stats/activity.vue'),
-            meta: { title: '活动统计' }
-          }
-        ]
-      },
-      {
         path: 'profile',
         name: 'WorkspaceProfile',
         component: () => import('@/views/workspace/profile/index.vue'),
-        meta: { title: '个人资料' }
+        meta: { title: '企业资料' }
       },
       {
         path: 'product/statistics',
