@@ -56,14 +56,14 @@
             <eye-outlined />
             <div class="stats-content">
               <div class="stats-label">浏览量</div>
-              <div class="stats-value">{{ stats.viewCount || 0 }}</div>
+              <div class="stats-value">{{ activity?.viewCount || 0 }}</div>
             </div>
           </div>
           <div class="stats-item">
             <team-outlined />
             <div class="stats-content">
               <div class="stats-label">报名人数</div>
-              <div class="stats-value">{{ stats.registerCount || 0 }}</div>
+              <div class="stats-value">{{ activity?.registerCount || 0 }}</div>
             </div>
           </div>
           <div class="stats-item">

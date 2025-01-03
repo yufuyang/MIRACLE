@@ -51,8 +51,13 @@ public class WebsiteCompanyActivityController {
         // 获取统计数据
         ActivityStats stats = activityStatsService.getOne(new LambdaQueryWrapper<ActivityStats>().eq(ActivityStats::getActivityId, id));
         if (stats != null) {
+
+            stats.setViewCount(stats.getViewCount() + 1);
+            activityStatsService.updateById(stats);
+
             dto.setViewCount(stats.getViewCount());
             dto.setRegisterCount(stats.getRegisterCount());
+
         }
 
         return SingleResponse.of(dto);
