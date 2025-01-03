@@ -8,7 +8,7 @@ public class CompanyDTO {
     private Long id;
     private String companyName;
     private String description;
-    private String logo;
+    private String logoUrl;
     private Integer productCount;
     private Integer intentionCount;
 }

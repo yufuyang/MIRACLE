@@ -4,7 +4,7 @@
     <div class="company-header">
       <div class="company-info">
         <div class="company-logo">
-          <img :src="company.logo || defaultImage" :alt="company.companyName" />
+          <img :src="company.logoUrl || defaultImage" :alt="company.companyName" />
         </div>
         <div class="company-meta">
           <h1>{{ company.companyName }}</h1>
@@ -58,7 +58,14 @@
           <div class="company-images">
             <div class="image-list">
               <div v-for="(image, index) in environmentImages" :key="index" class="image-item">
-                <img :src="image.url" :alt="company.companyName" />
+                <a-image
+                  :src="image.imageUrl"
+                  :alt="company.companyName"
+                  :preview="{
+                    src: image.imageUrl,
+                    mask: '预览'
+                  }"
+                />
               </div>
             </div>
           </div>
@@ -443,7 +450,7 @@ onMounted(async () => {
         gap: 16px;
 
         .image-item {
-          aspect-ratio: 16/9;
+          aspect-ratio: 4/3;
           border-radius: 8px;
           overflow: hidden;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -453,10 +460,15 @@ onMounted(async () => {
             transform: translateY(-4px);
           }
 
-          img {
+          :deep(.ant-image) {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+
+            img {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
           }
         }
       }
