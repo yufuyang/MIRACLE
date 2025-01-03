@@ -43,7 +43,7 @@ public class CompanyProductController {
 
         companyProductService.saveProduct(companyProduct);
 
-        companyProductStatsService.incrementViewCount(companyProduct.getCompanyId(),companyProduct.getId());
+//        companyProductStatsService.incrementViewCount(companyProduct.getCompanyId(),companyProduct.getId());
 
         return SingleResponse.buildSuccess();
     }

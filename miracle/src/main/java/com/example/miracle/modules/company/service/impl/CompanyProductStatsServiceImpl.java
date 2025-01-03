@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -177,32 +178,60 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
     }
 
     @Override
-    @Transactional
     public void incrementViewCount(Long companyId, Long productId) {
+        // 查询今日是否已有记录
+        CompanyProductStats todayStats = this.lambdaQuery()
+                .eq(CompanyProductStats::getProductId, productId)
+                .eq(CompanyProductStats::getCompanyId, companyId)
+                .eq(CompanyProductStats::getStatsDate, LocalDate.now())
+                .one();
 
-        CompanyProductStats stats = new CompanyProductStats();
-        stats.setCompanyId(companyId);
-        stats.setProductId(productId);
-        stats.setStatsDate(LocalDate.now());
-        stats.setViewCount(1);
-        stats.setIntentionCount(0);
-
-        getBaseMapper().updateStats(stats);
+        if (todayStats == null) {
+            // 创建新记录
+            CompanyProductStats stats = new CompanyProductStats();
+            stats.setProductId(productId);
+            stats.setCompanyId(companyId);
+            stats.setStatsDate(LocalDate.now());
+            stats.setViewCount(1);
+            stats.setIntentionCount(0);
+            stats.setCreateTime(LocalDateTime.now());
+            stats.setUpdateTime(LocalDateTime.now());
+            this.save(stats);
+        } else {
+            // 更新现有记录
+            todayStats.setViewCount(todayStats.getViewCount() + 1);
+            todayStats.setUpdateTime(LocalDateTime.now());
+            this.updateById(todayStats);
+        }
     }
 
     @Override
-    @Transactional
     public void incrementIntentCount(Long companyId, Long productId) {
-        CompanyProductStats stats = new CompanyProductStats();
-        stats.setCompanyId(companyId);
-        stats.setProductId(productId);
-        stats.setStatsDate(LocalDate.now());
-        stats.setViewCount(0);
-        stats.setIntentionCount(1);
+        // 查询今日是否已有记录
+        CompanyProductStats todayStats = this.lambdaQuery()
+                .eq(CompanyProductStats::getProductId, productId)
+                .eq(CompanyProductStats::getCompanyId, companyId)
+                .eq(CompanyProductStats::getStatsDate, LocalDate.now())
+                .one();
 
-        getBaseMapper().updateStats(stats);
+        if (todayStats == null) {
+            // 创建新记录
+            CompanyProductStats stats = new CompanyProductStats();
+            stats.setProductId(productId);
+            stats.setCompanyId(companyId);
+            stats.setStatsDate(LocalDate.now());
+            stats.setViewCount(0);
+            stats.setIntentionCount(1);
+            stats.setCreateTime(LocalDateTime.now());
+            stats.setUpdateTime(LocalDateTime.now());
+            this.save(stats);
+        } else {
+            // 更新现有记录
+            todayStats.setIntentionCount(todayStats.getIntentionCount() + 1);
+            todayStats.setUpdateTime(LocalDateTime.now());
+            this.updateById(todayStats);
+        }
     }
-
     @Override
     public void decrementIntentCount(Long productId) {
         getBaseMapper().decrementIntentCount(productId);

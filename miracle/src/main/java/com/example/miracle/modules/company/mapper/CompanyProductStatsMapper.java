@@ -66,14 +66,22 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
     /**
      * 增加浏览量
      */
-    @Update("UPDATE company_product_stats SET view_count = view_count + 1 WHERE product_id = #{productId}")
-    void incrementViewCount(@Param("productId") Long productId);
+    @Update("INSERT INTO company_product_stats (product_id, company_id, stats_date, view_count, intention_count, create_time, update_time) " +
+            "VALUES (#{productId}, #{companyId}, CURRENT_DATE, 1, 0, NOW(), NOW()) " +
+            "ON DUPLICATE KEY UPDATE " +
+            "view_count = view_count + 1, " +
+            "update_time = NOW()")
+    void incrementViewCount(@Param("productId") Long productId, @Param("companyId") Long companyId);
 
     /**
      * 增加意向数
      */
-    @Update("UPDATE company_product_stats SET intent_count = intent_count + 1 WHERE product_id = #{productId}")
-    void incrementIntentCount(@Param("productId") Long productId);
+    @Update("INSERT INTO company_product_stats (product_id, company_id, stats_date, view_count, intention_count, create_time, update_time) " +
+            "VALUES (#{productId}, #{companyId}, CURRENT_DATE, 0, 1, NOW(), NOW()) " +
+            "ON DUPLICATE KEY UPDATE " +
+            "intention_count = intention_count + 1, " +
+            "update_time = NOW()")
+    void incrementIntentCount(@Param("productId") Long productId, @Param("companyId") Long companyId);
 
     /**
      * 查询前N个优质企业
@@ -98,15 +106,15 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
             "p.product_name as productName, " +
             "p.description, " +
             "p.image_url as imageUrl, " +
-            "s.view_count as viewCount, " +
-            "s.intention_count as intentionCount " +
-            "FROM company_product_stats s " +
-            "INNER JOIN company_product p ON s.product_id = p.id " +
+            "COALESCE(SUM(s.view_count), 0) as viewCount, " +
+            "COALESCE(SUM(s.intention_count), 0) as intentionCount " +
+            "FROM company_product p " +
+            "LEFT JOIN company_product_stats s ON s.product_id = p.id " +
             "WHERE p.status = 1 " +
-            "ORDER BY s.intention_count DESC, s.view_count DESC " +
+            "GROUP BY p.id, p.product_name, p.description, p.image_url " +
+            "ORDER BY intentionCount DESC, viewCount DESC " +
             "LIMIT #{limit}")
     List<ProductDTO> selectHotProducts(@Param("limit") Integer limit);
-
 
     /**
      * 获取企业热门产品排行
@@ -116,15 +124,16 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
             "p.product_name as productName, " +
             "p.description, " +
             "p.image_url as imageUrl, " +
-            "s.view_count as viewCount, " +
-            "s.intention_count as intentionCount " +
-            "FROM company_product_stats s " +
-            "INNER JOIN company_product p ON s.product_id = p.id " +
-            "WHERE p.status = 1 AND s.company_id = #{companyId} " +
+            "COALESCE(SUM(s.view_count), 0) as viewCount, " +
+            "COALESCE(SUM(s.intention_count), 0) as intentionCount " +
+            "FROM company_product p " +
+            "LEFT JOIN company_product_stats s ON s.product_id = p.id " +
+            "WHERE p.status = 1 AND p.company_id = #{companyId} " +
+            "GROUP BY p.id, p.product_name, p.description, p.image_url " +
             "ORDER BY " +
-            "CASE WHEN #{rankType} = 'views' THEN s.view_count " +
-            "     WHEN #{rankType} = 'intentions' THEN s.intention_count " +
-            "END DESC ")
+            "CASE WHEN #{rankType} = 'views' THEN SUM(s.view_count) " +
+            "     WHEN #{rankType} = 'intentions' THEN SUM(s.intention_count) " +
+            "END DESC")
     List<ProductDTO> getCompanyHotProducts(@Param("companyId") Long companyId, @Param("rankType") String rankType);
 
     /**
