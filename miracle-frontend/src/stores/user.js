@@ -57,13 +57,13 @@ export const useUserStore = defineStore('user', () => {
       })
       
       if (res.code === 200) {
-        const { token: newToken, ...info } = res.data
-        // 设置token和基本用户信息
+        const { token: newToken, role, ...info } = res.data
+        // 设置token和基本用户信息，包括role
         setToken('Bearer ' + newToken)
-        updateUserInfo(info)
-        
-        // 获取用户详情
-        await fetchUserDetail()
+        updateUserInfo({
+          ...info,
+          role // 确保role被保存到userInfo中
+        })
         
         message.success('登录成功')
         router.push('/workspace/stats/overview')

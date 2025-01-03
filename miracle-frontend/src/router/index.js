@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import WebsiteLayout from '@/layout/website/index.vue'
 import WorkspaceLayout from '@/layout/workspace/index.vue'
 import EmptyLayout from '@/layout/empty.vue'
+import { useUserStore } from '@/stores/user'
 
 const routes = [
   {
@@ -263,6 +264,8 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
+  const userStore = useUserStore()
+  userStore.initUserState()
   const token = localStorage.getItem('token')
   
   if (to.meta.requiresAuth && !token) {

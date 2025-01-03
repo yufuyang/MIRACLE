@@ -25,8 +25,6 @@ public class WebsiteCompanyProductStatsController {
     @GetMapping("/{productId}")
     public SingleResponse<CompanyProductStats> get(@PathVariable Long productId) {
 
-        CompanyProductStats companyProductStats = companyProductStatsService.getOne(new LambdaQueryWrapper<CompanyProductStats>().eq(CompanyProductStats::getProductId, productId));
-
-        return SingleResponse.of(companyProductStats);
+        return companyProductStatsService.get(productId);
     }
 }

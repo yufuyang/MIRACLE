@@ -3,6 +3,7 @@ package com.example.miracle.modules.company.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.miracle.common.constant.CommonConstant;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.common.exception.BusinessException;
@@ -54,7 +55,7 @@ public class CompanyUserServiceImpl extends ServiceImpl<CompanyUserMapper, Compa
         CompanyUserLoginDTO loginDTO = new CompanyUserLoginDTO();
         loginDTO.setUsername(user.getUsername());
         loginDTO.setToken(token);
-
+        loginDTO.setRole(CommonConstant.PLATFORM_ROLE);
         return SingleResponse.of(loginDTO);
     }
 

@@ -103,6 +103,8 @@
         </div>
       </a-card>
     </a-spin>
+
+    <!-- 活动操作按钮 -->
   </div>
 </template>
 
@@ -124,10 +126,11 @@ import { registerActivity } from '@/api/merchant/activity'
 import { getCompanyDetail } from '@/api/company'
 import { useUserStore } from '@/stores/user'
 import dayjs from 'dayjs'
+import { USER_ROLE } from '@/constants'
 
 const router = useRouter()
 const route = useRoute()
-const userStore = ref(useUserStore())
+const userStore = useUserStore()
 const loading = ref(false)
 const activity = ref(null)
 const company = ref(null)
@@ -136,6 +139,12 @@ const stats = ref({
   viewCount: 0,
   registerCount: 0
 })
+
+// 判断是否已登录 - 调用 store 中的方法
+const isLoggedIn = computed(() => userStore.isLoggedIn())
+
+// 判断是否是商户用户
+const isMerchant = computed(() => userStore.userInfo?.role === 'MERCHANT')
 
 // 获取活动状态文本
 const getStatusText = (status) => {
@@ -195,45 +204,39 @@ const getRemainingTime = () => {
   return `${hours}小时`
 }
 
-// 处理报名
-const handleRegister = async () => {
-  // 判断登录状态
-  if (!userStore.token) {
-    Modal.confirm({
-      title: '提示',
-      content: '请先登录后再报名',
-      okText: '去登录',
-      cancelText: '取消',
-      onOk: () => {
-        router.push({
-          path: '/login',
-          query: { redirect: route.fullPath }
-        })
-      }
-    })
+// 报名处理函数
+const handleRegister = () => {
+  // 先判断活动状态
+  if (activity.value?.status !== 1) {
+    message.warning('活动未开始或已结束')
     return
   }
 
-  // 判断用户角色
+  // 判断是否登录
+  if (!userStore.isLoggedIn()) {
+    message.info('请先登录')
+    router.push('/login')
+    return
+  }
+
+  // 判断是否是商户用户
   if (userStore.userInfo?.role !== 'MERCHANT') {
-    message.warning('只有商户用户可以报名活动')
+    message.warning('只有商户用户才能报名活动')
     return
   }
 
-  if (!activity.value) return
-  
-  if (activity.value.status !== 1) {
-    message.warning('当前活动不在报名时间内')
-    return
-  }
+  // TODO: 处理报名逻辑
+  handleSubmitRegister()
+}
 
+// 提交报名
+const handleSubmitRegister = async () => {
   try {
-    await registerActivity(route.params.id)
+    // TODO: 调用报名接口
     message.success('报名成功')
-    fetchActivityDetail()
   } catch (error) {
     console.error('报名失败:', error)
-    message.error(error.message || '报名失败')
+    message.error('报名失败，请重试')
   }
 }
 
@@ -266,6 +269,13 @@ const fetchCompanyDetail = async (companyId) => {
 
 onMounted(() => {
   fetchActivityDetail()
+})
+
+// 调试用
+console.log('用户信息:', {
+  isLoggedIn: isLoggedIn.value,
+  role: userStore.userInfo?.role,
+  isMerchant: isMerchant.value
 })
 </script>
 

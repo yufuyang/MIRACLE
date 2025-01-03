@@ -13,6 +13,8 @@ public class MerchantUserLoginDTO {
      */
     private String username;
 
+    private String role;
+
     /**
      * token
      */

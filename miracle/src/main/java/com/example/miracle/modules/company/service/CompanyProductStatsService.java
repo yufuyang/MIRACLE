@@ -55,6 +55,8 @@ public interface CompanyProductStatsService extends IService<CompanyProductStats
      */
     MultiResponse<ProductRankDTO> getHotProducts(Long companyId, String timeRange, String rankType);
 
+    SingleResponse<CompanyProductStats> get(Long productId);
+
     /**
      * 增加产品浏览量
      */

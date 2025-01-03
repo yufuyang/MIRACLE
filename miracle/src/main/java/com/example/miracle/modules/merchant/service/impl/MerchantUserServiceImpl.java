@@ -2,6 +2,7 @@ package com.example.miracle.modules.merchant.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.miracle.common.constant.CommonConstant;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.common.exception.BusinessException;
 import com.example.miracle.common.utils.JwtUtil;
@@ -51,7 +52,7 @@ public class MerchantUserServiceImpl extends ServiceImpl<MerchantUserMapper, Mer
         MerchantUserLoginDTO loginDTO = new MerchantUserLoginDTO();
         loginDTO.setUsername(user.getUsername());
         loginDTO.setToken(token);
-
+        loginDTO.setRole(CommonConstant.MERCHANT_ROLE);
         return SingleResponse.of(loginDTO);
     }
 

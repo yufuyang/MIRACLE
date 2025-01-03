@@ -178,6 +178,12 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
     }
 
     @Override
+    public SingleResponse<CompanyProductStats> get(Long productId) {
+
+        return SingleResponse.of(this.getBaseMapper().selectByProductId(productId));
+    }
+
+    @Override
     public void incrementViewCount(Long companyId, Long productId) {
         // 查询今日是否已有记录
         CompanyProductStats todayStats = this.lambdaQuery()
@@ -232,6 +238,7 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
             this.updateById(todayStats);
         }
     }
+
     @Override
     public void decrementIntentCount(Long productId) {
         getBaseMapper().decrementIntentCount(productId);

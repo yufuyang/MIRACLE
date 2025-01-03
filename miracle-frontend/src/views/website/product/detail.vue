@@ -8,16 +8,13 @@
       >
         <template #extra>
           <a-space>
+            <a-button @click="handleViewCompany">查看企业</a-button>
             <a-button 
-              type="primary" 
-              @click="handleIntention"
+              type="primary"
+              :disabled="product?.status !== 1"
+              @click="handleAddIntention"
             >
-              <template #icon><heart-outlined /></template>
               添加意向
-            </a-button>
-            <a-button @click="goToCompany">
-              <template #icon><team-outlined /></template>
-              查看企业
             </a-button>
           </a-space>
         </template>
@@ -63,7 +60,7 @@
           <div class="stats-item">
             <eye-outlined />
             <div class="stats-content">
-              <div class="stats-label">浏��量</div>
+              <div class="stats-label">浏览量</div>
               <div class="stats-value">{{ stats.viewCount || 0 }}</div>
             </div>
           </div>
@@ -129,6 +126,7 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
   </div>
 </template>
 
@@ -165,14 +163,10 @@ const defaultImage = 'https://via.placeholder.com/200x200'
 const userInfo = ref({})
 
 // 判断是否已登录
-const isLoggedIn = computed(() => {
-  return !!localStorage.getItem('token')
-})
+const isLoggedIn = computed(() => userStore.isLoggedIn())
 
-// 判断是否为商户
-const isMerchant = computed(() => {
-  return userInfo.value?.role === 'MERCHANT'
-})
+// 判断是否是商户用户
+const isMerchant = computed(() => userStore.userInfo?.role === 'MERCHANT')
 
 // 判断是否为企业用户
 const isCompany = computed(() => {
@@ -278,38 +272,45 @@ const handleThumbnailClick = (index) => {
   currentImageIndex.value = index
 }
 
-// 处理添加意向
-const handleIntention = async () => {
-  // 判断登录状态
-  if (!userStore.token) {
-    Modal.confirm({
-      title: '提示',
-      content: '请先登录后再添加意向',
-      okText: '去登录',
-      cancelText: '取消',
-      onOk: () => {
-        router.push({
-          path: '/login',
-          query: { redirect: route.fullPath }
-        })
-      }
-    })
-    return
-  }
-
-  // 判断用户角色
-  if (userStore.userInfo?.role !== 'MERCHANT') {
-    message.warning('只有商户用户可以添加意向')
-    return
-  }
-
-  // 打开意向弹窗
-  intentionVisible.value = true
+// 查看企业
+const handleViewCompany = () => {
+  router.push(`/company/${product.value.companyId}`)
 }
 
-// 跳转到企业详情
-const goToCompany = () => {
-  router.push(`/company/${product.value.companyId}`)
+// 添加意向处理函数
+const handleAddIntention = () => {
+  // 先判断产品状态
+  if (product.value?.status !== 1) {
+    message.warning('该产品暂不可添加意向')
+    return
+  }
+
+  // 判断是否登录
+  if (!userStore.isLoggedIn()) {
+    message.info('请先登录')
+    router.push('/login')
+    return
+  }
+
+  // 判断是否是商户用户
+  if (userStore.userInfo?.role !== 'MERCHANT') {
+    message.warning('只有商户用户才能添加意向')
+    return
+  }
+
+  // TODO: 处理添加意向逻辑
+  handleSubmitIntention()
+}
+
+// 提交意向
+const handleSubmitIntention = async () => {
+  try {
+    // TODO: 调用添加意向接口
+    message.success('添加意向成功')
+  } catch (error) {
+    console.error('添加意向失败:', error)
+    message.error('添加意向失败，请重试')
+  }
 }
 
 // 提交意向
@@ -570,5 +571,10 @@ watch(() => product.value?.categoryId, (newVal) => {
       }
     }
   }
+}
+
+.action-buttons {
+  margin-top: 24px;
+  text-align: center;
 }
 </style> 

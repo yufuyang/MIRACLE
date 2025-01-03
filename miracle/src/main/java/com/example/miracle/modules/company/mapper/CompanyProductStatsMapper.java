@@ -147,4 +147,14 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
             "AND stats_date BETWEEN #{lastStartDate} AND #{lastEndDate} " +
             "GROUP BY product_id")
     List<Map<String, Object>> getLastPeriodStats(@Param("companyId") Long companyId, @Param("lastStartDate") LocalDate lastStartDate, @Param("lastEndDate") LocalDate lastEndDate);
+
+    /**
+     * 获取产品统计概览
+     */
+    @Select("SELECT " +
+            "COALESCE(SUM(view_count), 0) as view_count, " +
+            "COALESCE(SUM(intention_count), 0) as intention_count " +
+            "FROM company_product_stats " +
+            "WHERE product_id = #{productId}")
+    CompanyProductStats selectByProductId(@Param("productId") Long productId);
 }
