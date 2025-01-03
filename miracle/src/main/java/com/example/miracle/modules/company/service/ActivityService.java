@@ -6,6 +6,9 @@ import com.example.miracle.modules.company.dto.ActivityDTO;
 import com.example.miracle.modules.company.dto.query.ActivityPageQry;
 import com.example.miracle.modules.company.entity.Activity;
 
+import java.util.List;
+import java.util.Map;
+
 public interface ActivityService extends IService<Activity> {
     
     /**

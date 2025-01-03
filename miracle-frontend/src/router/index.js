@@ -123,7 +123,7 @@ const routes = [
             meta: { title: '产品分类' }
           },
           {
-            path: 'statistics',
+            path: 'stats.vue',
             name: 'ProductStatistics',
             component: () => import('@/views/workspace/company/product/statistics.vue'),
             meta: { title: '产品统计' }

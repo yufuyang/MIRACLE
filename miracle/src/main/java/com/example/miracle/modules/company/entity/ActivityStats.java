@@ -5,6 +5,8 @@ import com.example.miracle.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.time.LocalDate;
+
 @Data
 @TableName("activity_stats")
 @EqualsAndHashCode(callSuper = true)
@@ -24,4 +26,6 @@ public class ActivityStats extends BaseEntity {
      * 报名人数
      */
     private Integer registerCount;
+
+    private LocalDate statsDate;
 } 
