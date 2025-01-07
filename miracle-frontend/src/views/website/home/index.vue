@@ -1,30 +1,61 @@
 <template>
   <div class="home">
-    <!-- 轮播图（展示产品） -->
-    <div class="banner-section">
-      <a-carousel autoplay>
-        <template v-if="featuredProducts && featuredProducts.length > 0">
-          <div 
-            class="banner-item" 
-            v-for="product in featuredProducts.slice(0, 8)" 
-            :key="product.id" 
-            @click="goToProduct(product.id)"
-          >
-            <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
-            <div class="banner-content">
-              <h3>{{ product.productName }}</h3>
+    <!-- 左侧统计卡片 -->
+    <div class="stat-card left">
+      <div class="stat-content">
+        <div class="icon-wrapper">
+          <bank-outlined class="icon" />
+        </div>
+        <div class="stat-info">
+          <div class="label">入驻企业</div>
+          <div class="number">{{ statistics.companyCount }}</div>
+          <div class="desc">累计入驻企业数量</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧统计卡片 -->
+    <div class="stat-card right">
+      <div class="stat-content">
+        <div class="icon-wrapper">
+          <shop-outlined class="icon" />
+        </div>
+        <div class="stat-info">
+          <div class="label">入驻商户</div>
+          <div class="number">{{ statistics.merchantCount }}</div>
+          <div class="desc">累计入驻商户数量</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 轮播图区域的容器 -->
+    <div class="banner-container">
+      <!-- 中间轮播图（展示产品） -->
+      <div class="banner-section">
+        <a-carousel autoplay>
+          <template v-if="featuredProducts && featuredProducts.length > 0">
+            <div 
+              class="banner-item" 
+              v-for="product in featuredProducts.slice(0, 8)" 
+              :key="product.id" 
+              @click="goToProduct(product.id)"
+            >
+              <img :src="product.imageUrl || defaultImage" :alt="product.productName" />
+              <div class="banner-content">
+                <h3>{{ product.productName }}</h3>
+              </div>
             </div>
-          </div>
-        </template>
-        <template v-else>
-          <div class="banner-item">
-            <div class="banner-placeholder">
-              <picture-outlined />
-              <span>暂无产品</span>
+          </template>
+          <template v-else>
+            <div class="banner-item">
+              <div class="banner-placeholder">
+                <picture-outlined />
+                <span>暂无产品</span>
+              </div>
             </div>
-          </div>
-        </template>
-      </a-carousel>
+          </template>
+        </a-carousel>
+      </div>
     </div>
 
     <!-- 热门活动 -->
@@ -168,10 +199,12 @@ import {
   EyeOutlined, 
   HeartOutlined, 
   UserOutlined, 
-  ShopOutlined 
+  ShopOutlined, 
+  BankOutlined 
 } from '@ant-design/icons-vue'
 import defaultImage from '@/assets/images/default.jpg'
 import { getFeaturedProducts, getHotActivities, getFeaturedCompanies } from '@/api/home'
+import { getHomeStatistics } from '@/api/website'
 import dayjs from 'dayjs'
 
 const router = useRouter()
@@ -241,18 +274,129 @@ const goToRegister = () => {
   router.push('/register')
 }
 
+// 添加统计数据
+const statistics = ref({
+  companyCount: 0,    // 初始值设为0
+  merchantCount: 0    // 初始值设为0
+})
+
+// 获取统计数据
+const fetchStatistics = async () => {
+  try {
+    const { data } = await getHomeStatistics()
+    statistics.value = data
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
+  }
+}
+
 // 初始化
 onMounted(() => {
   loadHomeData()
+  fetchStatistics()  // 添加获取统计数据的调用
 })
 </script>
 
 <style scoped lang="less">
 .home {
+  position: relative;  // 添加相对定位
+  max-width: 1200px;  // 保持原有的最大宽度
+  margin: 0 auto;     // 居中显示
+  padding: 0 24px;    // 添加内边距
+
+  .stat-card {
+    position: fixed;  // 改为固定定位
+    top: 50%;        // 垂直居中
+    transform: translateY(-50%);
+    width: 200px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    z-index: 100;
+
+    &:hover {
+      transform: translateY(-50%) translateX(5px);  // 修改悬浮效果
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    &.left {
+      left: 40px;  // 固定距离左侧40px
+    }
+
+    &.right {
+      right: 40px;  // 固定距离右侧40px
+    }
+
+    .stat-content {
+      .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        
+        &.left {
+          background: linear-gradient(135deg, #1890ff20 0%, #1890ff40 100%);
+          .icon {
+            color: #1890ff;
+          }
+        }
+        
+        &.right {
+          background: linear-gradient(135deg, #52c41a20 0%, #52c41a40 100%);
+          .icon {
+            color: #52c41a;
+          }
+        }
+
+        .icon {
+          font-size: 24px;
+        }
+      }
+
+      .stat-info {
+        .label {
+          font-size: 16px;
+          color: rgba(0, 0, 0, 0.65);
+          margin-bottom: 8px;
+        }
+
+        .number {
+          font-size: 32px;
+          font-weight: bold;
+          color: #1890ff;
+          margin-bottom: 8px;
+        }
+
+        .desc {
+          font-size: 14px;
+          color: rgba(0, 0, 0, 0.45);
+        }
+      }
+    }
+  }
+
+  .banner-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    margin-bottom: 40px;
+
+    .banner-section {
+      margin: 0 auto;
+      width: 100%;
+    }
+  }
+
   .banner-section {
     margin-bottom: 40px;
     background: #fff;
-    padding: 24px;
 
     :deep(.ant-carousel) {
       max-width: 1200px;
@@ -572,6 +716,19 @@ onMounted(() => {
           }
         }
       }
+    }
+  }
+
+  // 响应式处理
+  @media (max-width: 1400px) {
+    .stat-card {
+      width: 180px;
+    }
+  }
+
+  @media (max-width: 1200px) {
+    .stat-card {
+      display: none;  // 在小屏幕上隐藏
     }
   }
 }
