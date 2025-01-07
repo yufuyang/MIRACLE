@@ -1,6 +1,8 @@
 package com.example.miracle.modules.company.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.miracle.common.dto.MultiResponse;
+import com.example.miracle.modules.company.dto.ActivityDTO;
 import com.example.miracle.modules.company.dto.ActivityStatsDTO;
 import com.example.miracle.modules.company.dto.ActivityTrendDTO;
 import com.example.miracle.modules.company.entity.ActivityStats;
@@ -42,5 +44,5 @@ public interface ActivityStatsService extends IService<ActivityStats> {
      * @param type 排序类型：view-按浏览量，register-按报名数
      * @return 热门活动列表
      */
-    List<Map<String, Object>> getHotActivities(Long companyId, String type);
+    MultiResponse<ActivityDTO> getHotActivities(Long companyId, String type);
 } 

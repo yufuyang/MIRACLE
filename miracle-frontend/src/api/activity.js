@@ -78,10 +78,35 @@ export function getActivityStats() {
   })
 }
 
+// 获取活动统计数据
+export function getActivityStatsOptions() {
+  return request({
+    url: '/company/activity/stats/options',
+    method: 'get'
+  })
+}
+
+// 获取活动统计趋势
+export function getActivityStatsTrend(params) {
+  return request({
+    url: '/company/activity/stats/trend',
+    method: 'get',
+    params
+  })
+}
+
+// 获取活动统计概览
+export function getActivityStatsOverview() {
+  return request({
+    url: '/company/activity/stats/overview',
+    method: 'get'
+  })
+}
+
 // 获取热门活动
 export function getHotActivities() {
   return request({
-    url: '/company/activity/hot',
+    url: '/company/activity/stats/hot',
     method: 'get'
   })
 }
@@ -93,4 +118,7 @@ export function getCompanyActivityList(data) {
     method: 'post',
     data
   })
-} 
+}
+
+
+

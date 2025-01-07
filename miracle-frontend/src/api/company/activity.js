@@ -67,4 +67,40 @@ export function auditActivityRegistration(id, data) {
     method: 'put',
     data
   })
-} 
+}
+
+
+
+// 获取活动统计概览
+export function getActivityStatsOverview() {
+  return request({
+    url: '/company/activity/stats/overview',
+    method: 'get'
+  })
+}
+
+// 获取活动趋势数据
+export function getActivityStatsTrend(params) {
+  return request({
+    url: '/company/activity/stats/trend',
+    method: 'get',
+    params
+  })
+}
+
+// 获取活动选项列表（统计用）
+export function getActivityStatsOptions() {
+  return request({
+    url: '/company/activity/stats/activities',
+    method: 'get'
+  })
+}
+
+// 获取热门活动排行（统计用）
+export function getActivityStatsRanking(params) {
+  return request({
+    url: '/company/activity/stats/hot',
+    method: 'get',
+    params
+  })
+}

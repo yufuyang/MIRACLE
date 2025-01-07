@@ -1,6 +1,9 @@
 package com.example.miracle.modules.company.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.miracle.common.dto.MultiResponse;
+import com.example.miracle.modules.company.dto.ActivityDTO;
 import com.example.miracle.modules.company.dto.ActivityStatsDTO;
 import com.example.miracle.modules.company.dto.ActivityTrendDTO;
 import com.example.miracle.modules.company.entity.ActivityStats;
@@ -11,6 +14,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -22,24 +27,48 @@ public class ActivityStatsServiceImpl extends ServiceImpl<ActivityStatsMapper, A
     @Override
     public ActivityStatsDTO getStatsOverview(Long companyId) {
         Map<String, Object> stats = baseMapper.selectStatsOverview(companyId);
-        
+
         ActivityStatsDTO dto = new ActivityStatsDTO();
         dto.setTotalCount(((Number) stats.get("totalCount")).intValue());
         dto.setActiveCount(((Number) stats.get("activeCount")).intValue());
         dto.setViewCount(((Number) stats.get("viewCount")).intValue());
         dto.setRegisterCount(((Number) stats.get("registerCount")).intValue());
-        
+
         return dto;
     }
 
     @Override
     public ActivityTrendDTO getStatsTrend(Long companyId, Long activityId, Integer days) {
-        List<Map<String, Object>> trendData = baseMapper.selectStatsTrend(companyId, activityId, days);
-        
         ActivityTrendDTO dto = new ActivityTrendDTO();
-        dto.setDates(trendData.stream().map(m -> (String) m.get("date")).collect(Collectors.toList()));
-        dto.setViewCounts(trendData.stream().map(m -> ((Number) m.get("viewCount")).intValue()).collect(Collectors.toList()));
-        dto.setRegCounts(trendData.stream().map(m -> ((Number) m.get("registerCount")).intValue()).collect(Collectors.toList()));
+        List<String> dates = new ArrayList<>();
+        List<Integer> viewCounts = new ArrayList<>();
+        List<Integer> regCounts = new ArrayList<>();
+        
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(days - 1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM-dd");
+        
+        // 获取日期范围内的统计数据
+        List<ActivityStats> statsList = baseMapper.getStatsByDateRange(activityId, startDate, endDate);
+        
+        // 将统计数据转换为Map，以日期为key
+        Map<LocalDate, ActivityStats> statsMap = statsList.stream()
+            .collect(Collectors.toMap(
+                ActivityStats::getStatsDate,
+                stats -> stats
+            ));
+        
+        // 填充每天的数据
+        for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusDays(1)) {
+            dates.add(date.format(formatter));
+            ActivityStats stats = statsMap.get(date);
+            viewCounts.add(stats != null ? stats.getViewCount() : 0);
+            regCounts.add(stats != null ? stats.getRegisterCount() : 0);
+        }
+        
+        dto.setDates(dates);
+        dto.setViewCounts(viewCounts);
+        dto.setRegCounts(regCounts);
         
         return dto;
     }
@@ -98,7 +127,7 @@ public class ActivityStatsServiceImpl extends ServiceImpl<ActivityStatsMapper, A
     }
 
     @Override
-    public List<Map<String, Object>> getHotActivities(Long companyId, String type) {
-        return baseMapper.selectHotActivities(companyId, type);
+    public MultiResponse<ActivityDTO> getHotActivities(Long companyId, String type) {
+        return MultiResponse.of(baseMapper.selectHotActivities(companyId, type));
     }
 } 

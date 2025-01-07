@@ -1,7 +1,9 @@
 package com.example.miracle.modules.company.controller;
 
 import com.example.miracle.common.controller.BaseController;
+import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.modules.company.dto.ActivityDTO;
 import com.example.miracle.modules.company.dto.ActivityStatsDTO;
 import com.example.miracle.modules.company.dto.ActivityTrendDTO;
 import com.example.miracle.modules.company.service.ActivityService;
@@ -52,7 +54,7 @@ public class CompanyActivityStatsController {
      * 获取热门活动排行
      */
     @GetMapping("/hot")
-    public SingleResponse<List<Map<String, Object>>> getHotActivities(@RequestParam(defaultValue = "view") String type) {
+    public MultiResponse<ActivityDTO> getHotActivities(@RequestParam(defaultValue = "view") String type) {
 
         if (!Arrays.asList("view", "register").contains(type)) {
             throw new IllegalArgumentException("Invalid type parameter");
@@ -60,8 +62,7 @@ public class CompanyActivityStatsController {
 
         Long companyId = baseController.getCompanyId();
 
-        List<Map<String, Object>> hotActivities = activityStatsService.getHotActivities(companyId, type);
 
-        return SingleResponse.of(hotActivities);
+        return activityStatsService.getHotActivities(companyId, type);
     }
 } 

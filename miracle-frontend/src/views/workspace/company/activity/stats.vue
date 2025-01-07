@@ -146,6 +146,11 @@ import {
   EyeOutlined,
   TeamOutlined
 } from '@ant-design/icons-vue'
+import { 
+  getActivityStatsOverview, 
+  getActivityStatsTrend,
+  getHotActivities
+} from '@/api/activity'
 
 const router = useRouter()
 const loading = ref(false)
@@ -218,26 +223,11 @@ const activityOptions = ref([])
 
 // 获取统计数据
 const fetchStatistics = async () => {
-  loading.value = true
   try {
-    // TODO: 调用接口获取数据
-    statistics.value = {
-      totalCount: 100,
-      activeCount: 30,
-      viewCount: 1000,
-      registerCount: 500
-    }
+    const { data } = await getActivityStatsOverview()
+    statistics.value = data
   } catch (error) {
     console.error('获取统计数据失败:', error)
-    // 如果获取失败，设置默认值
-    statistics.value = {
-      totalCount: 0,
-      activeCount: 0,
-      viewCount: 0,
-      registerCount: 0
-    }
-  } finally {
-    loading.value = false
   }
 }
 
@@ -263,7 +253,12 @@ const initChart = () => {
     xAxis: {
       type: 'category',
       boundaryGap: false,
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+      data: [],
+      axisLabel: {
+        formatter: (value) => {
+          return value  // 直接显示日期字符串 MM-DD 格式
+        }
+      }
     },
     yAxis: {
       type: 'value'
@@ -273,13 +268,13 @@ const initChart = () => {
         name: '浏览量',
         type: 'line',
         smooth: true,
-        data: [120, 132, 101, 134, 90, 230, 210]
+        data: []
       },
       {
         name: '报名数',
         type: 'line',
         smooth: true,
-        data: [220, 182, 191, 234, 290, 330, 310]
+        data: []
       }
     ]
   }
@@ -287,24 +282,37 @@ const initChart = () => {
   chart.setOption(option)
 }
 
+// 更新图表数据的方法
+const updateChart = (data) => {
+  const option = {
+    xAxis: {
+      data: data.dates
+    },
+    series: [
+      {
+        name: '浏览量',
+        data: data.viewCounts
+      },
+      {
+        name: '报名数',
+        data: data.regCounts
+      }
+    ]
+  }
+  chart.setOption(option)
+}
+
 // 获取活动列表
 const fetchActivityList = async () => {
   loading.value = true
   try {
-    // TODO: 调用接口获取数据
-    activityList.value = [
-      {
-        id: 1,
-        title: '示例活动1',
-        startTime: '2024-01-01 10:00',
-        endTime: '2024-01-07 18:00',
-        viewCount: 100,
-        registerCount: 50,
-        status: 1
-      }
-      // ... 更多数据
-    ]
-    pagination.value.total = 100
+    const { data } = await getHotActivities({
+      type: sortBy.value  // 'view' 或 'register'
+    })
+    activityList.value = data
+  } catch (error) {
+    console.error('获取热门活动失败:', error)
+    message.error('获取热门活动失败')
   } finally {
     loading.value = false
   }
@@ -336,13 +344,11 @@ const handleListTypeChange = () => {
 }
 
 const handleSortChange = () => {
-  pagination.value.current = 1
   fetchActivityList()
 }
 
-const handleTableChange = (pag) => {
-  pagination.value.current = pag.current
-  fetchActivityList()
+const handleTableChange = () => {
+  // 移除分页处理
 }
 
 const handleViewDetail = (record) => {
@@ -354,15 +360,19 @@ const handleResize = () => {
   chart?.resize()
 }
 
-// 获取活动列表
+// 获取活动选项
 const fetchActivityOptions = async () => {
   try {
-    // TODO: 调用接口获取活动列表
-    activityOptions.value = [
-      { id: 1, title: '活动1' },
-      { id: 2, title: '活动2' },
-      // ... 更多活动
-    ]
+    const { data } = await getHotActivities()
+    activityOptions.value = data.map(item => ({
+      id: item.id,
+      title: item.title
+    }))
+    // 设置默认选中第一个活动
+    if (activityOptions.value.length > 0) {
+      selectedActivity.value = activityOptions.value[0].id
+      fetchTrendData()  // 获取第一个活动的趋势数据
+    }
   } catch (error) {
     console.error('获取活动列表失败:', error)
   }
@@ -386,17 +396,44 @@ const fetchChartData = async () => {
   }
 }
 
-// 监听时间范围变化
-watch(timeRange, () => {
-  fetchChartData()
+// 监听活动选择和时间范围变化
+watch([selectedActivity, timeRange], () => {
+  fetchTrendData()
 })
+
+// 获取趋势数据
+const fetchTrendData = async () => {
+  try {
+    const { data } = await getActivityStatsTrend({
+      activityId: selectedActivity.value,
+      days: Number(timeRange.value)
+    })
+    updateChart(data)
+  } catch (error) {
+    console.error('获取趋势数据失败:', error)
+  }
+}
+
+// 获取热门活动
+const fetchHotActivities = async () => {
+  loading.value = true
+  try {
+    const { data } = await getHotActivityStats({ type: rankType.value })
+    hotActivities.value = data
+  } catch (error) {
+    console.error('获取热门活动失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 onMounted(() => {
   fetchStatistics()
   fetchActivityList()
   initChart()
   window.addEventListener('resize', handleResize)
-  fetchActivityOptions() // 获取活动列表
+  fetchActivityOptions()
+  fetchTrendData()
 })
 
 onUnmounted(() => {
