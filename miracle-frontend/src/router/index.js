@@ -162,14 +162,14 @@ const routes = [
           {
             path: 'list',
             name: 'InquiryList',
-            component: () => import('@/views/workspace/inquiry/list.vue'),
-            meta: { title: '询盘列表' }
+            component: () => import('@/views/workspace/company/inquiry/list.vue'),
+            meta: { title: '意向列表' }
           },
           {
             path: 'stats',
             name: 'InquiryStats',
-            component: () => import('@/views/workspace/inquiry/stats.vue'),
-            meta: { title: '询盘统计' }
+            component: () => import('@/views/workspace/company/inquiry/stats.vue'),
+            meta: { title: '意向统计' }
           }
         ]
       },
@@ -181,13 +181,13 @@ const routes = [
           {
             path: 'list',
             name: 'OrderList',
-            component: () => import('@/views/workspace/order/list.vue'),
+            component: () => import('@/views/workspace/company/order/list.vue'),
             meta: { title: '订单列表' }
           },
           {
             path: 'stats',
             name: 'OrderStats',
-            component: () => import('@/views/workspace/order/stats.vue'),
+            component: () => import('@/views/workspace/company/order/stats.vue'),
             meta: { title: '订单统计' }
           }
         ]
@@ -200,13 +200,13 @@ const routes = [
           {
             path: 'list',
             name: 'CooperationList',
-            component: () => import('@/views/workspace/cooperation/list.vue'),
+            component: () => import('@/views/workspace/company/cooperation/list.vue'),
             meta: { title: '合作列表' }
           },
           {
             path: 'stats',
             name: 'CooperationStats',
-            component: () => import('@/views/workspace/cooperation/stats.vue'),
+            component: () => import('@/views/workspace/company/cooperation/stats.vue'),
             meta: { title: '合作统计' }
           }
         ]
@@ -223,6 +223,7 @@ const routes = [
         name: 'ProductStatistics',
         meta: { title: '产品统计', icon: 'chart' }
       }
+
     ]
   },
   {
