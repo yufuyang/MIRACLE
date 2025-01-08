@@ -1,17 +1,19 @@
-package com.example.miracle.modules.platform.entity;
+package com.example.miracle.modules.website.dto.cmd;
 
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.example.miracle.common.base.BaseEntity;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
-/**
- * 商户信息实体类
- */
 @Data
-@EqualsAndHashCode(callSuper = true)
-@TableName("merchant")
-public class Merchant extends BaseEntity {
+public class MerchantRegisterCmd {
+
+    /**
+     * 用户名
+     */
+    private String username;
+
+    /**
+     * 密码
+     */
+    private String password;
 
     /**
      * 商户名称
@@ -47,14 +49,4 @@ public class Merchant extends BaseEntity {
      * 详细地址
      */
     private String address;
-
-    /**
-     * 商户描述
-     */
-    private String merchantDesc;
-
-    /**
-     * 状态：0-禁用 1-启用
-     */
-    private Integer status;
-} 
+}

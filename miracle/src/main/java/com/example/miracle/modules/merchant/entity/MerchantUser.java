@@ -28,15 +28,6 @@ public class MerchantUser extends BaseEntity {
      */
     private String password;
 
-    /**
-     * 真实姓名
-     */
-    private String realName;
-
-    /**
-     * 手机号
-     */
-    private String phone;
 
     /**
      * 状态：0-禁用 1-启用

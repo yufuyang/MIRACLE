@@ -29,11 +29,6 @@ public class Company extends BaseEntity {
     private String licenseNo;
 
     /**
-     * 法人代表
-     */
-    private String legalPerson;
-
-    /**
      * 联系人姓名
      */
     private String contactName;

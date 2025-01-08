@@ -39,23 +39,4 @@ public class MerchantServiceImpl extends ServiceImpl<MerchantMapper, Merchant> i
         // 返回结果
         return MultiResponse.of(page.getRecords(), (int) page.getTotal());
     }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean save(Merchant merchant) {
-        // 保存商户信息
-        boolean result = super.save(merchant);
-        if (result) {
-            // 创建商户管理员
-            MerchantUser merchantUser = new MerchantUser();
-            merchantUser.setMerchantId(merchant.getId());
-            merchantUser.setUsername(merchant.getContactPhone());
-            merchantUser.setRealName(merchant.getContactName());
-            merchantUser.setPhone(merchant.getContactPhone());
-            merchantUser.setPassword("123456");
-            merchantUser.setStatus(1);
-            merchantUserService.save(merchantUser);
-        }
-        return result;
-    }
 } 

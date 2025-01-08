@@ -49,25 +49,4 @@ public class CompanyServiceImpl extends ServiceImpl<CompanyMapper, Company> impl
         // 返回结果
         return MultiResponse.of(page.getRecords(), (int) page.getTotal());
     }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean save(Company company) {
-        // 保存公司信息
-        boolean result = super.save(company);
-
-        if (result) {
-            // 创建公司管理员
-            CompanyUser companyUser = new CompanyUser();
-            companyUser.setCompanyId(company.getId());
-            companyUser.setUsername(company.getContactPhone());
-            companyUser.setRealName(company.getContactName());
-            companyUser.setPhone(company.getContactPhone());
-            companyUser.setPassword("123456");
-            companyUser.setStatus(1);
-            companyUserService.save(companyUser);
-        }
-
-        return result;
-    }
 }

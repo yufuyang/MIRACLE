@@ -2,11 +2,15 @@ package com.example.miracle.modules.website.controller;
 
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.modules.company.entity.CompanyUser;
+import com.example.miracle.modules.company.service.CompanyUserService;
 import com.example.miracle.modules.platform.dto.query.CompanyPageQuery;
 import com.example.miracle.modules.platform.entity.Company;
 import com.example.miracle.modules.platform.service.CompanyService;
 import com.example.miracle.modules.website.dto.CompanyDTO;
+import com.example.miracle.modules.website.dto.cmd.CompanyRegisterCmd;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class WebsiteCompanyController {
 
     private final CompanyService companyService;
+
+    private final CompanyUserService companyUserService;
 
 
     /**
@@ -41,8 +47,19 @@ public class WebsiteCompanyController {
      * 新增公司
      */
     @PostMapping("/register")
-    public SingleResponse<Company> save(@RequestBody Company company) {
+    public SingleResponse<Company> save(@RequestBody CompanyRegisterCmd companyRegisterCmd) {
+
+        Company company = new Company();
+        BeanUtils.copyProperties(companyRegisterCmd, company);
+
         companyService.save(company);
+
+        CompanyUser companyUser = new CompanyUser();
+        BeanUtils.copyProperties(companyRegisterCmd, companyUser);
+        companyUser.setCompanyId(company.getId());
+
+        companyUserService.save(companyUser);
+
         return SingleResponse.of(company);
     }
 

@@ -66,17 +66,6 @@
               </template>
             </a-input>
           </a-form-item>
-          <a-form-item name="licenseNo">
-            <a-input
-              v-model:value="registerForm.licenseNo"
-              placeholder="请输入营业执照号"
-              size="large"
-            >
-              <template #prefix>
-                <file-outlined />
-              </template>
-            </a-input>
-          </a-form-item>
         </template>
         <template v-else>
           <a-form-item name="merchantName">
@@ -91,6 +80,18 @@
             </a-input>
           </a-form-item>
         </template>
+
+        <a-form-item name="licenseNo">
+          <a-input
+              v-model:value="registerForm.licenseNo"
+              placeholder="请输入营业执照号"
+              size="large"
+          >
+            <template #prefix>
+              <file-outlined />
+            </template>
+          </a-input>
+        </a-form-item>
 
         <!-- 联系信息 -->
         <a-form-item name="contactName">
