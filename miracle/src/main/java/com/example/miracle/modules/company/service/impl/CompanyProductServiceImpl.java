@@ -31,7 +31,6 @@ import java.util.Objects;
 public class CompanyProductServiceImpl extends ServiceImpl<CompanyProductMapper, CompanyProduct> implements CompanyProductService {
 
     private final CompanyProductImageService productImageService;
-    private final CompanyProductStatsService companyProductStatsService;
 
     @Override
     public MultiResponse<CompanyProduct> pageQuery(CompanyProductPageQuery companyProductPageQuery) {

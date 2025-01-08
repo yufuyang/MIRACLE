@@ -3,13 +3,14 @@ package com.example.miracle.modules.company.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.miracle.modules.company.dto.ActivityDTO;
 import com.example.miracle.modules.company.entity.ActivityStats;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 import java.util.Map;
 import java.time.LocalDate;
-
+@Mapper
 public interface ActivityStatsMapper extends BaseMapper<ActivityStats> {
 
     /**

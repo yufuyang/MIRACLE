@@ -4,13 +4,17 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.modules.company.entity.CompanyMerchantCooperation;
 import com.example.miracle.modules.company.entity.CompanyProductStats;
+import com.example.miracle.modules.company.service.CompanyMerchantCooperationService;
 import com.example.miracle.modules.company.service.CompanyProductStatsService;
 import com.example.miracle.modules.merchant.dto.query.MerchantProductIntentionPageQuery;
 import com.example.miracle.modules.merchant.entity.MerchantProductIntention;
 import com.example.miracle.modules.merchant.service.MerchantProductIntentionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Objects;
 
 /**
  * 商户产品意向控制器
@@ -23,6 +27,8 @@ public class MerchantProductIntentionController {
     private final BaseController baseController;
     private final MerchantProductIntentionService intentionService;
     private final CompanyProductStatsService companyProductStatsService;
+
+    private final CompanyMerchantCooperationService companyMerchantCooperationService;
 
     /**
      * 添加意向
@@ -53,6 +59,7 @@ public class MerchantProductIntentionController {
      */
     @PostMapping("/cancel")
     public SingleResponse<Void> cancelIntention(@RequestBody MerchantProductIntention intention) {
+
         intentionService.remove(new LambdaUpdateWrapper<MerchantProductIntention>()
                 .eq(MerchantProductIntention::getMerchantId, baseController.getMerchantId())
                 .eq(MerchantProductIntention::getProductId, intention.getProductId()));
