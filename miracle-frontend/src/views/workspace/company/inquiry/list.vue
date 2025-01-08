@@ -33,7 +33,7 @@
       <!-- 数据表格 -->
       <a-table
         :columns="columns"
-        :data-source="mockData"
+        :data-source="intentionList"
         :loading="loading"
         :pagination="pagination"
         @change="handleTableChange"
@@ -84,9 +84,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
+import { getIntentionList, handleCooperation } from '@/api/intention'
 
 // 查询参数
 const queryParams = ref({
@@ -129,12 +130,6 @@ const columns = [
     key: 'contactPhone'
   },
   {
-    title: '意向描述',
-    dataIndex: 'description',
-    key: 'description',
-    ellipsis: true
-  },
-  {
     title: '状态',
     dataIndex: 'status',
     key: 'status',
@@ -156,39 +151,29 @@ const columns = [
 
 const loading = ref(false)
 
-// 模拟数据
-const mockData = ref([
-  {
-    id: 1,
-    productName: '测试产品1',
-    merchantName: '测试商户1',
-    contactName: '张三',
-    contactPhone: '13800138001',
-    description: '想了解更多产品细节',
-    status: 0,
-    createTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
-  },
-  {
-    id: 2,
-    productName: '测试产品2',
-    merchantName: '测试商户2',
-    contactName: '李四',
-    contactPhone: '13800138002',
-    description: '希望进行深入合作',
-    status: 1,
-    createTime: dayjs().subtract(1, 'day').format('YYYY-MM-DD HH:mm:ss')
-  },
-  {
-    id: 3,
-    productName: '测试产品3',
-    merchantName: '测试商户3',
-    contactName: '王五',
-    contactPhone: '13800138003',
-    description: '需要详细的报价方案',
-    status: 2,
-    createTime: dayjs().subtract(2, 'day').format('YYYY-MM-DD HH:mm:ss')
+// 意向列表数据
+const intentionList = ref([])
+
+// 获取列表数据
+const fetchList = async () => {
+  loading.value = true
+  try {
+    const { data } = await getIntentionList({
+      pageNum: pagination.value.current,
+      pageSize: pagination.value.pageSize,
+      productName: queryParams.value.productName,
+      merchantName: queryParams.value.merchantName,
+      status: queryParams.value.status
+    })
+    intentionList.value = data.list
+    pagination.value.total = data.total
+  } catch (error) {
+    console.error('获取意向列表失败:', error)
+    message.error('获取意向列表失败')
+  } finally {
+    loading.value = false
   }
-])
+}
 
 // 合作确认弹框状态
 const cooperateModal = ref({
@@ -210,9 +195,9 @@ const handleCooperate = async () => {
 
   cooperateModal.value.loading = true
   try {
-    // 这里可以添加调用后端接口的逻辑
+    await handleCooperation(record.merchantId)
     message.success('已发起合作')
-    record.status = 1
+    fetchList()  // 重新加载列表
     cooperateModal.value.visible = false
   } catch (error) {
     message.error('发起合作失败')
@@ -246,14 +231,14 @@ const handleTableChange = (pag) => {
   pagination.value.pageSize = pag.pageSize
   queryParams.value.pageNum = pag.current
   queryParams.value.pageSize = pag.pageSize
+  fetchList()
 }
 
 // 搜索
 const handleSearch = () => {
   pagination.value.current = 1
   queryParams.value.pageNum = 1
-  // 这里可以添加搜索逻辑
-  console.log('搜索参数:', queryParams.value)
+  fetchList()
 }
 
 // 重置
@@ -265,9 +250,12 @@ const handleReset = () => {
     pageNum: 1,
     pageSize: 10
   }
-  // 这里可以添加重置后的查询逻辑
-  console.log('重置参数:', queryParams.value)
+  fetchList()
 }
+
+onMounted(() => {
+  fetchList()
+})
 </script>
 
 <style lang="less" scoped>

@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 获取活动列表
 export function getActivityList(params) {
   return request({
-    url: '/website/activity/page',
+    url: '/company/activity/list',
     method: 'post',
     data: params
   })
