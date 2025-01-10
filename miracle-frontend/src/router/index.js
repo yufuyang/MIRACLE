@@ -85,176 +85,96 @@ const routes = [
   // 工作台
   {
     path: '/workspace',
-    name: 'workspace',
     component: WorkspaceLayout,
     meta: { requiresAuth: true, showSidebar: true },
-    redirect: to => {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
-      console.log('Current user role:', userInfo?.role)
-      switch (userInfo?.role) {
-        case 'MERCHANT':
-          return '/workspace/merchant/home'
-        case 'COMPANY':
-          return '/workspace/profile'
-        default:
-          return '/workspace/stats/overview'
-      }
-    },
     children: [
+      // 企业用户路由
       {
-        path: '',
-        name: 'Workspace',
-        redirect: (to) => {
-          const userRole = JSON.parse(localStorage.getItem('userInfo'))?.role
-          return userRole === 'COMPANY' ? '/workspace/profile' : '/workspace/merchant/home'
-        }
-      },
-      {
-        path: 'stats',
-        meta: { roles: ['ADMIN', 'COMPANY'] },
-        children: [
-          {
-            path: 'overview',
-            component: () => import('@/views/workspace/stats/overview/index.vue'),
-            meta: { title: '数据概览' }
-          }
-        ]
+        path: 'profile',
+        component: () => import('@/views/workspace/profile/index.vue'),
+        meta: { title: '企业资料' }
       },
       {
         path: 'product',
-        name: 'CompanyProduct',
         redirect: 'product/list',
         children: [
           {
             path: 'list',
-            name: 'CompanyProductList',
             component: () => import('@/views/workspace/company/product/list.vue'),
             meta: { title: '产品列表' }
           },
           {
             path: 'detail/:id',
-            name: 'CompanyProductDetail',
             component: () => import('@/views/workspace/company/product/detail.vue'),
             meta: { title: '产品详情' }
           },
           {
             path: 'category',
-            name: 'CompanyProductCategory',
             component: () => import('@/views/workspace/company/product/category.vue'),
             meta: { title: '产品分类' }
           },
           {
             path: 'statistics',
-            name: 'ProductStatistics',
             component: () => import('@/views/workspace/company/product/statistics.vue'),
             meta: { title: '产品统计' }
           }
         ]
       },
       {
-        path: 'activity/list',
-        name: 'WorkspaceActivityList',
-        component: () => import('@/views/workspace/company/activity/list.vue'),
-        meta: { title: '活动列表' }
-      },
-      {
-        path: 'activity/detail/:id',
-        name: 'WorkspaceActivityDetail',
-        component: () => import('@/views/workspace/company/activity/detail.vue'),
-        meta: { title: '活动详情' }
-      },
-      {
-        path: 'activity/edit/:id',
-        name: 'ActivityEdit',
-        component: () => import('@/views/workspace/company/activity/edit.vue'),
-        meta: { title: '编辑活动', showSidebar: true }
-      },
-      {
-        path: 'activity/stats',
-        name: 'ActivityStats',
-        component: () => import('@/views/workspace/company/activity/stats.vue'),
-        meta: { title: '活动统计' }
+        path: 'activity',
+        children: [
+          {
+            path: 'list',
+            component: () => import('@/views/workspace/company/activity/list.vue'),
+            meta: { title: '活动列表' }
+          },
+          {
+            path: 'detail/:id',
+            component: () => import('@/views/workspace/company/activity/detail.vue'),
+            meta: { title: '活动详情' }
+          },
+          {
+            path: 'edit/:id',
+            component: () => import('@/views/workspace/company/activity/edit.vue'),
+            meta: { title: '编辑活动' }
+          },
+          {
+            path: 'stats',
+            component: () => import('@/views/workspace/company/activity/stats.vue'),
+            meta: { title: '活动统计' }
+          }
+        ]
       },
       {
         path: 'inquiry',
-        name: 'WorkspaceInquiry',
         redirect: 'inquiry/list',
         children: [
           {
             path: 'list',
-            name: 'InquiryList',
             component: () => import('@/views/workspace/company/inquiry/list.vue'),
             meta: { title: '意向列表' }
           },
           {
             path: 'stats',
-            name: 'InquiryStats',
             component: () => import('@/views/workspace/company/inquiry/stats.vue'),
             meta: { title: '意向统计' }
           }
         ]
       },
-      {
-        path: 'order',
-        name: 'WorkspaceOrder',
-        redirect: 'order/list',
-        children: [
-          {
-            path: 'list',
-            name: 'OrderList',
-            component: () => import('@/views/workspace/company/order/list.vue'),
-            meta: { title: '订单列表' }
-          },
-          {
-            path: 'stats',
-            name: 'OrderStats',
-            component: () => import('@/views/workspace/company/order/stats.vue'),
-            meta: { title: '订单统计' }
-          }
-        ]
-      },
-      {
-        path: 'cooperation',
-        name: 'WorkspaceCooperation',
-        redirect: 'cooperation/list',
-        children: [
-          {
-            path: 'list',
-            name: 'CooperationList',
-            component: () => import('@/views/workspace/company/cooperation/list.vue'),
-            meta: { title: '合作列表' }
-          },
-          {
-            path: 'stats',
-            name: 'CooperationStats',
-            component: () => import('@/views/workspace/company/cooperation/stats.vue'),
-            meta: { title: '合作统计' }
-          }
-        ]
-      },
-      {
-        path: 'profile',
-        name: 'WorkspaceProfile',
-        component: () => import('@/views/workspace/profile/index.vue'),
-        meta: { title: '企业资料' }
-      },
+      // 商户用户路由
       {
         path: 'merchant',
-        meta: { roles: ['MERCHANT'] },
         children: [
           {
             path: 'home',
-            name: 'MerchantHome',
             component: () => import('@/views/workspace/merchant/home/index.vue'),
             meta: { title: '商户首页' }
           },
           {
             path: 'activity',
-            name: 'MerchantActivity',
             children: [
               {
                 path: 'list',
-                name: 'MerchantActivityList',
                 component: () => import('@/views/workspace/merchant/activity/list.vue'),
                 meta: { title: '活动列表' }
               }
@@ -262,11 +182,9 @@ const routes = [
           },
           {
             path: 'intention',
-            name: 'MerchantIntention',
             children: [
               {
                 path: 'list',
-                name: 'MerchantIntentionList',
                 component: () => import('@/views/workspace/merchant/intention/list.vue'),
                 meta: { title: '意向列表' }
               }
@@ -274,11 +192,9 @@ const routes = [
           },
           {
             path: 'cooperation',
-            name: 'MerchantCooperation',
             children: [
               {
                 path: 'list',
-                name: 'MerchantCooperationList',
                 component: () => import('@/views/workspace/merchant/cooperation/list.vue'),
                 meta: { title: '合作列表' }
               }
@@ -342,7 +258,7 @@ router.beforeEach((to, from, next) => {
       return
     }
 
-    if (userInfo?.role === 'COMPANY' && !to.path.startsWith('/workspace/profile')) {
+    if (userInfo?.role === 'COMPANY' && to.path === '/workspace') {
       next('/workspace/profile')
       return
     }

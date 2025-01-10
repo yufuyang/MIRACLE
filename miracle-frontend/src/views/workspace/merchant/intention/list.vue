@@ -64,7 +64,7 @@ import { useRouter } from 'vue-router'
 import dayjs from 'dayjs'
 import { message } from 'ant-design-vue'
 import defaultImage from '@/assets/images/default.jpg'
-import { getMerchantIntentionList, cancelIntention } from '@/api/merchant/merchant-base'
+import { getMerchantIntentionList, cancelIntention } from '@/api/merchant'
 
 const router = useRouter()
 

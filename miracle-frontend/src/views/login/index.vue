@@ -94,21 +94,36 @@ const rules = {
 }
 
 // 处理登录
-const handleLogin = async () => {
-  loginFormRef.value.validate().then(async () => {
+const handleLogin = () => {
+  loginFormRef.value?.validate().then(async () => {
     loading.value = true
     try {
-      const result = await userStore.login(loginForm)
-      if (!result) {
-        loading.value = false
+      // 根据角色选择不同的登录接口
+      const loginApi = loginForm.role === 'company' ? companyLogin : merchantLogin
+      const response = await loginApi({
+        username: loginForm.username,
+        password: loginForm.password
+      })
+      
+      if (response.data) {
+        // 存储用户信息和token
+        localStorage.setItem('userInfo', JSON.stringify(response.data))
+        localStorage.setItem('token', response.data.token)
+        
+        // 根据角色直接跳转到对应页面
+        if (response.data.role === 'COMPANY') {
+          router.push('/workspace/profile')
+        } else if (response.data.role === 'MERCHANT') {
+          router.push('/workspace/merchant/home')
+        }
+        message.success('登录成功')
       }
     } catch (error) {
       console.error('Login failed:', error)
       message.error(error.response?.data?.message || '登录失败')
+    } finally {
       loading.value = false
     }
-  }).catch(error => {
-    console.log('验证失败:', error)
   })
 }
 

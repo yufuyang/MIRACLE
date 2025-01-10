@@ -144,7 +144,7 @@ import {
   UserOutlined
 } from '@ant-design/icons-vue'
 import { getProductDetail, getProductImages } from '@/api/product'
-import { createIntention } from '@/api/merchant/merchant-base'
+import { createIntention } from '@/api/merchant'
 import { getProductCategory, getProductStats } from '@/api/website/companyProduct'
 import { getCompanyDetail } from '@/api/company'
 import { getUserDetail } from '@/api/user'
