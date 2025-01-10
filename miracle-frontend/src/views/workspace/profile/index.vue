@@ -1,7 +1,5 @@
 <template>
   <div class="company-profile">
-    <page-header title="企业资料" @back="$router.back" />
-
     <a-spin :spinning="loading">
       <!-- 基本信息部分 -->
       <div class="basic-info section-card">
@@ -34,10 +32,6 @@
           <div class="info-item">
             <span class="label">营业执照号：</span>
             <span class="value">{{ formData.licenseNo }}</span>
-          </div>
-          <div class="info-item">
-            <span class="label">法定代表人：</span>
-            <span class="value">{{ formData.legalPerson }}</span>
           </div>
           <div class="info-item">
             <span class="label">联系人：</span>

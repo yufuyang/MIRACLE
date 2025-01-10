@@ -55,7 +55,7 @@ public class CompanyUserServiceImpl extends ServiceImpl<CompanyUserMapper, Compa
         CompanyUserLoginDTO loginDTO = new CompanyUserLoginDTO();
         loginDTO.setUsername(user.getUsername());
         loginDTO.setToken(token);
-        loginDTO.setRole(CommonConstant.PLATFORM_ROLE);
+        loginDTO.setRole(CommonConstant.COMPANY_ROLE);
         return SingleResponse.of(loginDTO);
     }
 

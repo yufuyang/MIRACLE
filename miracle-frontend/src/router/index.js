@@ -85,22 +85,40 @@ const routes = [
   // 工作台
   {
     path: '/workspace',
+    name: 'workspace',
     component: WorkspaceLayout,
     meta: { requiresAuth: true, showSidebar: true },
+    redirect: to => {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      console.log('Current user role:', userInfo?.role)
+      switch (userInfo?.role) {
+        case 'MERCHANT':
+          return '/workspace/merchant/home'
+        case 'COMPANY':
+          return '/workspace/profile'
+        default:
+          return '/workspace/stats/overview'
+      }
+    },
     children: [
       {
         path: '',
         name: 'Workspace',
         redirect: (to) => {
           const userRole = JSON.parse(localStorage.getItem('userInfo'))?.role
-          return userRole === 'COMPANY' ? '/workspace/profile' : '/workspace/merchant/dashboard'
+          return userRole === 'COMPANY' ? '/workspace/profile' : '/workspace/merchant/home'
         }
       },
       {
-        path: 'stats/overview',
-        name: 'StatsOverview',
-        component: () => import('@/views/workspace/stats/overview.vue'),
-        meta: { title: '总览' }
+        path: 'stats',
+        meta: { roles: ['ADMIN', 'COMPANY'] },
+        children: [
+          {
+            path: 'overview',
+            component: () => import('@/views/workspace/stats/overview/index.vue'),
+            meta: { title: '数据概览' }
+          }
+        ]
       },
       {
         path: 'product',
@@ -309,32 +327,27 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const userStore = useUserStore()
-  userStore.initUserState()
+  const userInfo = JSON.parse(localStorage.getItem('userInfo'))
   const token = localStorage.getItem('token')
-  const userRole = userStore.userInfo?.role
-  
-  if (to.meta.requiresAuth && !token) {
-    next('/login')
-    return
-  }
-  
-  if (to.meta.roles && !to.meta.roles.includes(userRole)) {
-    next('/403')
-    return
-  }
-  
-  if ((to.path === '/login' || to.path === '/register') && token) {
-    if (userRole === 'COMPANY') {
-      next('/workspace/profile')
-    } else if (userRole === 'MERCHANT') {
-      next('/workspace/merchant/dashboard')
-    } else {
-      next('/')
+  console.log('Router guard - userInfo:', userInfo)
+
+  if (to.meta.requiresAuth) {
+    if (!token) {
+      next('/login')
+      return
     }
-    return
+
+    if (userInfo?.role === 'MERCHANT' && !to.path.startsWith('/workspace/merchant')) {
+      next('/workspace/merchant/home')
+      return
+    }
+
+    if (userInfo?.role === 'COMPANY' && !to.path.startsWith('/workspace/profile')) {
+      next('/workspace/profile')
+      return
+    }
   }
-  
+
   next()
 })
 
