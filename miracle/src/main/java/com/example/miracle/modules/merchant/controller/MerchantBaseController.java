@@ -1,5 +1,6 @@
 package com.example.miracle.modules.merchant.controller;
 
+import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.modules.platform.entity.Merchant;
 import com.example.miracle.modules.platform.service.MerchantService;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 public class MerchantBaseController {
 
     private final MerchantService merchantService;
+
+    private final BaseController baseController;
 
     /**
      * 新增商户
@@ -34,8 +37,11 @@ public class MerchantBaseController {
     /**
      * 获取商户详情
      */
-    @GetMapping("/{id}")
-    public SingleResponse<Merchant> getById(@PathVariable Long id) {
-        return SingleResponse.of(merchantService.getById(id));
+    @GetMapping
+    public SingleResponse<Merchant> getById() {
+
+        Long merchantId = baseController.getMerchantId();
+
+        return SingleResponse.of(merchantService.getById(merchantId));
     }
 }

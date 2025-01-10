@@ -23,6 +23,17 @@ public class CompanyMerchantCooperationDTO {
      */
     private Integer status;
 
+    private Long companyId;
+
+    private String companyName;
+
+    private String companyLogo;
+
+    private String contactName;
+
+
+    private String contactPhone;
+
     /**
      * 创建时间
      */

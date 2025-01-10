@@ -9,10 +9,13 @@ import com.example.miracle.modules.company.dto.query.CompanyMerchantCooperationP
 import com.example.miracle.modules.company.entity.CompanyMerchantCooperation;
 import com.example.miracle.modules.company.mapper.CompanyMerchantCooperationMapper;
 import com.example.miracle.modules.company.service.CompanyMerchantCooperationService;
+import com.example.miracle.modules.platform.entity.Company;
 import com.example.miracle.modules.platform.entity.Merchant;
+import com.example.miracle.modules.platform.mapper.CompanyMapper;
 import com.example.miracle.modules.platform.mapper.MerchantMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -25,11 +28,14 @@ public class CompanyMerchantCooperationServiceImpl extends ServiceImpl<CompanyMe
 
     private final MerchantMapper merchantMapper;
 
+    private final CompanyMapper companyMapper;
+
     @Override
     public MultiResponse<CompanyMerchantCooperationDTO> page(CompanyMerchantCooperationPageQry companyMerchantCooperationPageQry) {
 
         LambdaQueryWrapper<CompanyMerchantCooperation> wrapper = new LambdaQueryWrapper<CompanyMerchantCooperation>()
                 .eq(Objects.nonNull(companyMerchantCooperationPageQry.getCompanyId()), CompanyMerchantCooperation::getCompanyId, companyMerchantCooperationPageQry.getCompanyId())
+                .eq(Objects.nonNull(companyMerchantCooperationPageQry.getMerchantId()), CompanyMerchantCooperation::getMerchantId, companyMerchantCooperationPageQry.getMerchantId())
                 .orderByDesc(CompanyMerchantCooperation::getCreateTime);
 
         if (StringUtils.hasText(companyMerchantCooperationPageQry.getMerchantName())) {
@@ -37,12 +43,26 @@ public class CompanyMerchantCooperationServiceImpl extends ServiceImpl<CompanyMe
             LambdaQueryWrapper<Merchant> merchantWrapper = new LambdaQueryWrapper<Merchant>()
                     .like(Merchant::getMerchantName, companyMerchantCooperationPageQry.getMerchantName());
 
-            Merchant merchant = merchantMapper.selectOne(merchantWrapper);
-            if (merchant != null) {
-                wrapper.eq(CompanyMerchantCooperation::getMerchantId, merchant.getId());
-            }else {
+            List<Merchant> merchantList = merchantMapper.selectList(merchantWrapper);
+            if (CollectionUtils.isEmpty(merchantList)) {
                 return MultiResponse.buildSuccess();
+            }else {
+                wrapper.in(CompanyMerchantCooperation::getMerchantId, merchantList.stream().map(Merchant::getId).collect(Collectors.toList()));
             }
+        }
+
+        if (StringUtils.hasText(companyMerchantCooperationPageQry.getCompanyName())) {
+
+            LambdaQueryWrapper<Company> companyWrapper = new LambdaQueryWrapper<Company>()
+                    .like(Company::getCompanyName, companyMerchantCooperationPageQry.getCompanyName());
+
+            List<Company> companyList = companyMapper.selectList(companyWrapper);
+            if (CollectionUtils.isEmpty(companyList)) {
+                return MultiResponse.buildSuccess();
+            }else {
+                wrapper.in(CompanyMerchantCooperation::getCompanyId, companyList.stream().map(Company::getId).collect(Collectors.toList()));
+            }
+
         }
 
         Page<CompanyMerchantCooperation> page = this.page(new Page<>(companyMerchantCooperationPageQry.getPageNum(), companyMerchantCooperationPageQry.getPageSize()), wrapper);
@@ -51,6 +71,7 @@ public class CompanyMerchantCooperationServiceImpl extends ServiceImpl<CompanyMe
             CompanyMerchantCooperationDTO dto = new CompanyMerchantCooperationDTO();
             dto.setId(item.getId());
             dto.setMerchantId(item.getMerchantId());
+            dto.setCompanyId(item.getCompanyId());
             dto.setMerchantName(merchantMapper.selectById(item.getMerchantId()).getMerchantName());
             dto.setStatus(item.getStatus());
             dto.setCreateTime(item.getCreateTime());

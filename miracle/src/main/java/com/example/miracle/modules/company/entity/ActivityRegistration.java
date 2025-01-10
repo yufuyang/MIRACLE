@@ -20,7 +20,6 @@ public class ActivityRegistration extends BaseEntity {
      */
     private Long merchantId;
 
-    private String merchantName;
 
     /**
      * 状态:0-待审核,1-已通过,2-已拒绝

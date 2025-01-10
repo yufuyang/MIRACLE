@@ -10,6 +10,7 @@
           <a-button
               type="primary"
               :disabled="activity?.status !== 1"
+              :loading="registerLoading"
               @click="handleRegister"
           >
             <template #icon><user-add-outlined /></template>
@@ -103,8 +104,6 @@
         </div>
       </a-card>
     </a-spin>
-
-    <!-- 活动操作按钮 -->
   </div>
 </template>
 
@@ -132,6 +131,7 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const loading = ref(false)
+const registerLoading = ref(false)
 const activity = ref(null)
 const company = ref(null)
 const defaultImage = 'https://via.placeholder.com/800x400'
@@ -205,38 +205,32 @@ const getRemainingTime = () => {
 }
 
 // 报名处理函数
-const handleRegister = () => {
-  // 先判断活动状态
-  if (activity.value?.status !== 1) {
-    message.warning('活动未开始或已结束')
-    return
-  }
-
-  // 判断是否登录
+const handleRegister = async () => {
   if (!userStore.isLoggedIn()) {
-    message.info('请先登录')
-    router.push('/login')
+    message.warning('请先登录')
     return
   }
 
-  // 判断是否是商户用户
   if (userStore.userInfo?.role !== 'MERCHANT') {
-    message.warning('只有商户用户才能报名活动')
+    message.warning('只有商户用户可以报名活动')
     return
   }
 
-  // TODO: 处理报名逻辑
-  handleSubmitRegister()
-}
+  if (registerLoading.value) return
+  registerLoading.value = true
 
-// 提交报名
-const handleSubmitRegister = async () => {
   try {
-    // TODO: 调用报名接口
+    await registerActivity({
+      activityId: route.params.id,
+      companyId: activity.value.companyId
+    })
     message.success('报名成功')
+    // 重新加载活动详情，更新报名状态
+    fetchActivityDetail()
   } catch (error) {
-    console.error('报名失败:', error)
-    message.error('报名失败，请重试')
+    message.error(error.response?.data?.message || '报名失败')
+  } finally {
+    registerLoading.value = false
   }
 }
 

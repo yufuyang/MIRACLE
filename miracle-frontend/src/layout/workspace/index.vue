@@ -13,7 +13,7 @@
           <a-dropdown>
             <a class="user-dropdown" @click.prevent>
               <user-outlined />
-              <span class="username">{{ userInfo?.realName || userInfo?.username }}</span>
+              <span class="username">{{ userInfo?.username }}</span>
             </a>
             <template #overlay>
               <a-menu>
@@ -37,87 +37,123 @@
           mode="inline"
           :style="{ height: '100%', borderRight: 0 }"
         >
-          <a-menu-item key="overview">
-            <template #icon>
-              <dashboard-outlined />
-            </template>
-            <router-link to="/workspace/stats/overview">总览</router-link>
-          </a-menu-item>
+          <!-- 企业菜单 -->
+          <template v-if="userRole === 'COMPANY'">
+            <a-menu-item key="profile">
+              <template #icon>
+                <user-outlined />
+              </template>
+              <router-link to="/workspace/profile">企业资料</router-link>
+            </a-menu-item>
 
-          <a-sub-menu key="product">
-            <template #icon>
-              <shop-outlined />
-            </template>
-            <template #title>产品管理</template>
-            <a-menu-item key="product-list">
-              <router-link to="/workspace/product/list">产品列表</router-link>
-            </a-menu-item>
-            <a-menu-item key="product-category">
-              <router-link to="/workspace/product/category">产品分类</router-link>
-            </a-menu-item>
-            <a-menu-item key="product-statistics">
-              <router-link to="/workspace/product/statistics">产品统计</router-link>
-            </a-menu-item>
-          </a-sub-menu>
+            <a-sub-menu key="product">
+              <template #icon>
+                <shop-outlined />
+              </template>
+              <template #title>产品管理</template>
+              <a-menu-item key="product-list">
+                <router-link to="/workspace/product/list">产品列表</router-link>
+              </a-menu-item>
+              <a-menu-item key="product-category">
+                <router-link to="/workspace/product/category">产品分类</router-link>
+              </a-menu-item>
+              <a-menu-item key="product-statistics">
+                <router-link to="/workspace/product/statistics">产品统计</router-link>
+              </a-menu-item>
+            </a-sub-menu>
 
-          <a-sub-menu key="activity">
-            <template #icon>
-              <calendar-outlined />
-            </template>
-            <template #title>活动管理</template>
-            <a-menu-item key="activity-list">
-              <router-link to="/workspace/activity/list">活动列表</router-link>
-            </a-menu-item>
-            <a-menu-item key="activity-stats">
-              <router-link to="/workspace/activity/stats">活动统计</router-link>
-            </a-menu-item>
-          </a-sub-menu>
+            <a-sub-menu key="activity">
+              <template #icon>
+                <calendar-outlined />
+              </template>
+              <template #title>活动管理</template>
+              <a-menu-item key="activity-list">
+                <router-link to="/workspace/activity/list">活动列表</router-link>
+              </a-menu-item>
+              <a-menu-item key="activity-stats">
+                <router-link to="/workspace/activity/stats">活动统计</router-link>
+              </a-menu-item>
+            </a-sub-menu>
 
-          <a-sub-menu key="inquiry">
-            <template #icon>
-              <message-outlined />
-            </template>
-            <template #title>意向管理</template>
-            <a-menu-item key="inquiry-list">
-              <router-link to="/workspace/inquiry/list">意向列表</router-link>
-            </a-menu-item>
-            <a-menu-item key="inquiry-stats">
-              <router-link to="/workspace/inquiry/stats">意向统计</router-link>
-            </a-menu-item>
-          </a-sub-menu>
+            <a-sub-menu key="inquiry">
+              <template #icon>
+                <message-outlined />
+              </template>
+              <template #title>意向管理</template>
+              <a-menu-item key="inquiry-list">
+                <router-link to="/workspace/inquiry/list">意向列表</router-link>
+              </a-menu-item>
+              <a-menu-item key="inquiry-stats">
+                <router-link to="/workspace/inquiry/stats">意向统计</router-link>
+              </a-menu-item>
+            </a-sub-menu>
 
-          <a-sub-menu key="order">
-            <template #icon>
-              <shopping-cart-outlined />
-            </template>
-            <template #title>订单管理</template>
-            <a-menu-item key="order-list">
-              <router-link to="/workspace/order/list">订单列表</router-link>
-            </a-menu-item>
-            <a-menu-item key="order-stats">
-              <router-link to="/workspace/order/stats">订单统计</router-link>
-            </a-menu-item>
-          </a-sub-menu>
+            <a-sub-menu key="order">
+              <template #icon>
+                <shopping-cart-outlined />
+              </template>
+              <template #title>订单管理</template>
+              <a-menu-item key="order-list">
+                <router-link to="/workspace/order/list">订单列表</router-link>
+              </a-menu-item>
+              <a-menu-item key="order-stats">
+                <router-link to="/workspace/order/stats">订单统计</router-link>
+              </a-menu-item>
+            </a-sub-menu>
 
-          <a-sub-menu key="cooperation">
-            <template #icon>
-              <team-outlined />
-            </template>
-            <template #title>合作管理</template>
-            <a-menu-item key="cooperation-list">
-              <router-link to="/workspace/cooperation/list">合作列表</router-link>
-            </a-menu-item>
-            <a-menu-item key="cooperation-stats">
-              <router-link to="/workspace/cooperation/stats">合作统计</router-link>
-            </a-menu-item>
-          </a-sub-menu>
+            <a-sub-menu key="cooperation">
+              <template #icon>
+                <team-outlined />
+              </template>
+              <template #title>合作管理</template>
+              <a-menu-item key="cooperation-list">
+                <router-link to="/workspace/cooperation/list">合作列表</router-link>
+              </a-menu-item>
+              <a-menu-item key="cooperation-stats">
+                <router-link to="/workspace/cooperation/stats">合作统计</router-link>
+              </a-menu-item>
+            </a-sub-menu>
+          </template>
 
-          <a-menu-item key="profile">
-            <template #icon>
-              <user-outlined />
-            </template>
-            <router-link to="/workspace/profile">企业资料</router-link>
-          </a-menu-item>
+          <!-- 商户菜单 -->
+          <template v-else>
+            <a-menu-item key="merchant-dashboard">
+              <template #icon>
+                <dashboard-outlined />
+              </template>
+              <router-link to="/workspace/merchant/home">商户首页</router-link>
+            </a-menu-item>
+            
+            <a-sub-menu key="merchant-activity">
+              <template #icon>
+                <calendar-outlined />
+              </template>
+              <template #title>活动管理</template>
+              <a-menu-item key="merchant-activity-list">
+                <router-link to="/workspace/merchant/activity/list">活动列表</router-link>
+              </a-menu-item>
+            </a-sub-menu>
+            
+            <a-sub-menu key="merchant-intention">
+              <template #icon>
+                <message-outlined />
+              </template>
+              <template #title>意向管理</template>
+              <a-menu-item key="merchant-intention-list">
+                <router-link to="/workspace/merchant/intention/list">意向列表</router-link>
+              </a-menu-item>
+            </a-sub-menu>
+            
+            <a-sub-menu key="merchant-cooperation">
+              <template #icon>
+                <team-outlined />
+              </template>
+              <template #title>合作管理</template>
+              <a-menu-item key="merchant-cooperation-list">
+                <router-link to="/workspace/merchant/cooperation/list">合作列表</router-link>
+              </a-menu-item>
+            </a-sub-menu>
+          </template>
         </a-menu>
       </a-layout-sider>
 
@@ -192,6 +228,10 @@ const handleLogout = () => {
 
 // 初始化
 initUserInfo()
+
+const userRole = computed(() => {
+  return userInfo.value?.role || ''
+})
 </script>
 
 <style scoped lang="less">

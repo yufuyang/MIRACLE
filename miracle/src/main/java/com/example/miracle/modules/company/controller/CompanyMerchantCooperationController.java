@@ -26,7 +26,7 @@ public class CompanyMerchantCooperationController {
     private final BaseController baseController;
 
     @PostMapping("/page")
-    public MultiResponse<CompanyMerchantCooperationDTO> page(CompanyMerchantCooperationPageQry companyMerchantCooperationPageQry){
+    public MultiResponse<CompanyMerchantCooperationDTO> page(@RequestBody CompanyMerchantCooperationPageQry companyMerchantCooperationPageQry){
 
         Long companyId = baseController.getCompanyId();
 

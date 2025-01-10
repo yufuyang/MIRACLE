@@ -10,5 +10,9 @@ public class CompanyMerchantCooperationPageQry extends PageQuery {
 
     private Long companyId;
 
+    private Long merchantId;
+
     private String merchantName;
+
+    private String companyName;
 }

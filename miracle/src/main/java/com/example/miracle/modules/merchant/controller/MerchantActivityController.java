@@ -11,8 +11,10 @@ import com.example.miracle.modules.company.entity.Activity;
 import com.example.miracle.modules.company.entity.ActivityStats;
 import com.example.miracle.modules.company.service.ActivityService;
 import com.example.miracle.modules.company.service.ActivityStatsService;
+import com.example.miracle.modules.platform.service.CompanyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -29,18 +31,32 @@ public class MerchantActivityController {
     private final ActivityStatsService activityStatsService;
     private final BaseController baseController;
 
+    private final CompanyService companyService;
+
 
     /**
      * 获取活动列表
      */
-    @GetMapping
+    @PostMapping("/list")
     public MultiResponse<ActivityDTO> listActivities(@RequestBody ActivityPageQry activityPageQry) {
 
         Long merchantId = baseController.getMerchantId();
 
         activityPageQry.setMerchantId(merchantId);
 
-        return activityService.listActivities(activityPageQry);
+        MultiResponse<ActivityDTO> activityDTOMultiResponse = activityService.listActivities(activityPageQry);
+
+        if (CollectionUtils.isEmpty(activityDTOMultiResponse.getData())){
+            return activityDTOMultiResponse;
+        }
+
+        activityDTOMultiResponse.getData().forEach(activityDTO -> {
+            if (Objects.nonNull(activityDTO.getCompanyId())){
+                activityDTO.setCompanyName(companyService.getById(activityDTO.getCompanyId()).getCompanyName());
+            }
+        });
+
+        return activityDTOMultiResponse;
     }
 
     /**

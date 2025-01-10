@@ -5,16 +5,25 @@ import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.modules.company.entity.CompanyMerchantCooperation;
+import com.example.miracle.modules.company.entity.CompanyProduct;
 import com.example.miracle.modules.company.entity.CompanyProductStats;
 import com.example.miracle.modules.company.service.CompanyMerchantCooperationService;
+import com.example.miracle.modules.company.service.CompanyProductService;
 import com.example.miracle.modules.company.service.CompanyProductStatsService;
+import com.example.miracle.modules.merchant.dto.MerchantProductIntentionDTO;
 import com.example.miracle.modules.merchant.dto.query.MerchantProductIntentionPageQuery;
 import com.example.miracle.modules.merchant.entity.MerchantProductIntention;
 import com.example.miracle.modules.merchant.service.MerchantProductIntentionService;
+import com.example.miracle.modules.platform.entity.Company;
+import com.example.miracle.modules.platform.service.CompanyService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 商户产品意向控制器
@@ -28,6 +37,9 @@ public class MerchantProductIntentionController {
     private final MerchantProductIntentionService intentionService;
     private final CompanyProductStatsService companyProductStatsService;
 
+    private final CompanyService companyService;
+
+    private final CompanyProductService companyProductService;
     private final CompanyMerchantCooperationService companyMerchantCooperationService;
 
     /**
@@ -49,9 +61,50 @@ public class MerchantProductIntentionController {
      * 分页查询意向列表
      */
     @PostMapping("/page")
-    public MultiResponse<MerchantProductIntention> pageQuery(@RequestBody MerchantProductIntentionPageQuery query) {
+    public MultiResponse<MerchantProductIntentionDTO> pageQuery(@RequestBody MerchantProductIntentionPageQuery query) {
+
         query.setMerchantId(baseController.getMerchantId());
-        return intentionService.pageQuery(query);
+
+        MultiResponse<MerchantProductIntention> merchantProductIntentionMultiResponse = intentionService.pageQuery(query);
+
+        if (CollectionUtils.isEmpty(merchantProductIntentionMultiResponse.getData())) {
+            return MultiResponse.buildSuccess();
+        }
+
+        List<Long> companyIdList = merchantProductIntentionMultiResponse.getData().stream().map(MerchantProductIntention::getCompanyId).distinct().collect(Collectors.toList());
+
+        List<Long> productIdList = merchantProductIntentionMultiResponse.getData().stream().map(MerchantProductIntention::getProductId).collect(Collectors.toList());
+
+
+        List<Company> companyList = companyService.listByIds(companyIdList);
+
+        List<CompanyProduct> companyProducts = companyProductService.listByIds(productIdList);
+
+        List<MerchantProductIntentionDTO> merchantProductIntentionList = new ArrayList<>();
+
+        for (MerchantProductIntention merchantProductIntention : merchantProductIntentionMultiResponse.getData()) {
+
+            MerchantProductIntentionDTO merchantProductIntentionDTO = new MerchantProductIntentionDTO();
+            merchantProductIntentionDTO.setId(merchantProductIntention.getId());
+            merchantProductIntentionDTO.setMerchantId(merchantProductIntention.getMerchantId());
+            merchantProductIntentionDTO.setProductId(merchantProductIntention.getProductId());
+            merchantProductIntentionDTO.setCreateTime(merchantProductIntention.getCreateTime());
+
+            companyList.stream().filter(company -> company.getId().equals(merchantProductIntention.getCompanyId())).findFirst().ifPresent(company -> {
+                merchantProductIntentionDTO.setCompanyName(company.getCompanyName());
+                merchantProductIntentionDTO.setContactName(company.getContactName());
+                merchantProductIntentionDTO.setContactPhone(company.getContactPhone());
+            });
+
+            companyProducts.stream().filter(companyProduct -> companyProduct.getId().equals(merchantProductIntention.getProductId())).findFirst().ifPresent(companyProduct -> {
+                merchantProductIntentionDTO.setProductName(companyProduct.getProductName());
+                merchantProductIntentionDTO.setProductLogo(companyProduct.getImageUrl());
+            });
+
+            merchantProductIntentionList.add(merchantProductIntentionDTO);
+        }
+
+        return MultiResponse.of(merchantProductIntentionList, merchantProductIntentionMultiResponse.getTotal());
     }
 
     /**

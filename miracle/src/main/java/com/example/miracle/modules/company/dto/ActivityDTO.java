@@ -17,6 +17,8 @@ public class ActivityDTO {
      */
     private Long companyId;
 
+    private String companyName;
+
     /**
      * 活动标题
      */

@@ -143,7 +143,8 @@ import {
   PhoneOutlined,
   UserOutlined
 } from '@ant-design/icons-vue'
-import { getProductDetail, getProductImages, addIntention } from '@/api/product'
+import { getProductDetail, getProductImages } from '@/api/product'
+import { createIntention } from '@/api/merchant/merchant-base'
 import { getProductCategory, getProductStats } from '@/api/website/companyProduct'
 import { getCompanyDetail } from '@/api/company'
 import { getUserDetail } from '@/api/user'
@@ -277,64 +278,47 @@ const handleViewCompany = () => {
   router.push(`/company/${product.value.companyId}`)
 }
 
-// 添加意向处理函数
+// 处理添加意向按钮点击
 const handleAddIntention = () => {
-  // 先判断产品状态
-  if (product.value?.status !== 1) {
-    message.warning('该产品暂不可添加意向')
+  // 检查是否登录
+  if (!isLoggedIn.value) {
+    message.warning('请先登录')
     return
   }
-
-  // 判断是否登录
-  if (!userStore.isLoggedIn()) {
-    message.info('请先登录')
-    router.push('/login')
+  
+  // 检查用户角色
+  if (!isMerchant.value) {
+    message.warning('只有商户用户可以添加意向')
     return
   }
-
-  // 判断是否是商户用户
-  if (userStore.userInfo?.role !== 'MERCHANT') {
-    message.warning('只有商户用户才能添加意向')
-    return
-  }
-
-  // TODO: 处理添加意向逻辑
-  handleSubmitIntention()
+  
+  intentionVisible.value = true
 }
 
 // 提交意向
-const handleSubmitIntention = async () => {
+const submitIntention = async () => {
   try {
-    // TODO: 调用添加意向接口
-    message.success('添加意向成功')
+    await intentionFormRef.value.validate()
+    intentionLoading.value = true
+    
+    await createIntention({
+      productId: route.params.id,
+      companyId: product.value.companyId,
+      remark: intentionForm.remark
+    })
+    
+    message.success('意向添加成功')
+    intentionVisible.value = false
+    intentionForm.remark = ''
+    
+    // 刷新统计数据
+    loadStats()
   } catch (error) {
     console.error('添加意向失败:', error)
-    message.error('添加意向失败，请重试')
+    message.error(error.response?.data?.message || '添加意向失败')
+  } finally {
+    intentionLoading.value = false
   }
-}
-
-// 提交意向
-const submitIntention = () => {
-  intentionFormRef.value.validate().then(async () => {
-    intentionLoading.value = true
-    try {
-      await addIntention({
-        productId: route.params.id,
-        companyId: product.value.companyId,
-        remark: intentionForm.remark
-      })
-      message.success('添加意向成功')
-      intentionVisible.value = false
-      intentionForm.remark = ''
-      // 重新加载产品详情，更新意向数
-      loadProductDetail()
-    } catch (error) {
-      console.error('添加意向失败:', error)
-      message.error('添加意向失败')
-    } finally {
-      intentionLoading.value = false
-    }
-  })
 }
 
 // 格式化时长
