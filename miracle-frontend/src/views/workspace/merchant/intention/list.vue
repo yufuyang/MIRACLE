@@ -226,6 +226,27 @@ const handleViewProduct = (record) => {
 onMounted(() => {
   fetchList()
 })
+
+// 状态相关
+const getStatusColor = (status) => {
+  const colors = {
+    0: 'warning',    // 待处理
+    1: 'success',    // 已合作
+    2: 'error',      // 已拒绝
+    3: 'default'     // 已终止
+  }
+  return colors[status] || 'default'
+}
+
+const getStatusText = (status) => {
+  const statusMap = {
+    0: '待处理',
+    1: '已合作',
+    2: '已拒绝',
+    3: '已终止'
+  }
+  return statusMap[status] || '未知'
+}
 </script>
 
 <style lang="less" scoped>

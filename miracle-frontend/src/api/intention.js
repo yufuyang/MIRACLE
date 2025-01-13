@@ -10,12 +10,10 @@ export function getIntentionList(params) {
 }
 
 // 处理意向 - 发起合作
-export function handleCooperation(merchantId) {
+export function handleCooperation(params) {
   return request({
     url: `/company/merchant/cooperation`,
     method: 'post',
-    data: {
-      intentionId: merchantId
-    }
+    data:params
   })
 }

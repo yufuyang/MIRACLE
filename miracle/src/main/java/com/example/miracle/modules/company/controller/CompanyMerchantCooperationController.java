@@ -10,8 +10,11 @@ import com.example.miracle.modules.company.dto.query.CompanyMerchantCooperationP
 import com.example.miracle.modules.company.entity.CompanyMerchantCooperation;
 import com.example.miracle.modules.company.entity.CompanyProduct;
 import com.example.miracle.modules.company.service.CompanyMerchantCooperationService;
+import com.example.miracle.modules.platform.entity.Merchant;
+import com.example.miracle.modules.platform.service.MerchantService;
 import lombok.RequiredArgsConstructor;
 import org.apache.ibatis.annotations.Delete;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -23,6 +26,8 @@ public class CompanyMerchantCooperationController {
 
     private final CompanyMerchantCooperationService companyMerchantCooperationService;
 
+    private final MerchantService merchantService;
+
     private final BaseController baseController;
 
     @PostMapping("/page")
@@ -32,7 +37,23 @@ public class CompanyMerchantCooperationController {
 
         companyMerchantCooperationPageQry.setCompanyId(companyId);
 
-        return companyMerchantCooperationService.page(companyMerchantCooperationPageQry);
+        MultiResponse<CompanyMerchantCooperationDTO> companyMerchantCooperationMultiResponse = companyMerchantCooperationService.page(companyMerchantCooperationPageQry);
+
+        if (CollectionUtils.isEmpty(companyMerchantCooperationMultiResponse.getData())) {
+            return companyMerchantCooperationMultiResponse;
+        }
+
+        companyMerchantCooperationMultiResponse.getData().forEach(companyMerchantCooperationDTO -> {
+            Merchant merchant  = merchantService.getById(companyMerchantCooperationDTO.getMerchantId());
+            if (Objects.isNull(merchant)) {
+                return;
+            }
+            companyMerchantCooperationDTO.setMerchantName(merchant.getMerchantName());
+            companyMerchantCooperationDTO.setMerchantContactName(merchant.getContactName());
+            companyMerchantCooperationDTO.setMerchantContactPhone(merchant.getContactPhone());
+        });
+
+        return companyMerchantCooperationMultiResponse;
     }
 
     @DeleteMapping("/dissolution/{id}")
@@ -69,7 +90,7 @@ public class CompanyMerchantCooperationController {
 
         if (Objects.nonNull(merchantCooperation) ) {
 
-            if (merchantCooperation.getStatus() == 0){
+            if (merchantCooperation.getStatus() == 0 ){
                 throw new BusinessException("已存在待处理关系");
             }
 

@@ -1,13 +1,9 @@
 <template>
-  <div class="inquiry-list">
+  <div class="cooperation-list">
     <a-card :bordered="false">
       <!-- 搜索表单 -->
       <div class="table-page-search-wrapper">
         <div class="search-form">
-          <div class="search-item">
-            <span class="label">产品名称：</span>
-            <a-input v-model:value="queryParams.productName" placeholder="请输入产品名称" allow-clear />
-          </div>
           <div class="search-item">
             <span class="label">商户名称：</span>
             <a-input v-model:value="queryParams.merchantName" placeholder="请输入商户名称" allow-clear />
@@ -20,8 +16,10 @@
               style="width: 200px"
               allow-clear
             >
-              <a-select-option :value="0">未处理</a-select-option>
-              <a-select-option :value="1">已处理</a-select-option>
+              <a-select-option :value="0">待处理</a-select-option>
+              <a-select-option :value="1">已合作</a-select-option>
+              <a-select-option :value="2">已拒绝</a-select-option>
+              <a-select-option :value="3">已终止</a-select-option>
             </a-select>
             <a-button type="primary" @click="handleSearch">查询</a-button>
             <a-button style="margin-left: 8px" @click="handleReset">重置</a-button>
@@ -32,7 +30,7 @@
       <!-- 数据表格 -->
       <a-table
         :columns="columns"
-        :data-source="intentionList"
+        :data-source="cooperationList"
         :loading="loading"
         :pagination="pagination"
         @change="handleTableChange"
@@ -46,12 +44,21 @@
 
         <!-- 操作列 -->
         <template #action="{ record }">
-          <template v-if="record.status === 0">
+          <template v-if="record.status === 1 || record.status === 3">
             <a-button 
-              type="primary"
-              @click="showCooperateConfirm(record)"
+              type="link" 
+              danger
+              @click="showCancelConfirm(record)"
+              v-if="record.status === 1"
             >
-              发起合作
+              终止合作
+            </a-button>
+            <a-button 
+              type="link"
+              @click="handleRestart(record)"
+              v-if="record.status === 3"
+            >
+              重新合作
             </a-button>
           </template>
         </template>
@@ -60,38 +67,24 @@
 
     <!-- 确认弹框 -->
     <a-modal
-      v-model:visible="cooperateModal.visible"
-      title="发起合作"
-      @ok="handleCooperate"
-      @cancel="cooperateModal.visible = false"
-      :confirmLoading="cooperateModal.loading"
+      v-model:visible="cancelModal.visible"
+      title="终止合作"
+      @ok="handleCancel"
+      @cancel="cancelModal.visible = false"
+      :confirmLoading="cancelModal.loading"
     >
-      <p>确定要与 {{ cooperateModal.record?.merchantName }} 发起合作吗？</p>
-      <p style="margin-top: 8px; color: #666;">
-        <strong>产品名称：</strong>{{ cooperateModal.record?.productName }}
-      </p>
-      <p style="color: #666;">
-        <strong>联系人：</strong>{{ cooperateModal.record?.contactName }}
-      </p>
-      <p style="color: #666;">
-        <strong>联系电话：</strong>{{ cooperateModal.record?.contactPhone }}
-      </p>
-      <p style="color: #666;">
-        <strong>意向描述：</strong>{{ cooperateModal.record?.description }}
-      </p>
+      <p>确定要终止与商户 "{{ cancelModal.record?.merchantName }}" 的合作吗？</p>
     </a-modal>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { message, Modal } from 'ant-design-vue'
-import dayjs from 'dayjs'
-import { getIntentionList, handleCooperation } from '@/api/intention'
+import { message } from 'ant-design-vue'
+import { getCooperationList, cancelCooperation, handleCooperation } from '@/api/company/cooperation'
 
 // 查询参数
 const queryParams = ref({
-  productName: '',
   merchantName: '',
   status: undefined,
   pageNum: 1,
@@ -102,7 +95,7 @@ const queryParams = ref({
 const pagination = ref({
   current: 1,
   pageSize: 10,
-  total: 100,
+  total: 0,
   showSizeChanger: true,
   showQuickJumper: true
 })
@@ -110,24 +103,19 @@ const pagination = ref({
 // 表格列定义
 const columns = [
   {
-    title: '产品名称',
-    dataIndex: 'productName',
-    key: 'productName'
-  },
-  {
     title: '商户名称',
     dataIndex: 'merchantName',
     key: 'merchantName'
   },
   {
     title: '联系人',
-    dataIndex: 'contactName',
-    key: 'contactName'
+    dataIndex: 'merchantContactName',
+    key: 'merchantContactName'
   },
   {
     title: '联系电话',
-    dataIndex: 'contactPhone',
-    key: 'contactPhone'
+    dataIndex: 'merchantContactPhone',
+    key: 'merchantContactPhone'
   },
   {
     title: '状态',
@@ -136,7 +124,7 @@ const columns = [
     slots: { customRender: 'status' }
   },
   {
-    title: '创建时间',
+    title: '开始时间',
     dataIndex: 'createTime',
     key: 'createTime',
     width: 180
@@ -150,88 +138,84 @@ const columns = [
 ]
 
 const loading = ref(false)
-
-// 意向列表数据
-const intentionList = ref([])
+const cooperationList = ref([])
 
 // 获取列表数据
 const fetchList = async () => {
   loading.value = true
   try {
-    const { data } = await getIntentionList({
+    const { data } = await getCooperationList({
       pageNum: pagination.value.current,
       pageSize: pagination.value.pageSize,
-      productName: queryParams.value.productName,
       merchantName: queryParams.value.merchantName,
       status: queryParams.value.status
     })
-    intentionList.value = data.map(item => ({
+    cooperationList.value = data.map(item => ({
       id: item.id,
-      productId: item.productId,
-      productName: item.productName,
       merchantId: item.merchantId,
       merchantName: item.merchantName,
-      contactName: item.merchantRealName,
-      contactPhone: item.merchantPhone,
+      merchantContactName: item.merchantContactName,
+      merchantContactPhone: item.merchantContactPhone,
       status: item.status,
-      createTime: item.createTime,
-      remark: item.remark
+      createTime: item.createTime
     }))
-    pagination.value.total = data.total || 1
+    pagination.value.total = data.total || 0
   } catch (error) {
-    console.error('获取意向列表失败:', error)
-    message.error('获取意向列表失败')
+    console.error('获取合作列表失败:', error)
+    message.error('获取合作列表失败')
   } finally {
     loading.value = false
-  }
-}
-
-// 合作确认弹框状态
-const cooperateModal = ref({
-  visible: false,
-  loading: false,
-  record: null
-})
-
-// 显示确认弹框
-const showCooperateConfirm = (record) => {
-  cooperateModal.value.record = record
-  cooperateModal.value.visible = true
-}
-
-// 处理发起合作
-const handleCooperate = async () => {
-  const record = cooperateModal.value.record
-  if (!record) return
-
-  cooperateModal.value.loading = true
-  try {
-    await handleCooperation(record)
-    message.success('已发起合作')
-    fetchList()  // 重新加载列表
-    cooperateModal.value.visible = false
-  } catch (error) {
-    message.error('发起合作失败')
-  } finally {
-    cooperateModal.value.loading = false
   }
 }
 
 // 状态相关
 const getStatusColor = (status) => {
   const colors = {
-    0: 'warning',    // 未处理
-    1: 'success'     // 已处理
+    0: 'warning',    // 待处理
+    1: 'success',    // 已合作
+    2: 'error',      // 已拒绝
+    3: 'default'     // 已终止
   }
   return colors[status] || 'default'
 }
 
 const getStatusText = (status) => {
   const statusMap = {
-    0: '未处理',
-    1: '已处理'
+    0: '待处理',
+    1: '已合作',
+    2: '已拒绝',
+    3: '已终止'
   }
   return statusMap[status] || '未知'
+}
+
+// 取消合作相关
+const cancelModal = ref({
+  visible: false,
+  loading: false,
+  record: null
+})
+
+const showCancelConfirm = (record) => {
+  cancelModal.value.record = record
+  cancelModal.value.visible = true
+}
+
+const handleCancel = async () => {
+  const record = cancelModal.value.record
+  if (!record) return
+
+  cancelModal.value.loading = true
+  try {
+    await cancelCooperation(record.id)
+    message.success('已终止合作')
+    fetchList()
+    cancelModal.value.visible = false
+  } catch (error) {
+    message.error('终止合作失败')
+  } finally {
+    cancelModal.value.loading = false
+  }
 }
 
 // 表格事件处理
@@ -253,7 +237,6 @@ const handleSearch = () => {
 // 重置
 const handleReset = () => {
   queryParams.value = {
-    productName: '',
     merchantName: '',
     status: undefined,
     pageNum: 1,
@@ -262,26 +245,18 @@ const handleReset = () => {
   fetchList()
 }
 
-// 取消合作
-const handleCancelCooperation = (record) => {
-  Modal.confirm({
-    title: '确认取消合作',
-    content: '确定要取消与该商户的合作吗？',
-    okText: '确定',
-    cancelText: '取消',
-    onOk: async () => {
-      try {
-        await handleCooperation({
-          ...record,
-          status: 3  // 设置状态为已取消
-        })
-        message.success('已取消合作')
-        fetchList()  // 重新加载列表
-      } catch (error) {
-        message.error('取消合作失败')
-      }
-    }
-  })
+// 重新合作
+const handleRestart = async (record) => {
+  try {
+    await handleCooperation({
+      id: record.id,
+      merchantId: record.merchantId,
+    })
+    message.success('已重新合作')
+    fetchList()
+  } catch (error) {
+    message.error('重新合作失败')
+  }
 }
 
 onMounted(() => {
@@ -290,7 +265,7 @@ onMounted(() => {
 </script>
 
 <style lang="less" scoped>
-.inquiry-list {
+.cooperation-list {
   padding: 24px;
 
   .table-page-search-wrapper {
@@ -325,19 +300,6 @@ onMounted(() => {
   .ant-table-wrapper {
     .ant-table-pagination {
       margin: 16px 0;
-    }
-  }
-}
-
-.ant-modal {
-  .ant-modal-body {
-    p {
-      margin-bottom: 8px;
-      
-      strong {
-        display: inline-block;
-        width: 80px;
-      }
     }
   }
 }

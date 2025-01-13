@@ -161,6 +161,16 @@ const routes = [
           }
         ]
       },
+      {
+        path: 'cooperation',
+        children: [
+          {
+            path: 'list',
+            component: () => import('@/views/workspace/company/cooperation/list.vue'),
+            meta: { title: '合作列表' }
+          }
+        ]
+      },
       // 商户用户路由
       {
         path: 'merchant',

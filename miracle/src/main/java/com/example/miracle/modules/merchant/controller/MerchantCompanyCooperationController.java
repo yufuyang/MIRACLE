@@ -62,8 +62,8 @@ public class MerchantCompanyCooperationController {
             }
             companyMerchantCooperationDTO.setCompanyName(company.getCompanyName());
             companyMerchantCooperationDTO.setCompanyLogo(company.getLogoUrl());
-            companyMerchantCooperationDTO.setContactName(company.getContactName());
-            companyMerchantCooperationDTO.setContactPhone(company.getContactPhone());
+            companyMerchantCooperationDTO.setCompanyContactName(company.getContactName());
+            companyMerchantCooperationDTO.setCompanyContactPhone(company.getContactPhone());
 
         });
 

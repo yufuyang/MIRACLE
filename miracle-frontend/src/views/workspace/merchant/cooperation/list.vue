@@ -18,8 +18,9 @@
             allow-clear
           >
             <a-select-option :value="0">待处理</a-select-option>
-            <a-select-option :value="1">已通过</a-select-option>
+            <a-select-option :value="1">已合作</a-select-option>
             <a-select-option :value="2">已拒绝</a-select-option>
+            <a-select-option :value="3">已终止</a-select-option>
           </a-select>
         </a-form-item>
         <a-form-item>
@@ -61,7 +62,7 @@
       <template #action="{ record }">
         <a-space>
           <a @click="handleViewCompany(record)">查看企业</a>
-          <!-- 待审核状态显示同意/拒绝按钮 -->
+          <!-- 待处理状态显示同意/拒绝按钮 -->
           <template v-if="record.status === 0">
             <a-button 
               type="link" 
@@ -77,15 +78,6 @@
               拒绝
             </a-button>
           </template>
-          <!-- 已通过状态显示取消合作按钮 -->
-          <a-button 
-            v-if="record.status === 1"
-            type="link" 
-            danger
-            @click="handleCancel(record)"
-          >
-            取消合作
-          </a-button>
         </a-space>
       </template>
     </a-table>
@@ -192,8 +184,8 @@ const fetchList = async () => {
       companyId: item.companyId,
       companyLogo: item.companyLogo,
       companyName: item.companyName,
-      contactName: item.contactName,
-      contactPhone: item.contactPhone,
+      contactName: item.companyContactName,
+      contactPhone: item.companyContactPhone,
       status: item.status,
       createTime: item.createTime
     }))
@@ -232,20 +224,6 @@ const handleViewCompany = (record) => {
   router.push(`/company/${record.companyId}`)
 }
 
-// 取消合作
-const handleCancel = async (record) => {
-  try {
-    await cancelCooperation({
-      id: record.id,
-      companyId: record.companyId
-    })
-    message.success('已取消合作')
-    fetchList()
-  } catch (error) {
-    message.error('取消失败')
-  }
-}
-
 // 格式化日期时间
 const formatDateTime = (date) => {
   return date ? dayjs(date).format('YYYY-MM-DD HH:mm:ss') : '-'
@@ -254,9 +232,10 @@ const formatDateTime = (date) => {
 // 获取状态颜色
 const getStatusColor = (status) => {
   const colors = {
-    0: 'warning',   // 待审核
-    1: 'success',   // 已通过
-    2: 'error'      // 已拒绝
+    0: 'warning',    // 待处理
+    1: 'success',    // 已合作
+    2: 'error',      // 已拒绝
+    3: 'default'     // 已终止
   }
   return colors[status] || 'default'
 }
@@ -265,8 +244,9 @@ const getStatusColor = (status) => {
 const getStatusText = (status) => {
   const texts = {
     0: '待处理',
-    1: '已通过',
-    2: '已拒绝'
+    1: '已合作',
+    2: '已拒绝',
+    3: '已终止'
   }
   return texts[status] || '未知'
 }
@@ -292,7 +272,7 @@ const handleReject = async (record) => {
     await handleCooperation({
       id: record.id,
       companyId: record.companyId,
-      status: 0
+      status: 2
     })
     message.success('已拒绝合作')
     fetchList()

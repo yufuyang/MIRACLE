@@ -18,6 +18,11 @@ public class CompanyMerchantCooperationDTO {
      */
     private String merchantName;
 
+    private String merchantContactName;
+
+
+    private String merchantContactPhone;
+
     /**
      * 状态 0-待处理 1-已通过 2-已拒绝 3-已解除合作
      */
@@ -29,10 +34,10 @@ public class CompanyMerchantCooperationDTO {
 
     private String companyLogo;
 
-    private String contactName;
+    private String companyContactName;
 
 
-    private String contactPhone;
+    private String companyContactPhone;
 
     /**
      * 创建时间
