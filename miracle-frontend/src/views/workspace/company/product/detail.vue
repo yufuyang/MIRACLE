@@ -89,7 +89,7 @@
 
       <a-card title="生产步骤" style="margin-bottom: 24px">
         <template #extra>
-          <a-button type="primary" @click="handleAddStep">
+          <a-button type="primary" @click="showStepModal">
             <template #icon>
               <plus-outlined />
             </template>
@@ -275,6 +275,94 @@
         </a-form-item>
       </a-form>
     </a-modal>
+
+    <!-- 所需物料 -->
+    <a-card title="所需物料" style="margin-bottom: 24px">
+      <template #extra>
+        <a-button type="primary" @click="showMaterialModal">
+          <template #icon>
+            <plus-outlined />
+          </template>
+          添加物料
+        </a-button>
+      </template>
+
+      <a-table
+        :columns="materialColumns"
+        :data-source="materialList"
+        :loading="materialLoading"
+        :pagination="materialPagination"
+        @change="handleTableChange"
+      >
+        <!-- 物料图片 -->
+        <template #materialImage="{ text }">
+          <a-image
+            :src="text || defaultImage"
+            :alt="text"
+            style="width: 80px; height: 80px; object-fit: cover"
+          />
+        </template>
+        <!-- 操作列 -->
+        <template #materialAction="{ record }">
+          <a-space>
+            <a @click="handleEditMaterial(record)">编辑</a>
+            <a-popconfirm
+              title="确定要删除该物料吗？"
+              @confirm="handleDeleteMaterial(record)"
+            >
+              <a class="danger-link">删除</a>
+            </a-popconfirm>
+          </a-space>
+        </template>
+      </a-table>
+    </a-card>
+
+    <!-- 添加/编辑物料弹窗 -->
+    <a-modal
+      v-model:visible="materialModal.visible"
+      :title="materialModal.isEdit ? '编辑物料' : '添加物料'"
+      @ok="handleSubmitMaterial"
+      :confirmLoading="materialModal.loading"
+    >
+      <a-form :model="materialModal.form" :rules="materialRules" ref="materialFormRef">
+        <a-form-item label="物料名称" name="name">
+          <a-input v-model:value="materialModal.form.name" placeholder="请输入物料名称" />
+        </a-form-item>
+        <a-form-item label="物料图片" name="image">
+          <a-upload
+            v-model:fileList="materialModal.form.fileList"
+            :beforeUpload="beforeUpload"
+            :maxCount="1"
+            list-type="picture-card"
+          >
+            <div v-if="!materialModal.form.fileList.length">
+              <plus-outlined />
+              <div style="margin-top: 8px">上传</div>
+            </div>
+          </a-upload>
+        </a-form-item>
+        <a-form-item label="单位" name="unit">
+          <a-input v-model:value="materialModal.form.unit" placeholder="请输入单位" />
+        </a-form-item>
+        <a-form-item label="规格" name="specification">
+          <a-input v-model:value="materialModal.form.specification" placeholder="请输入规格" />
+        </a-form-item>
+        <a-form-item label="首次订购推荐量" name="recommendedQuantity">
+          <a-input-number
+            v-model:value="materialModal.form.recommendedQuantity"
+            placeholder="请输入推荐量"
+            style="width: 100%"
+          />
+        </a-form-item>
+        <a-form-item label="说明" name="description">
+          <a-textarea
+            v-model:value="materialModal.form.description"
+            placeholder="请输入说明"
+            :rows="4"
+          />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -286,9 +374,12 @@ import { PlusOutlined, MenuOutlined, UploadOutlined } from '@ant-design/icons-vu
 import draggable from 'vuedraggable'
 import { getCompanyProducts, updateCompanyProduct, getProductImages, addProductImage, deleteProductImage, updateImageSort, getProductCategories, getProductSteps, addProductStep, updateProductStep, deleteProductStep, updateStepsSort } from '@/api/company'
 import { uploadImage } from '@/api/upload'
+import { getMaterialList, addMaterial, updateMaterial, deleteMaterial } from '@/api/company/material'
+import defaultImage from '@/assets/images/default.jpg'
 
 const router = useRouter()
 const route = useRoute()
+const productId = ref(Number(route.params.id))
 const loading = ref(false)
 const imageLoading = ref(false)
 const product = ref(null)
@@ -370,7 +461,7 @@ const fetchProductImages = async () => {
     }
   } catch (error) {
     console.error('获取产品图片失败:', error)
-    message.error('获���产品图片失败')
+    message.error('获取产品图片失败')
   } finally {
     imageLoading.value = false
   }
@@ -384,51 +475,34 @@ const beforeUpload = (file) => {
     message.error('只能上传图片文件!')
     return false
   }
-  
+
   // 检查文件大小（例如限制为2MB）
   const isLt2M = file.size / 1024 / 1024 < 2
   if (!isLt2M) {
     message.error('图片必须小于2MB!')
     return false
   }
-  
+
   return true
 }
 
-const handleImageUpload = async ({ file, onSuccess, onError }) => {
-  if (productImages.value.length >= 8) {
-    message.error('最多只能上传8张图片')
-    onError(new Error('最多只能上传8张图片'))
-    return
-  }
-
+// 产品图片上传
+const handleImageUpload = async ({ file }) => {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    const res = await uploadImage(formData)
-    if (res.code === 200) {
-      const imageData = {
-        productId: route.params.id,
-        imageUrl: res.data,
-        sort: productImages.value.length + 1,
-        isMain: productImages.value.length === 0 ? 1 : 0
-      }
-      const saveRes = await addProductImage(imageData)
-      if (saveRes.code === 200) {
-        await fetchProductImages()
-        onSuccess()
-      } else {
-        message.error(saveRes.msg || '保存图片失败')
-        onError(new Error(saveRes.msg))
-      }
-    } else {
-      message.error(res.msg || '上传失败')
-      onError(new Error(res.msg))
-    }
+    const { data } = await uploadImage(formData)
+
+    // 保存产品图片
+    await addProductImage({
+      productId: productId.value,
+      imageUrl: data,
+      isMain: productImages.value.length === 0 ? 1 : 0
+    })
+
+    fetchProductImages()
   } catch (error) {
-    console.error('上传失败:', error)
-    message.error('上传失败，请重试')
-    onError(error)
+    message.error('上传失败')
   }
 }
 
@@ -529,7 +603,7 @@ const handleModalOk = async () => {
   try {
     await formRef.value.validate()
     modalLoading.value = true
-    
+
     // 确保主图已上传
     if (!fileList.value.length) {
       message.error('请上传产品主图')
@@ -542,7 +616,7 @@ const handleModalOk = async () => {
       ...formData.value,
       imageUrl: formData.value.imageUrl
     }
-    
+
     const res = await updateCompanyProduct(submitData)
     if (res.code === 200) {
       message.success('更新成功')
@@ -628,7 +702,7 @@ const handleDragEnd = async () => {
       ...img,
       sort: index + 1
     }))
-    
+
     if (sortData.length === 0) {
       return
     }
@@ -694,10 +768,10 @@ const handleStepDragEnd = async () => {
       productId: step.productId,
       sort: index + 1
     }))
-    
+
     const res = await updateStepsSort(sortData)
     if (res.code === 200) {
-      message.success('排序更新��功')
+      message.success('排序更新成功')
     } else {
       message.error(res.msg || '排序更新失败')
       await fetchProductSteps()
@@ -714,16 +788,16 @@ const handleStepModalOk = async () => {
   try {
     await stepFormRef.value.validate()
     stepModalLoading.value = true
-    
+
     const submitData = {
       ...stepForm.value,
       productId: route.params.id
     }
-    
+
     const res = submitData.id
       ? await updateProductStep(submitData)
       : await addProductStep(submitData)
-      
+
     if (res.code === 200) {
       message.success('保存成功')
       stepModalVisible.value = false
@@ -762,7 +836,7 @@ const getCategoryName = (categoryId) => {
   if (!categoryId) return '-'
   const category = categories.value.find(c => c.id === categoryId)
   if (!category) return '-'
-  
+
   if (category.parentId) {
     const parentCategory = categories.value.find(c => c.id === category.parentId)
     return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
@@ -775,13 +849,13 @@ const handleStepImageUpload = async ({ file, onSuccess, onError }) => {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    
+
     const res = await uploadImage(formData)
     if (res.code === 200) {
       // 更新步骤表单的媒体信息
       stepForm.value.mediaUrl = res.data
       stepForm.value.mediaType = 'image'
-      
+
       // 更新文件列表，完全参考 customUpload 的处理方式
       stepMediaList.value = [{
         uid: '-1',
@@ -789,10 +863,10 @@ const handleStepImageUpload = async ({ file, onSuccess, onError }) => {
         status: 'done',
         url: res.data
       }]
-      
+
       // 重要：强制更新组件
       stepMediaList.value = [...stepMediaList.value]
-      
+
       onSuccess()
       message.success('上传成功')
     } else {
@@ -813,14 +887,14 @@ const beforeVideoUpload = (file) => {
     message.error('只能上传视频文件!')
     return false
   }
-  
+
   // 检查文件大小（限制为100MB）
   const isLt100M = file.size / 1024 / 1024 < 100
   if (!isLt100M) {
     message.error('视频必须小于100MB!')
     return false
   }
-  
+
   return true
 }
 
@@ -830,26 +904,26 @@ const handleStepVideoUpload = async ({ file, onSuccess, onError }) => {
   try {
     const formData = new FormData()
     formData.append('file', file)
-    
+
     // 显示上传中提示
     hide = message.loading({
       content: '视频上传中...',
       duration: 0,
       key: 'videoUpload'  // 添加唯一的 key
     })
-    
+
     const res = await uploadImage(formData)
     if (res.code === 200) {
       stepForm.value.mediaUrl = res.data
       stepForm.value.mediaType = 'video'
-      
+
       stepMediaList.value = [{
         uid: '-1',
         name: file.name,
         status: 'done',
         url: res.data
       }]
-      
+
       onSuccess()
       message.success('上传成功')
     } else {
@@ -870,11 +944,209 @@ const handleStepVideoUpload = async ({ file, onSuccess, onError }) => {
   }
 }
 
+// 物料相关
+const materialLoading = ref(false)
+const materialList = ref([])
+const materialPagination = ref({
+  current: 1,
+  pageSize: 10,
+  total: 0
+})
+const materialFormRef = ref()
+
+const materialColumns = [
+  {
+    title: '物料图片',
+    dataIndex: 'image',
+    width: 120,
+    slots: { customRender: 'materialImage' }
+  },
+  {
+    title: '物料名称',
+    dataIndex: 'name'
+  },
+  {
+    title: '单位',
+    dataIndex: 'unit'
+  },
+  {
+    title: '规格',
+    dataIndex: 'specification'
+  },
+  {
+    title: '建议数量',
+    dataIndex: 'recommendedQuantity'
+  },
+  {
+    title: '操作',
+    width: 150,
+    slots: { customRender: 'materialAction' }
+  }
+]
+
+const materialModal = ref({
+  visible: false,
+  loading: false,
+  isEdit: false,
+  form: {
+    name: '',
+    unit: '',
+    specification: '',
+    recommendedQuantity: undefined,
+    description: '',
+    fileList: []
+  }
+})
+
+const materialRules = {
+  name: [{ required: true, message: '请输入物料名称' }],
+  unit: [{ required: true, message: '请输入单位' }],
+  specification: [{ required: true, message: '请输入规格' }],
+  recommendedQuantity: [{ required: true, message: '请输入推荐量' }]
+}
+
+// 获取物料列表
+const fetchMaterialList = async () => {
+  try {
+    const { data } = await getMaterialList({
+      productId: productId.value
+    })
+    materialList.value = data.map(item => ({
+      id: item.id,
+      name: item.name,
+      unit: item.unit,
+      specification: item.specification,
+      recommendedQuantity: item.recommendedQuantity,
+      description: item.description,
+      image: item.image
+    }))
+  } catch (error) {
+    console.error('获取物料列表失败:', error)
+    message.error('获取物料列表失败')
+  }
+}
+
+// 处理分页变化
+const handleTableChange = (pagination) => {
+  materialPagination.value.current = pagination.current
+  materialPagination.value.pageSize = pagination.pageSize
+  fetchMaterialList()
+}
+
+// 显示添加物料弹窗
+const showMaterialModal = () => {
+  materialModal.value.isEdit = false
+  materialModal.value.form = {
+    name: '',
+    unit: '',
+    specification: '',
+    recommendedQuantity: undefined,
+    description: '',
+    fileList: []
+  }
+  materialModal.value.visible = true
+}
+
+// 编辑物料
+const handleEditMaterial = (record) => {
+  materialModal.value.isEdit = true
+  materialModal.value.visible = true
+  materialModal.value.form = {
+    id: record.id,
+    name: record.name,
+    unit: record.unit,
+    specification: record.specification,
+    recommendedQuantity: record.recommendedQuantity,
+    description: record.description,
+    image: record.image,
+    fileList: record.image ? [
+      {
+        uid: '-1',
+        name: 'image.png',
+        status: 'done',
+        url: record.image
+      }
+    ] : []
+  }
+}
+
+// 提交物料表单
+const handleSubmitMaterial = async () => {
+  try {
+    await materialFormRef.value.validate()
+    materialModal.value.loading = true
+
+    let imageUrl = ''
+    if (materialModal.value.form.fileList.length > 0) {
+      // 如果是已有图片，直接使用 url
+      if (materialModal.value.form.fileList[0].url) {
+        imageUrl = materialModal.value.form.fileList[0].url
+      } else {
+        // 否则上传新图片
+        const formData = new FormData()
+        formData.append('file', materialModal.value.form.fileList[0].originFileObj)
+        const { data } = await uploadImage(formData)
+        imageUrl = data
+      }
+    }
+
+    const data = {
+      productId: productId.value,
+      name: materialModal.value.form.name,
+      unit: materialModal.value.form.unit,
+      specification: materialModal.value.form.specification,
+      recommendedQuantity: materialModal.value.form.recommendedQuantity,
+      description: materialModal.value.form.description,
+      image: imageUrl
+    }
+
+    if (materialModal.value.isEdit) {
+      data.id = materialModal.value.form.id
+      await updateMaterial(data)
+    } else {
+      await addMaterial(data)
+    }
+
+    message.success(materialModal.value.isEdit ? '编辑成功' : '添加成功')
+    materialModal.value.visible = false
+    fetchMaterialList()
+  } catch (error) {
+    console.error('提交物料失败:', error)
+    message.error(materialModal.value.isEdit ? '编辑失败' : '添加失败')
+  } finally {
+    materialModal.value.loading = false
+  }
+}
+
+// 删除物料
+const handleDeleteMaterial = async (record) => {
+  try {
+    await deleteMaterial(record.id)
+    message.success('删除成功')
+    fetchMaterialList()
+  } catch (error) {
+    message.error('删除失败')
+  }
+}
+
+// 修复添加步骤按钮
+const showStepModal = () => {
+  stepModalVisible.value = true
+  stepForm.value = {
+    title: '',
+    description: '',
+    mediaType: 'none',
+    mediaUrl: ''
+  }
+  stepMediaList.value = []
+}
+
 onMounted(() => {
   fetchProduct()
   fetchProductImages()
   fetchCategories()
   fetchProductSteps()
+  fetchMaterialList()
 })
 </script>
 
