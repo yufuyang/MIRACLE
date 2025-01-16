@@ -36,6 +36,7 @@ public class CompanyMerchantCooperationServiceImpl extends ServiceImpl<CompanyMe
         LambdaQueryWrapper<CompanyMerchantCooperation> wrapper = new LambdaQueryWrapper<CompanyMerchantCooperation>()
                 .eq(Objects.nonNull(companyMerchantCooperationPageQry.getCompanyId()), CompanyMerchantCooperation::getCompanyId, companyMerchantCooperationPageQry.getCompanyId())
                 .eq(Objects.nonNull(companyMerchantCooperationPageQry.getMerchantId()), CompanyMerchantCooperation::getMerchantId, companyMerchantCooperationPageQry.getMerchantId())
+                .eq(Objects.nonNull(companyMerchantCooperationPageQry.getStatus()), CompanyMerchantCooperation::getStatus, companyMerchantCooperationPageQry.getStatus())
                 .orderByDesc(CompanyMerchantCooperation::getCreateTime);
 
         if (StringUtils.hasText(companyMerchantCooperationPageQry.getMerchantName())) {

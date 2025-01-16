@@ -1,5 +1,6 @@
 package com.example.miracle.modules.merchant.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
@@ -47,8 +48,23 @@ public class MerchantProductIntentionController {
      */
     @PostMapping
     public SingleResponse<Void> addIntention(@RequestBody MerchantProductIntention intention) {
+
+        CompanyProduct companyProduct = companyProductService.getById(intention.getProductId());
+        if (companyProduct == null) {
+            return SingleResponse.buildFailure("产品不存在");
+        }
+
+        MerchantProductIntention merchantProductIntention = intentionService.getOne(new LambdaQueryWrapper<MerchantProductIntention>()
+                .eq(MerchantProductIntention::getMerchantId, baseController.getMerchantId())
+                .eq(MerchantProductIntention::getProductId, intention.getProductId()));
+
+        if (Objects.nonNull(merchantProductIntention)) {
+            return SingleResponse.buildFailure("已存在意向");
+        }
+
         // 设置商户ID
         intention.setMerchantId(baseController.getMerchantId());
+        intention.setCompanyId(companyProduct.getCompanyId());
         intentionService.save(intention);
 
         // 更新公司产品统计

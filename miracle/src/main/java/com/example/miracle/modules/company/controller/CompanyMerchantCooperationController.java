@@ -51,6 +51,10 @@ public class CompanyMerchantCooperationController {
             companyMerchantCooperationDTO.setMerchantName(merchant.getMerchantName());
             companyMerchantCooperationDTO.setMerchantContactName(merchant.getContactName());
             companyMerchantCooperationDTO.setMerchantContactPhone(merchant.getContactPhone());
+            companyMerchantCooperationDTO.setMerchantProvince(merchant.getProvince());
+            companyMerchantCooperationDTO.setMerchantCity(merchant.getCity());
+            companyMerchantCooperationDTO.setMerchantAddress(merchant.getAddress());
+            companyMerchantCooperationDTO.setMerchantLicenseNo(merchant.getLicenseNo());
         });
 
         return companyMerchantCooperationMultiResponse;

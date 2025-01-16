@@ -15,4 +15,6 @@ public class CompanyMerchantCooperationPageQry extends PageQuery {
     private String merchantName;
 
     private String companyName;
+
+    private Integer status;
 }
