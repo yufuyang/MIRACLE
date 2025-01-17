@@ -25,4 +25,12 @@ export function cancelIntention(params) {
     method: 'post',
     data: params
   })
+}
+
+// 检查产品意向状态
+export function checkProductIntention(productId) {
+  return request({
+    url: `/merchant/product/intention/check/${productId}`,
+    method: 'get'
+  })
 } 

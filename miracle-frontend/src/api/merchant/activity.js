@@ -16,4 +16,28 @@ export function registerActivity(data) {
     method: 'post',
     data
   })
+}
+
+// 检查活动报名状态
+export function checkActivityRegistration(activityId) {
+  return request({
+    url: `/merchant/activity/registration/check/${activityId}`,
+    method: 'get'
+  })
+}
+
+// 取消活动报名
+export function cancelActivityRegistration(activityId) {
+  return request({
+    url: `/merchant/activity/registration/${activityId}`,
+    method: 'delete'
+  })
+}
+
+// 获取活动统计数据
+export function getActivityStats(activityId) {
+  return request({
+    url: `/merchant/activity/stats/${activityId}`,
+    method: 'get'
+  })
 } 

@@ -35,8 +35,6 @@ import java.util.stream.Collectors;
 public class ActivityRegistrationServiceImpl extends ServiceImpl<ActivityRegistrationMapper, ActivityRegistration> implements ActivityRegistrationService {
 
 
-    private final MerchantService merchantService;
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SingleResponse register(MerchantRegisterActivityCmd merchantRegisterActivityCmd) {

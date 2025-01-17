@@ -138,4 +138,17 @@ public class MerchantProductIntentionController {
 
         return SingleResponse.buildSuccess();
     }
+
+
+    @GetMapping("/check/{productId}")
+    public SingleResponse<Boolean> checkIntention(@PathVariable Long productId) {
+        MerchantProductIntention merchantProductIntention = intentionService.getOne(new LambdaQueryWrapper<MerchantProductIntention>()
+                .eq(MerchantProductIntention::getMerchantId, baseController.getMerchantId())
+                .eq(MerchantProductIntention::getProductId, productId));
+
+        if (Objects.nonNull(merchantProductIntention)) {
+            return SingleResponse.of(Boolean.TRUE);
+        }
+        return SingleResponse.of(Boolean.FALSE);
+    }
 } 

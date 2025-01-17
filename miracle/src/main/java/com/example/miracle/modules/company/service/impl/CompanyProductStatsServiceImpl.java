@@ -9,6 +9,7 @@ import com.example.miracle.modules.company.dto.ProductRankDTO;
 import com.example.miracle.modules.company.dto.ProductStatsDTO;
 import com.example.miracle.modules.company.dto.ProductTrendDTO;
 import com.example.miracle.modules.company.dto.query.CompanyProductStatsQuery;
+import com.example.miracle.modules.company.entity.ActivityStats;
 import com.example.miracle.modules.company.entity.CompanyProductStats;
 import com.example.miracle.modules.company.mapper.CompanyProductStatsMapper;
 import com.example.miracle.modules.company.service.CompanyProductStatsService;
@@ -241,7 +242,14 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
 
     @Override
     public void decrementIntentCount(Long productId) {
-        getBaseMapper().decrementIntentCount(productId);
+        LocalDate today = LocalDate.now();
+
+        CompanyProductStats stats = this.lambdaQuery().eq(CompanyProductStats::getProductId, productId).eq(CompanyProductStats::getStatsDate, today).one();
+
+        if (stats != null && stats.getIntentionCount() > 0) {
+            stats.setIntentionCount(stats.getIntentionCount() - 1);
+            this.updateById(stats);
+        }
     }
 
 }

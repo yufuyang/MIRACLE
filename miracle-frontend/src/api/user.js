@@ -53,9 +53,9 @@ export function logout() {
 }
 
 // 获取用户详情
-export function getUserDetail() {
+export function getUserDetail(path) {
   return request({
-    url: '/company/user',
+    url: path,
     method: 'get'
   })
 }

@@ -15,6 +15,10 @@ export const useUserStore = defineStore('user', () => {
     if (storedToken && storedUserInfo) {
       token.value = storedToken
       userInfo.value = JSON.parse(storedUserInfo)
+      console.log('初始化用户状态:', {
+        token: token.value,
+        userInfo: userInfo.value
+      })
     }
   }
 
@@ -33,14 +37,15 @@ export const useUserStore = defineStore('user', () => {
   // 获取用户详情
   const fetchUserDetail = async () => {
     try {
-      const res = await getUserDetail()
+      const detailApi = userInfo.value?.role === 'MERCHANT' ? 
+        '/merchant/user' : '/company/user'
+      const res = await getUserDetail(detailApi)
       if (res.code === 200) {
-        const detail = res.data
         updateUserInfo({
           ...userInfo.value,
-          ...detail
+          ...res.data
         })
-        return detail
+        return res.data
       }
     } catch (error) {
       console.error('获取用户详情失败:', error)
@@ -58,7 +63,7 @@ export const useUserStore = defineStore('user', () => {
       
       if (res.code === 200) {
         const { token: newToken, role, ...info } = res.data
-        // 设置token和基本用户信息，包括role
+        // 设置token和基本用户信息
         setToken('Bearer ' + newToken)
         updateUserInfo({
           ...info,
@@ -66,7 +71,8 @@ export const useUserStore = defineStore('user', () => {
         })
         
         message.success('登录成功')
-        router.push('/workspace/stats/overview')
+        const homePath = role === 'MERCHANT' ? '/workspace/merchant/home' : '/workspace/company/home'
+        router.push(homePath)
         return true
       } else {
         message.error(res.msg || '登录失败')
@@ -91,7 +97,10 @@ export const useUserStore = defineStore('user', () => {
 
   // 检查是否登录
   const isLoggedIn = () => {
-    return !!token.value && !!userInfo.value
+    // 从 localStorage 中获取登录状态
+    const storedToken = localStorage.getItem('token')
+    const storedUserInfo = localStorage.getItem('userInfo')
+    return !!storedToken && !!storedUserInfo
   }
 
   return {

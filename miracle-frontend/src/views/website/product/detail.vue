@@ -9,13 +9,15 @@
         <template #extra>
           <a-space>
             <a-button @click="handleViewCompany">查看企业</a-button>
-            <a-button 
-              type="primary"
-              :disabled="product?.status !== 1"
-              @click="handleAddIntention"
-            >
-              添加意向
-            </a-button>
+            <a-button
+                v-if="userStore.userInfo?.role === 'MERCHANT'"
+                type="primary"
+                :disabled="product?.status !== 1"
+                :danger="hasIntention.value"
+                @click="handleAddIntention"
+              >
+                {{ buttonText }}
+              </a-button>
           </a-space>
         </template>
       </a-page-header>
@@ -109,29 +111,11 @@
       </a-card>
     </a-spin>
 
-    <!-- 意向弹窗 -->
-    <a-modal
-      v-model:visible="intentionVisible"
-      title="添加意向"
-      @ok="submitIntention"
-      :confirmLoading="intentionLoading"
-    >
-      <a-form :model="intentionForm" :rules="rules" ref="intentionFormRef">
-        <a-form-item label="备注" name="remark">
-          <a-textarea
-            v-model:value="intentionForm.remark"
-            :rows="4"
-            placeholder="请输入意向备注"
-          />
-        </a-form-item>
-      </a-form>
-    </a-modal>
-
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed, watch } from 'vue'
+import { ref, onMounted, reactive, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { message, Modal } from 'ant-design-vue'
 import {
@@ -144,7 +128,7 @@ import {
   UserOutlined
 } from '@ant-design/icons-vue'
 import { getProductDetail, getProductImages } from '@/api/product'
-import { createIntention } from '@/api/merchant'
+import { createIntention, checkProductIntention, cancelIntention } from '@/api/merchant'
 import { getProductCategory, getProductStats } from '@/api/website/companyProduct'
 import { getCompanyDetail } from '@/api/company'
 import { getUserDetail } from '@/api/user'
@@ -156,6 +140,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const currentImageIndex = ref(0)
 const loading = ref(false)
+const hasIntention = ref(false)
 
 // 默认图片
 const defaultImage = 'https://via.placeholder.com/200x200'
@@ -182,23 +167,45 @@ const category = ref(null)
 // 公司数据
 const company = ref({})
 
-// 意向相关
-const intentionVisible = ref(false)
-const intentionLoading = ref(false)
-const intentionFormRef = ref(null)
-const intentionForm = reactive({
-  remark: ''
-})
-const rules = {
-  remark: [{ required: true, message: '请输入意向备注', trigger: 'blur' }]
-}
-
 // 数据
 const stats = ref({
   viewCount: 0,
   intentionCount: 0,
   onlineDays: 1
 })
+
+// 按钮文本
+const buttonText = computed(() => {
+  console.log('计算按钮文本:', {
+    hasIntention: hasIntention.value,
+    type: typeof hasIntention.value
+  })
+  return hasIntention.value ? '已添加意向' : '添加意向'
+})
+
+// 检查是否已添加意向
+const checkIntentionStatus = async () => {
+  if (userStore.isLoggedIn() && userStore.userInfo?.role === 'MERCHANT') {
+    try {
+      const res = await checkProductIntention(route.params.id)
+      console.log('检查意向状态结果:', res)
+      hasIntention.value = Boolean(res.data)
+      console.log('设置意向状态后:', hasIntention.value)
+    } catch (error) {
+      console.error('检查意向状态失败:', error)
+    }
+  }
+}
+
+// 确保用户信息是最新的
+const ensureUserInfo = async () => {
+  if (localStorage.getItem('token')) {
+    userStore.initUserState()
+    if (userStore.userInfo?.role === 'MERCHANT') {
+      await userStore.fetchUserDetail()
+    }
+  }
+}
 
 // 获取用户信息
 const loadUserInfo = async () => {
@@ -279,45 +286,58 @@ const handleViewCompany = () => {
 }
 
 // 处理添加意向按钮点击
-const handleAddIntention = () => {
-  // 检查是否登录
-  if (!isLoggedIn.value) {
+const handleAddIntention = async () => {
+  // 未登录时跳转到登录页
+  if (!userStore.isLoggedIn()) {
     message.warning('请先登录')
+    router.push('/login')
     return
   }
-  
-  // 检查用户角色
-  if (!isMerchant.value) {
+
+  // 已登录但不是商户用户
+  if (userStore.userInfo?.role !== 'MERCHANT') {
     message.warning('只有商户用户可以添加意向')
     return
   }
-  
-  intentionVisible.value = true
-}
 
-// 提交意向
-const submitIntention = async () => {
+  // 如果已添加意向，则取消意向
+  if (hasIntention.value) {
+    Modal.confirm({
+      title: '确认取消意向',
+      content: '确定要取消该产品的意向吗？',
+      async onOk() {
+        try {
+          await cancelIntention({
+            productId: route.params.id
+          })
+          message.success('已取消意向')
+          hasIntention.value = false
+          // 重新获取产品详情以更新数据
+          loadProductDetail()
+          loadStats()
+        } catch (error) {
+          console.error('取消意向失败:', error)
+          message.error('取消意向失败')
+        }
+      }
+    })
+    return
+  }
+
+  // 直接添加意向
   try {
-    await intentionFormRef.value.validate()
-    intentionLoading.value = true
-    
     await createIntention({
       productId: route.params.id,
-      companyId: product.value.companyId,
-      remark: intentionForm.remark
+      companyId: product.value.companyId
     })
-    
     message.success('意向添加成功')
-    intentionVisible.value = false
-    intentionForm.remark = ''
-    
-    // 刷新统计数据
+    hasIntention.value = true
+    // 重新获取产品详情以更新数据
+    loadProductDetail()
     loadStats()
   } catch (error) {
     console.error('添加意向失败:', error)
     message.error(error.response?.data?.message || '添加意向失败')
-  } finally {
-    intentionLoading.value = false
   }
 }
 
@@ -375,11 +395,24 @@ const loadStats = async () => {
 onMounted(async () => {
   const id = route.params.id
   if (id) {
-    await Promise.all([
-      loadProductDetail(),
-      loadProductImages(),
+    try {
+      // 先初始化用户状态
+      await ensureUserInfo()
+      
+      // 如果是商户用户，先检查意向状态
+      if (userStore.userInfo?.role === 'MERCHANT') {
+        console.log('开始检查意向状态')
+        await checkIntentionStatus()
+        console.log('意向状态检查完成:', hasIntention.value)
+      }
+      
+      // 然后再加载其他数据
+      loadProductDetail()
+      loadProductImages()
       loadStats()
-    ])
+    } catch (error) {
+      console.error('初始化失败:', error)
+    }
   }
 })
 

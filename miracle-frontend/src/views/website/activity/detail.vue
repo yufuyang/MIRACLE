@@ -7,15 +7,18 @@
           @back="() => router.back()"
       >
         <template #extra>
-          <a-button
-              type="primary"
-              :disabled="activity?.status !== 1"
-              :loading="registerLoading"
-              @click="handleRegister"
-          >
-            <template #icon><user-add-outlined /></template>
-            {{ getRegisterButtonText() }}
-          </a-button>
+          <a-space>
+            <a-button @click="handleViewCompany">查看企业</a-button>
+            <a-button
+                v-if="userStore.userInfo?.role === 'MERCHANT'"
+                type="primary"
+                :disabled="activity?.status !== 1"
+                :danger="hasRegistered.value"
+                @click="handleRegister"
+            >
+              {{ buttonText }}
+            </a-button>
+          </a-space>
         </template>
       </a-page-header>
     </div>
@@ -121,7 +124,11 @@ import {
   UserOutlined
 } from '@ant-design/icons-vue'
 import { getActivityDetail } from '@/api/website/activity'
-import { registerActivity } from '@/api/merchant/activity'
+import { 
+  registerActivity, 
+  checkActivityRegistration,
+  cancelActivityRegistration
+} from '@/api/merchant/activity'
 import { getCompanyDetail } from '@/api/company'
 import { useUserStore } from '@/stores/user'
 import dayjs from 'dayjs'
@@ -135,10 +142,7 @@ const registerLoading = ref(false)
 const activity = ref(null)
 const company = ref(null)
 const defaultImage = 'https://via.placeholder.com/800x400'
-const stats = ref({
-  viewCount: 0,
-  registerCount: 0
-})
+const hasRegistered = ref(false)  // 是否已报名
 
 // 判断是否已登录 - 调用 store 中的方法
 const isLoggedIn = computed(() => userStore.isLoggedIn())
@@ -166,22 +170,6 @@ const getStatusColor = (status) => {
   return colorMap[status] || 'default'
 }
 
-// 获取报名按钮文本
-const getRegisterButtonText = () => {
-  if (!activity.value) return '报名'
-
-  switch (activity.value.status) {
-    case 0:
-      return '未开始'
-    case 1:
-      return '立即报名'
-    case 2:
-      return '已结束'
-    default:
-      return '报名'
-  }
-}
-
 // 格式化日期
 const formatDate = (date) => {
   if (!date) return '-'
@@ -204,15 +192,72 @@ const getRemainingTime = () => {
   return `${hours}小时`
 }
 
-// 报名处理函数
+// 确保用户信息是最新的
+const ensureUserInfo = async () => {
+  if (localStorage.getItem('token')) {
+    userStore.initUserState()
+    if (userStore.userInfo?.role === 'MERCHANT') {
+      await userStore.fetchUserDetail()
+    }
+  }
+}
+
+// 按钮文本
+const buttonText = computed(() => {
+  console.log('计算按钮文本:', {
+    hasRegistered: hasRegistered.value,
+    type: typeof hasRegistered.value
+  })
+  return hasRegistered.value ? '已报名' : '立即报名'
+})
+
+// 检查是否已报名
+const checkRegistrationStatus = async () => {
+  if (userStore.isLoggedIn() && userStore.userInfo?.role === 'MERCHANT') {
+    try {
+      const res = await checkActivityRegistration(route.params.id)
+      console.log('检查报名状态结果:', res)
+      hasRegistered.value = Boolean(res.data)
+      console.log('设置报名状态后:', hasRegistered.value)
+    } catch (error) {
+      console.error('检查报名状态失败:', error)
+    }
+  }
+}
+
+// 处理报名按钮点击
 const handleRegister = async () => {
+  // 未登录时跳转到登录页
   if (!userStore.isLoggedIn()) {
     message.warning('请先登录')
+    router.push('/login')
     return
   }
 
+  // 已登录但不是商户用户
   if (userStore.userInfo?.role !== 'MERCHANT') {
     message.warning('只有商户用户可以报名活动')
+    return
+  }
+
+  // 如果已报名，则取消报名
+  if (hasRegistered.value) {
+    Modal.confirm({
+      title: '确认取消报名',
+      content: '确定要取消该活动的报名吗？',
+      async onOk() {
+        try {
+          await cancelActivityRegistration(route.params.id)
+          message.success('已取消报名')
+          hasRegistered.value = false
+          // 重新获取活动详情以更新数据
+          fetchActivityDetail()
+        } catch (error) {
+          console.error('取消报名失败:', error)
+          message.error('取消报名失败')
+        }
+      }
+    })
     return
   }
 
@@ -225,7 +270,9 @@ const handleRegister = async () => {
       companyId: activity.value.companyId
     })
     message.success('报名成功')
-    // 重新加载活动详情，更新报名状态
+    // 更新报名状态
+    hasRegistered.value = true
+    // 重新获取活动详情以更新数据
     fetchActivityDetail()
   } catch (error) {
     message.error(error.response?.data?.message || '报名失败')
@@ -261,8 +308,27 @@ const fetchCompanyDetail = async (companyId) => {
   }
 }
 
-onMounted(() => {
-  fetchActivityDetail()
+// 初始化
+onMounted(async () => {
+  const id = route.params.id
+  if (id) {
+    try {
+      // 先初始化用户状态
+      await ensureUserInfo()
+      
+      // 如果是商户用户，先检查报名状态
+      if (userStore.userInfo?.role === 'MERCHANT') {
+        console.log('开始检查报名状态')
+        await checkRegistrationStatus()
+        console.log('报名状态检查完成:', hasRegistered.value)
+      }
+      
+      // 然后再加载其他数据
+      await fetchActivityDetail()
+    } catch (error) {
+      console.error('初始化失败:', error)
+    }
+  }
 })
 
 // 调试用
