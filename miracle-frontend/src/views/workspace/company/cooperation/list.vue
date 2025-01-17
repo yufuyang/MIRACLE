@@ -108,6 +108,27 @@ const columns = [
     key: 'merchantName'
   },
   {
+
+    title: '营业执照号',
+
+    dataIndex: 'licenseNo',
+
+    key: 'licenseNo'
+
+  },
+  {
+
+    title: '商户地址',
+
+    dataIndex: 'address',
+
+    key: 'address',
+
+    customRender: ({ record }) => {
+      return `${record.province} ${record.city} ${record.address}`
+    }
+  },
+  {
     title: '联系人',
     dataIndex: 'merchantContactName',
     key: 'merchantContactName'
@@ -157,7 +178,11 @@ const fetchList = async () => {
       merchantContactName: item.merchantContactName,
       merchantContactPhone: item.merchantContactPhone,
       status: item.status,
-      createTime: item.createTime
+      createTime: item.createTime,
+      licenseNo: item.merchantLicenseNo || '-',
+      province: item.merchantProvince || '',
+      city: item.merchantCity || '',
+      address: item.merchantAddress || ''
     }))
     pagination.value.total = data.total || 0
   } catch (error) {
