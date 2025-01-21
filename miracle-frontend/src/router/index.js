@@ -222,6 +222,10 @@ const routes = [
                 path: 'create',
                 component: () => import('@/views/workspace/merchant/order/create.vue'),
                 meta: { title: '订单创建' }
+              },
+              {
+                path: ':id',
+                component: () => import('@/views/workspace/merchant/order/detail.vue')
               }
             ]
           }

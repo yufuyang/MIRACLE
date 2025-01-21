@@ -205,7 +205,9 @@ const handleCreate = () => {
 
 // 处理查看详情
 const handleViewDetail = (record) => {
-  router.push(`/workspace/merchant/order/${record.id}`)
+  router.push({
+    path: `/workspace/merchant/order/${record.id}`
+  })
 }
 
 // 处理付款

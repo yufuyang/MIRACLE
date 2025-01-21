@@ -3,6 +3,7 @@ package com.example.miracle.modules.merchant.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -63,6 +64,8 @@ public class MerchantOrderInfoDTO {
      * 备注
      */
     private String remark;
+
+    private LocalDateTime createTime;
 
     /**
      * 订单物料
