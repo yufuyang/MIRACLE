@@ -153,6 +153,16 @@
                 <router-link to="/workspace/merchant/cooperation/list">合作列表</router-link>
               </a-menu-item>
             </a-sub-menu>
+
+            <a-sub-menu key="order">
+              <template #icon>
+                <shopping-cart-outlined />
+              </template>
+              <template #title>订单管理</template>
+              <a-menu-item key="order-list">
+                <router-link to="/workspace/merchant/order/list">订单列表</router-link>
+              </a-menu-item>
+            </a-sub-menu>
           </template>
         </a-menu>
       </a-layout-sider>

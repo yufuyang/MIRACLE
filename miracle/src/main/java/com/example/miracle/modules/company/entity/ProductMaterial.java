@@ -5,6 +5,8 @@ import com.example.miracle.common.base.BaseEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.math.BigDecimal;
+
 @Data
 @EqualsAndHashCode(callSuper = true)
 @TableName("product_material")
@@ -34,6 +36,11 @@ public class ProductMaterial extends BaseEntity {
      * 规格
      */
     private String specification;
+
+    /**
+     * 单价
+     */
+    private BigDecimal price;
 
     /**
      * 首次订购推荐量

@@ -91,7 +91,7 @@ const routes = [
       // 企业用户路由
       {
         path: 'profile',
-        component: () => import('@/views/workspace/profile/index.vue'),
+        component: () => import('@/views/workspace/company/profile/index.vue'),
         meta: { title: '企业资料' }
       },
       {
@@ -207,6 +207,21 @@ const routes = [
                 path: 'list',
                 component: () => import('@/views/workspace/merchant/cooperation/list.vue'),
                 meta: { title: '合作列表' }
+              }
+            ]
+          },
+          {
+            path: 'order',
+            children: [
+              {
+                path: 'list',
+                component: () => import('@/views/workspace/merchant/order/list.vue'),
+                meta: { title: '订单列表' }
+              },
+              {
+                path: 'create',
+                component: () => import('@/views/workspace/merchant/order/create.vue'),
+                meta: { title: '订单创建' }
               }
             ]
           }

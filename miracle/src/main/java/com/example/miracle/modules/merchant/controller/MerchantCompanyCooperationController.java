@@ -1,12 +1,20 @@
 package com.example.miracle.modules.merchant.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.modules.company.dto.CompanyMerchantCooperationDTO;
 import com.example.miracle.modules.company.dto.query.CompanyMerchantCooperationPageQry;
+import com.example.miracle.modules.company.dto.query.CompanyProductPageQuery;
+import com.example.miracle.modules.company.dto.query.ProductMaterialPageQry;
 import com.example.miracle.modules.company.entity.CompanyMerchantCooperation;
+import com.example.miracle.modules.company.entity.CompanyProduct;
+import com.example.miracle.modules.company.entity.ProductMaterial;
 import com.example.miracle.modules.company.service.CompanyMerchantCooperationService;
+import com.example.miracle.modules.company.service.CompanyProductService;
+import com.example.miracle.modules.company.service.ProductMaterialService;
 import com.example.miracle.modules.platform.entity.Company;
 import com.example.miracle.modules.platform.service.CompanyService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +34,10 @@ public class MerchantCompanyCooperationController {
     private final CompanyMerchantCooperationService merchantCompanyCooperationService;
 
     private final CompanyService companyService;
+
+    private final CompanyProductService companyProductService;
+
+    private final ProductMaterialService productMaterialService;
 
     @PostMapping
     public SingleResponse handleCooperation(@RequestBody CompanyMerchantCooperation cooperation) {
@@ -69,5 +81,25 @@ public class MerchantCompanyCooperationController {
 
 
         return merchantCooperationDTOMultiResponse;
+    }
+
+
+    @PostMapping("/product/page")
+    public MultiResponse<CompanyProduct> pageQuery(@RequestBody CompanyProductPageQuery companyProductPageQuery) {;
+        companyProductPageQuery.setStatus(1);
+        return companyProductService.pageQuery(companyProductPageQuery);
+    }
+
+    @PostMapping("/product/material/page")
+    public MultiResponse<ProductMaterial> pageQuery(@RequestBody ProductMaterialPageQry productMaterialPageQry) {
+
+        LambdaQueryWrapper<ProductMaterial> query =new LambdaQueryWrapper<>();
+
+        query.eq(productMaterialPageQry.getProductId()!= null, ProductMaterial::getProductId, productMaterialPageQry.getProductId());
+
+        Page<ProductMaterial> page = productMaterialService.page(new Page<>(productMaterialPageQry.getPageNum(), productMaterialPageQry.getPageSize()), query);
+
+
+        return MultiResponse.of(page.getRecords(), (int) page.getTotal());
     }
 }
