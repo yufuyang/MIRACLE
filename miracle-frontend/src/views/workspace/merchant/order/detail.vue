@@ -75,10 +75,10 @@ const loading = ref(false)
 
 // 订单状态映射
 const orderStatusMap = {
-  1: '待付款',
+  1: '待审批',
   2: '待发货',
-  3: '配送中',
-  4: '已送达',
+  3: '审批拒绝',
+  4: '发货中',
   5: '已完成',
   6: '已取消'
 }
@@ -125,12 +125,12 @@ const materialColumns = [
 // 获取状态颜色
 const getStatusColor = (status) => {
   const colorMap = {
-    1: 'warning',
-    2: 'processing',
-    3: 'processing',
-    4: 'processing',
-    5: 'success',
-    6: 'default'
+    1: 'warning',     // 待审批 - 黄色
+    2: 'processing',  // 待发货 - 蓝色
+    3: 'error',      // 审批拒绝 - 红色
+    4: 'processing', // 发货中 - 蓝色
+    5: 'success',    // 已完成 - 绿色
+    6: 'default'     // 已取消 - 灰色
   }
   return colorMap[status] || 'default'
 }

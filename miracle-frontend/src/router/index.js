@@ -171,6 +171,21 @@ const routes = [
           }
         ]
       },
+      {
+        path: 'order',
+        children: [
+          {
+            path: 'list',
+            component: () => import('@/views/workspace/company/order/list.vue'),
+            meta: { title: '订单列表' }
+          },
+          {
+            path: 'detail/:id',
+            component: () => import('@/views/workspace/company/order/detail.vue'),
+            meta: { title: '订单详情' }
+          }
+        ]
+      },
       // 商户用户路由
       {
         path: 'merchant',
@@ -261,6 +276,10 @@ const routes = [
       {
         path: 'inquiry/stats',
         redirect: '/workspace/inquiry/stats'
+      },
+      {
+        path: 'order/list',
+        redirect: '/workspace/order/list'
       }
     ]
   }

@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
@@ -32,7 +33,7 @@ public class MerchantOrder extends BaseEntity {
      */
     private BigDecimal totalAmount;
     /**
-     * 订单状态：1-待确认，2-待发货，3-配送中，4-已送达，5-已完成，6-已取消
+     * 订单状态：1-待审批，2-待发货，3-审批拒绝，4-发货中，5-已完成，6-已取消
      */
     private Integer status;
     /**
@@ -47,6 +48,26 @@ public class MerchantOrder extends BaseEntity {
      * 收货人地址
      */
     private String receiverAddress;
+    /**
+     * 物流公司
+     */
+    private String logisticsCompany;
+    /**
+     * 物流单号
+     */
+    private String logisticsNo;
+    /**
+     * 审批时间
+     */
+    private LocalDateTime approveTime;
+    /**
+     * 发货时间
+     */
+    private LocalDateTime logisticsTime;
+    /**
+     * 完成时间
+     */
+    private LocalDateTime finishedTime;
     /**
      * 备注
      */

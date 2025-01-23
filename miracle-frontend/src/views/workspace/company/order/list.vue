@@ -6,8 +6,8 @@
         <a-form-item label="订单编号">
           <a-input v-model:value="queryParams.orderNo" placeholder="请输入订单编号" allowClear />
         </a-form-item>
-        <a-form-item label="企业名称">
-          <a-input v-model:value="queryParams.companyName" placeholder="请输入企业名称" allowClear />
+        <a-form-item label="商户名称">
+          <a-input v-model:value="queryParams.merchantName" placeholder="请输入商户名称" allowClear />
         </a-form-item>
         <a-form-item label="订单状态">
           <a-select v-model:value="queryParams.status" placeholder="请选择状态" allowClear style="width: 120px">
@@ -20,7 +20,6 @@
           <a-space>
             <a-button type="primary" @click="handleSearch">查询</a-button>
             <a-button @click="handleReset">重置</a-button>
-            <a-button type="primary" @click="handleCreate">创建订单</a-button>
           </a-space>
         </a-form-item>
       </a-form>
@@ -52,13 +51,16 @@
               <template #overlay>
                 <a-menu>
                   <a-menu-item v-if="record.status === 1">
-                    <a @click="handlePay(record)">付款</a>
-                  </a-menu-item>
-                  <a-menu-item v-if="record.status === 4">
-                    <a @click="handleConfirmReceive(record)">确认收货</a>
+                    <a @click="handleApprove(record)">审批通过</a>
                   </a-menu-item>
                   <a-menu-item v-if="record.status === 1">
-                    <a @click="handleCancel(record)">取消订单</a>
+                    <a @click="handleReject(record)">审批拒绝</a>
+                  </a-menu-item>
+                  <a-menu-item v-if="record.status === 2">
+                    <a @click="handleDeliver(record)">发货</a>
+                  </a-menu-item>
+                  <a-menu-item v-if="record.status === 4">
+                    <a @click="handleComplete(record)">完成订单</a>
                   </a-menu-item>
                 </a-menu>
               </template>
@@ -67,6 +69,23 @@
         </template>
       </a-table>
     </a-card>
+
+    <!-- 发货弹窗 -->
+    <a-modal
+      v-model:visible="deliverModal.visible"
+      title="订单发货"
+      @ok="handleDeliverSubmit"
+      :confirmLoading="deliverModal.loading"
+    >
+      <a-form :model="deliverForm" :rules="deliverRules" ref="deliverFormRef">
+        <a-form-item label="物流公司" name="logisticsCompany">
+          <a-input v-model:value="deliverForm.logisticsCompany" placeholder="请输入物流公司" />
+        </a-form-item>
+        <a-form-item label="物流单号" name="logisticsNo">
+          <a-input v-model:value="deliverForm.logisticsNo" placeholder="请输入物流单号" />
+        </a-form-item>
+      </a-form>
+    </a-modal>
   </div>
 </template>
 
@@ -75,7 +94,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { DownOutlined } from '@ant-design/icons-vue'
-import { getOrderList, cancelOrder } from '@/api/merchant/order'
+import { getOrderList, deliverOrder, cancelOrder, approveOrder, rejectOrder, completeOrder } from '@/api/company/order'
 import dayjs from 'dayjs'
 
 const router = useRouter()
@@ -106,7 +125,7 @@ const getStatusColor = (status) => {
 // 查询参数
 const queryParams = reactive({
   orderNo: '',
-  companyName: '',
+  merchantName: '',
   status: undefined,
   pageNum: 1,
   pageSize: 10
@@ -115,15 +134,10 @@ const queryParams = reactive({
 // 分页配置
 const pagination = reactive({
   total: 0,
-  showSizeChanger: true,
-  showQuickJumper: true,
   current: 1,
   pageSize: 10,
-  onChange: (page, pageSize) => {
-    queryParams.pageNum = page
-    queryParams.pageSize = pageSize
-    fetchOrderList()
-  }
+  showSizeChanger: true,
+  showQuickJumper: true
 })
 
 // 表格列定义
@@ -131,53 +145,60 @@ const columns = [
   {
     title: '订单编号',
     dataIndex: 'orderNo',
-    key: 'orderNo',
-    width: 180
+    width: 200
   },
   {
-    title: '企业名称',
-    dataIndex: 'companyName',
-    key: 'companyName',
-    width: 180
-  },
-  {
-    title: '产品名称',
-    dataIndex: 'productName',
-    key: 'productName',
-    width: 180
+    title: '商户名称',
+    dataIndex: 'merchantName',
+    width: 200
   },
   {
     title: '订单金额',
     dataIndex: 'totalAmount',
-    key: 'totalAmount',
     width: 120,
     customRender: ({ text }) => `¥${text}`
   },
   {
     title: '订单状态',
     dataIndex: 'status',
-    key: 'status',
     width: 120,
     slots: { customRender: 'status' }
   },
   {
     title: '创建时间',
     dataIndex: 'createTime',
-    key: 'createTime',
     width: 180,
-    customRender: ({ text }) => text ? dayjs(text).format('YYYY-MM-DD HH:mm:ss') : '-'
+    customRender: ({ text }) => dayjs(text).format('YYYY-MM-DD HH:mm:ss')
   },
   {
     title: '操作',
     key: 'action',
-    width: 150,
     slots: { customRender: 'action' },
+    width: 150,
     fixed: 'right'
   }
 ]
 
 const loading = ref(false)
 const orderList = ref([])
+
+// 发货弹窗相关
+const deliverModal = reactive({
+  visible: false,
+  loading: false,
+  record: null
+})
+
+const deliverForm = reactive({
+  logisticsCompany: '',
+  logisticsNo: ''
+})
+
+const deliverFormRef = ref()
+const deliverRules = {
+  logisticsCompany: [{ required: true, message: '请输入物流公司' }],
+  logisticsNo: [{ required: true, message: '请输入物流单号' }]
+}
 
 // 处理查询
 const handleSearch = () => {
@@ -189,7 +210,7 @@ const handleSearch = () => {
 const handleReset = () => {
   Object.assign(queryParams, {
     orderNo: '',
-    companyName: '',
+    merchantName: '',
     status: undefined,
     pageNum: 1,
     pageSize: 10
@@ -197,37 +218,73 @@ const handleReset = () => {
   handleSearch()
 }
 
-// 处理创建订单
-const handleCreate = () => {
-  router.push('/workspace/merchant/order/create')
-}
-
 // 处理查看详情
 const handleViewDetail = (record) => {
-  router.push({
-    path: `/workspace/merchant/order/${record.id}`
-  })
+  router.push(`/workspace/order/detail/${record.id}`)
 }
 
-// 处理付款
-const handlePay = (record) => {
-  message.info('支付功能开发中')
+// 处理发货
+const handleDeliver = (record) => {
+  deliverModal.record = record
+  deliverModal.visible = true
 }
 
-// 处理确认收货
-const handleConfirmReceive = async (record) => {
-  message.info('确认收货功能开发中')
-}
-
-// 处理取消订单
-const handleCancel = async (record) => {
+// 提交发货
+const handleDeliverSubmit = async () => {
   try {
-    await cancelOrder(record.id)
-    message.success('订单取消成功')
+    await deliverFormRef.value.validate()
+    deliverModal.loading = true
+    
+    await deliverOrder({
+      orderId: deliverModal.record.id,
+      ...deliverForm
+    })
+    
+    message.success('发货成功')
+    deliverModal.visible = false
+    fetchOrderList()
+    
+  } catch (error) {
+    console.error('发货失败:', error)
+    message.error('发货失败')
+  } finally {
+    deliverModal.loading = false
+  }
+}
+
+// 审批通过
+const handleApprove = async (record) => {
+  try {
+    await approveOrder(record.id)
+    message.success('审批通过')
     fetchOrderList()
   } catch (error) {
-    console.error('取消订单失败:', error)
-    message.error(error.response?.data?.message || '取消订单失败')
+    console.error('审批失败:', error)
+    message.error('审批失败')
+  }
+}
+
+// 审批拒绝
+const handleReject = async (record) => {
+  try {
+    await rejectOrder(record.id)
+    message.success('已拒绝订单')
+    fetchOrderList()
+  } catch (error) {
+    console.error('操作失败:', error)
+    message.error('操作失败')
+  }
+}
+
+// 完成订单
+const handleComplete = async (record) => {
+  try {
+    await completeOrder(record.id)
+    message.success('订单已完成')
+    fetchOrderList()
+  } catch (error) {
+    console.error('操作失败:', error)
+    message.error('操作失败')
   }
 }
 
@@ -247,24 +304,12 @@ const fetchOrderList = async () => {
       pageNum: pagination.current,
       pageSize: pagination.pageSize
     })
-    if (data && Array.isArray(data)) {
-      // 如果data直接是数组
-      orderList.value = data.map(item => ({
-        ...item,
-        key: item.id
-      }))
-      pagination.total = data.length
-    } else if (data && Array.isArray(data.list)) {
-      // 如果data是包含list的对象
-      orderList.value = data.list.map(item => ({
-        ...item,
-        key: item.id
-      }))
-      pagination.total = data.total
-    } else {
-      orderList.value = []
-      pagination.total = 0
-    }
+    
+    orderList.value = data.map(item => ({
+      ...item,
+      key: item.id
+    }))
+    pagination.total = data.total
   } catch (error) {
     console.error('获取订单列表失败:', error)
     message.error('获取订单列表失败')
@@ -279,6 +324,8 @@ fetchOrderList()
 
 <style scoped lang="less">
 .order-list {
+  padding: 24px;
+  
   .search-card {
     margin-bottom: 24px;
   }

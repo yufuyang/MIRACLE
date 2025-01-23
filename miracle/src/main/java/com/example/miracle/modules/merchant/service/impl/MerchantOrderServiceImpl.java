@@ -116,7 +116,7 @@ public class MerchantOrderServiceImpl extends ServiceImpl<MerchantOrderMapper, M
             orderMaterialDTO.setMaterialName(productMaterial.getName());
             orderMaterialDTO.setImage(productMaterial.getImage());
             orderMaterialDTO.setUnit(productMaterial.getUnit());
-            orderMaterialDTO.setSpecification(productMaterial.getSpecification());
+            orderMaterialDTO.setSpecification(productMaterial.getSpecification()    );
 
             return orderMaterialDTO;
         }).collect(Collectors.toList());
