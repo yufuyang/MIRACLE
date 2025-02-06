@@ -44,25 +44,27 @@
         <template #action="{ record }">
           <a-space>
             <a @click="handleViewDetail(record)">查看</a>
-            <a-divider type="vertical" />
-            <a-dropdown>
-              <a class="ant-dropdown-link" @click.prevent>
-                更多 <down-outlined />
-              </a>
-              <template #overlay>
-                <a-menu>
-                  <a-menu-item v-if="record.status === 1">
-                    <a @click="handlePay(record)">付款</a>
-                  </a-menu-item>
-                  <a-menu-item v-if="record.status === 4">
-                    <a @click="handleConfirmReceive(record)">确认收货</a>
-                  </a-menu-item>
-                  <a-menu-item v-if="record.status === 1">
-                    <a @click="handleCancel(record)">取消订单</a>
-                  </a-menu-item>
-                </a-menu>
-              </template>
-            </a-dropdown>
+            <template v-if="record.status !== 5">
+              <a-divider type="vertical" />
+              <a-dropdown>
+                <a class="ant-dropdown-link" @click.prevent>
+                  更多 <down-outlined />
+                </a>
+                <template #overlay>
+                  <a-menu>
+                    <a-menu-item v-if="record.status === 1">
+                      <a @click="handlePay(record)">付款</a>
+                    </a-menu-item>
+                    <a-menu-item v-if="record.status === 4">
+                      <a @click="handleConfirmReceive(record)">确认收货</a>
+                    </a-menu-item>
+                    <a-menu-item v-if="record.status === 1">
+                      <a @click="handleCancel(record)">取消订单</a>
+                    </a-menu-item>
+                  </a-menu>
+                </template>
+              </a-dropdown>
+            </template>
           </a-space>
         </template>
       </a-table>

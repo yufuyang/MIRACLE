@@ -83,9 +83,9 @@
               <a-menu-item key="inquiry-list">
                 <router-link to="/workspace/inquiry/list">意向列表</router-link>
               </a-menu-item>
-              <a-menu-item key="inquiry-stats">
-                <router-link to="/workspace/inquiry/stats">意向统计</router-link>
-              </a-menu-item>
+<!--              <a-menu-item key="inquiry-stats">-->
+<!--                <router-link to="/workspace/inquiry/stats">意向统计</router-link>-->
+<!--              </a-menu-item>-->
             </a-sub-menu>
 
             <a-sub-menu key="order">
@@ -96,9 +96,9 @@
               <a-menu-item key="order-list">
                 <router-link to="/workspace/order/list">订单列表</router-link>
               </a-menu-item>
-              <a-menu-item key="order-stats">
-                <router-link to="/workspace/order/stats">订单统计</router-link>
-              </a-menu-item>
+<!--              <a-menu-item key="order-stats">-->
+<!--                <router-link to="/workspace/order/stats">订单统计</router-link>-->
+<!--              </a-menu-item>-->
             </a-sub-menu>
 
             <a-sub-menu key="cooperation">
@@ -109,9 +109,9 @@
               <a-menu-item key="cooperation-list">
                 <router-link to="/workspace/cooperation/list">合作列表</router-link>
               </a-menu-item>
-              <a-menu-item key="cooperation-stats">
-                <router-link to="/workspace/cooperation/stats">合作统计</router-link>
-              </a-menu-item>
+<!--              <a-menu-item key="cooperation-stats">-->
+<!--                <router-link to="/workspace/cooperation/stats">合作统计</router-link>-->
+<!--              </a-menu-item>-->
             </a-sub-menu>
           </template>
 

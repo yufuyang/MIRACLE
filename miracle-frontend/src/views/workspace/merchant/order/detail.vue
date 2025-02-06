@@ -29,6 +29,7 @@
         <a-descriptions-item label="企业名称">{{ orderDetail.companyName }}</a-descriptions-item>
         <a-descriptions-item label="产品名称">{{ orderDetail.productName }}</a-descriptions-item>
         <a-descriptions-item label="创建时间">{{ formatDateTime(orderDetail.createTime) }}</a-descriptions-item>
+        <a-descriptions-item label="审批时间">{{ formatDateTime(orderDetail.approveTime) }}</a-descriptions-item>
         <a-descriptions-item label="收货人">{{ orderDetail.receiverName }}</a-descriptions-item>
         <a-descriptions-item label="联系电话">{{ orderDetail.receiverPhone }}</a-descriptions-item>
         <a-descriptions-item label="收货地址" :span="3">{{ orderDetail.receiverAddress }}</a-descriptions-item>
@@ -56,6 +57,31 @@
           />
         </template>
       </a-table>
+    </a-card>
+
+    <!-- 间隔 -->
+    <div class="card-spacer"></div>
+
+    <!-- 物流信息卡片 -->
+    <a-card v-if="orderDetail.status >= 4" title="物流信息" class="logistics-card">
+      <div class="logistics-info">
+        <div class="info-item">
+          <span class="label">发货时间：</span>
+          <span class="value">{{ formatDateTime(orderDetail.logisticsTime) }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">物流公司：</span>
+          <span class="value">{{ orderDetail.logisticsCompany }}</span>
+        </div>
+        <div class="info-item">
+          <span class="label">物流单号：</span>
+          <span class="value">{{ orderDetail.logisticsNo }}</span>
+        </div>
+        <div class="info-item" v-if="orderDetail.status === 5">
+          <span class="label">完成时间：</span>
+          <span class="value">{{ formatDateTime(orderDetail.finishedTime) }}</span>
+        </div>
+      </div>
     </a-card>
   </div>
 </template>
@@ -207,10 +233,40 @@ onMounted(() => {
     margin-bottom: 24px;
   }
 
+  .card-spacer {
+    height: 24px;
+  }
+
   .material-card {
+    margin-bottom: 0;
     :deep(.ant-table-wrapper) {
       .ant-table-thead > tr > th {
         background-color: #fafafa;
+      }
+    }
+  }
+
+  .logistics-card {
+    margin-bottom: 24px;
+    
+    .logistics-info {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 16px;
+      
+      .info-item {
+        flex: 0 0 33.33%;
+        margin-bottom: 16px;
+        
+        .label {
+          color: #8c8c8c;
+          margin-right: 8px;
+        }
+        
+        .value {
+          color: #262626;
+          font-weight: 500;
+        }
       }
     }
   }

@@ -71,4 +71,25 @@ public class MerchantOrderInfoDTO {
      * 订单物料
      */
     private List<OrderMaterialDTO> orderMaterials;
+
+    /**
+     * 物流公司
+     */
+    private String logisticsCompany;
+    /**
+     * 物流单号
+     */
+    private String logisticsNo;
+    /**
+     * 审批时间
+     */
+    private LocalDateTime approveTime;
+    /**
+     * 发货时间
+     */
+    private LocalDateTime logisticsTime;
+    /**
+     * 完成时间
+     */
+    private LocalDateTime finishedTime;
 }
