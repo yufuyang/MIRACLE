@@ -51,21 +51,30 @@
       </div>
     </a-card>
 
-    <!-- 统计数据 -->
-    <div class="stats-row">
-      <div class="stats-item">
-        <div class="stats-value">{{ stats.cooperationCount }}</div>
-        <div class="stats-label">合作企业</div>
-      </div>
-      <div class="stats-item">
-        <div class="stats-value">{{ stats.intentionCount }}</div>
-        <div class="stats-label">意向记录</div>
-      </div>
-      <div class="stats-item">
-        <div class="stats-value">{{ stats.activityCount }}</div>
-        <div class="stats-label">活动报名</div>
-      </div>
-    </div>
+<!--    &lt;!&ndash; 数据统计卡片 &ndash;&gt;-->
+<!--    <a-card class="stats-card">-->
+<!--      <template #title>-->
+<!--        <div class="card-title">数据统计</div>-->
+<!--      </template>-->
+<!--      <div class="stats-grid">-->
+<!--        <div class="stats-item">-->
+<!--          <div class="stats-value">{{ stats.intentionCount }}</div>-->
+<!--          <div class="stats-label">意向数</div>-->
+<!--        </div>-->
+<!--        <div class="stats-item">-->
+<!--          <div class="stats-value">{{ stats.orderCount }}</div>-->
+<!--          <div class="stats-label">订单数</div>-->
+<!--        </div>-->
+<!--        <div class="stats-item">-->
+<!--          <div class="stats-value">{{ stats.activityCount }}</div>-->
+<!--          <div class="stats-label">活动数</div>-->
+<!--        </div>-->
+<!--        <div class="stats-item">-->
+<!--          <div class="stats-value">¥{{ stats.totalAmount?.toFixed(2) }}</div>-->
+<!--          <div class="stats-label">订单总额</div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </a-card>-->
 
     <!-- 合作企业 -->
     <a-card class="cooperation-list" :loading="cooperationLoading">
@@ -80,20 +89,20 @@
         <a-col v-for="company in cooperationList" :key="company.id" :span="6">
           <a-card hoverable class="company-card" @click="handleViewCompany(company)">
             <img 
-              :src="company.logo || defaultImage" 
-              :alt="company.name"
+              :src="company.companyLogo || defaultImage" 
+              :alt="company.companyName"
               class="company-logo"
             />
             <div class="company-info">
-              <div class="company-name">{{ company.name }}</div>
+              <div class="company-name">{{ company.companyName }}</div>
               <div class="company-contact">
                 <div class="contact-item">
                   <UserOutlined />
-                  <span>{{ company.contactName }}</span>
+                  <span>{{ company.companyContactName }}</span>
                 </div>
                 <div class="contact-item">
                   <PhoneOutlined />
-                  <span>{{ company.contactPhone }}</span>
+                  <span>{{ company.companyContactPhone }}</span>
                 </div>
               </div>
             </div>
@@ -195,6 +204,7 @@ import {
 } from '@ant-design/icons-vue'
 import { getMerchantInfo, updateMerchantInfo } from '@/api/merchant/merchant-base'
 import { getCooperationList } from '@/api/merchant/cooperation'
+import { getMerchantStats } from '@/api/merchant/stats'
 import regionsData from '@/assets/data/regions.json'
 import defaultImage from '@/assets/images/default.jpg'
 
@@ -208,9 +218,10 @@ const editFormRef = ref()
 const merchantInfo = ref({})
 // 统计数据
 const stats = ref({
-  cooperationCount: 0,
-  intentionCount: 0,
-  activityCount: 0
+  intentionCount: 0,    // 意向数
+  orderCount: 0,        // 订单数
+  activityCount: 0,     // 活动数
+  totalAmount: 0        // 订单总金额
 })
 // 合作企业列表
 const cooperationList = ref([])
@@ -258,9 +269,10 @@ const fetchMerchantInfo = async () => {
     const { data } = await getMerchantInfo()
     merchantInfo.value = data
     stats.value = {
-      cooperationCount: data.cooperationCount || 0,
       intentionCount: data.intentionCount || 0,
-      activityCount: data.activityCount || 0
+      orderCount: data.orderCount || 0,
+      activityCount: data.activityCount || 0,
+      totalAmount: data.totalAmount || 0
     }
   } catch (error) {
     message.error('获取商户信息失败')
@@ -283,6 +295,19 @@ const fetchCooperationList = async () => {
     message.error('获取合作企业失败')
   } finally {
     cooperationLoading.value = false
+  }
+}
+
+// 获取统计数据
+const fetchStats = async () => {
+  try {
+    const res = await getMerchantStats()
+    if (res.code === 200) {
+      stats.value = res.data
+    }
+  } catch (error) {
+    console.error('获取统计数据失败:', error)
+    message.error('获取统计数据失败')
   }
 }
 
@@ -313,7 +338,7 @@ const handleViewMore = () => {
 
 // 查看企业详情
 const handleViewCompany = (company) => {
-  router.push(`/company/${company.id}`)
+  router.push(`/company/${company.companyId}`)
 }
 
 // 处理头像上传
@@ -325,6 +350,7 @@ const handleAvatarUpload = async (file) => {
 onMounted(() => {
   fetchMerchantInfo()
   fetchCooperationList()
+  // fetchStats()
 })
 </script>
 
