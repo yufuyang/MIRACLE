@@ -39,4 +39,12 @@ export function getProductCategory(id) {
     url: `/website/product/category/${id}`,
     method: 'get'
   })
-} 
+}
+
+// 获取产品生产步骤
+export function getProductSteps(productId) {
+  return request({
+    url: `/website/product/steps/${productId}`,
+    method: 'get'
+  })
+}

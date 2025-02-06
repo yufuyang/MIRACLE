@@ -55,6 +55,48 @@
         </a-descriptions>
       </a-card>
 
+      <!-- 产品步骤 -->
+      <a-card title="生产步骤" style="margin-bottom: 24px">
+        <div class="steps-wrapper">
+          <template v-if="productSteps.length > 0">
+            <div 
+              v-for="(step, index) in productSteps" 
+              :key="index"
+              class="step-item"
+            >
+              <div class="step-header">
+                <div class="step-number">{{ index + 1 }}</div>
+                <div class="step-title">{{ step.sort }}. {{ step.title }}</div>
+              </div>
+              <div class="step-content">
+                <div class="step-description">{{ step.description }}</div>
+                <div class="step-media" v-if="step.mediaUrl">
+                  <!-- 图片类型 -->
+                  <template v-if="step.mediaType === 'image'">
+                    <a-image
+                      :src="step.mediaUrl"
+                      :alt="step.title"
+                      :preview="true"
+                    />
+                  </template>
+                  <!-- 视频类型 -->
+                  <template v-if="step.mediaType === 'video'">
+                    <video
+                      controls
+                      class="step-video"
+                      :src="step.mediaUrl"
+                    ></video>
+                  </template>
+                </div>
+              </div>
+            </div>
+          </template>
+          <template v-else>
+            <a-empty description="暂无产品步骤" />
+          </template>
+        </div>
+      </a-card>
+
       <!-- 数据统计 -->
       <div class="stats-section">
         <div class="stats-title">数据统计</div>
@@ -129,7 +171,7 @@ import {
 } from '@ant-design/icons-vue'
 import { getProductDetail, getProductImages } from '@/api/product'
 import { createIntention, checkProductIntention, cancelIntention } from '@/api/merchant'
-import { getProductCategory, getProductStats } from '@/api/website/companyProduct'
+import { getProductCategory, getProductStats, getProductSteps } from '@/api/website/companyProduct'
 import { getCompanyDetail } from '@/api/company'
 import { getUserDetail } from '@/api/user'
 import dayjs from 'dayjs'
@@ -162,6 +204,7 @@ const isCompany = computed(() => {
 // 产品数据
 const product = ref({})
 const productImages = ref([])
+const productSteps = ref([])
 const category = ref(null)
 
 // 公司数据
@@ -219,27 +262,32 @@ const loadUserInfo = async () => {
 }
 
 // 获取产品详情
-const loadProductDetail = async () => {
+const fetchProductDetail = async () => {
   loading.value = true
   try {
-    const res = await getProductDetail(route.params.id)
-    product.value = res.data
+    const [detailRes, imagesRes, statsRes] = await Promise.all([
+      getProductDetail(route.params.id),
+      getProductImages(route.params.id),
+      getProductStats(route.params.id)
+    ])
+    
+    product.value = detailRes.data
+    productImages.value = imagesRes.data
+    stats.value = statsRes.data
+    
+    // 获取生产步骤
+    const stepsRes = await getProductSteps(route.params.id)
+    if (stepsRes.code === 200) {  // 修改判断条件
+      productSteps.value = stepsRes.data
+      // 按 sort 字段排序
+      productSteps.value.sort((a, b) => a.sort - b.sort)
+    }
+
   } catch (error) {
     console.error('获取产品详情失败:', error)
     message.error('获取产品详情失败')
   } finally {
     loading.value = false
-  }
-}
-
-// 获取产品图片
-const loadProductImages = async () => {
-  try {
-    const res = await getProductImages(route.params.id)
-    productImages.value = res.data || []
-  } catch (error) {
-    console.error('获取产品图片失败:', error)
-    message.error('获取产品图片失败')
   }
 }
 
@@ -313,7 +361,7 @@ const handleAddIntention = async () => {
           message.success('已取消意向')
           hasIntention.value = false
           // 重新获取产品详情以更新数据
-          loadProductDetail()
+          fetchProductDetail()
           loadStats()
         } catch (error) {
           console.error('取消意向失败:', error)
@@ -333,7 +381,7 @@ const handleAddIntention = async () => {
     message.success('意向添加成功')
     hasIntention.value = true
     // 重新获取产品详情以更新数据
-    loadProductDetail()
+    fetchProductDetail()
     loadStats()
   } catch (error) {
     console.error('添加意向失败:', error)
@@ -407,9 +455,7 @@ onMounted(async () => {
       }
       
       // 然后再加载其他数据
-      loadProductDetail()
-      loadProductImages()
-      loadStats()
+      fetchProductDetail()
     } catch (error) {
       console.error('初始化失败:', error)
     }
@@ -583,6 +629,92 @@ watch(() => product.value?.categoryId, (newVal) => {
             font-size: 20px;
             font-weight: 500;
             color: #333;
+          }
+        }
+      }
+    }
+  }
+
+  .steps-wrapper {
+    padding: 24px 32px;
+
+    .step-item {
+      position: relative;
+      padding-left: 48px;
+      margin-bottom: 32px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 24px;
+        top: 40px;
+        bottom: -24px;
+        width: 1px;
+        background-color: #f0f0f0;
+      }
+
+      &:last-child::before {
+        display: none;
+      }
+
+      .step-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 16px;
+
+        .step-number {
+          position: absolute;
+          left: 0;
+          width: 48px;
+          height: 48px;
+          line-height: 48px;
+          text-align: center;
+          background-color: #1890ff;
+          color: #fff;
+          border-radius: 50%;
+          font-size: 20px;
+          font-weight: 500;
+        }
+
+        .step-title {
+          font-size: 16px;
+          font-weight: 500;
+          color: #262626;
+          margin-left: 16px;
+        }
+      }
+
+      .step-content {
+        margin-left: 16px;
+
+        .step-description {
+          color: #666;
+          font-size: 14px;
+          line-height: 1.6;
+          margin-bottom: 16px;
+        }
+
+        .step-media {
+          width: 100%;
+          max-width: 400px;
+          border-radius: 4px;
+          overflow: hidden;
+          margin-bottom: 16px;
+
+          img {
+            width: 100%;
+            height: auto;
+            object-fit: cover;
+          }
+
+          .step-video {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
           }
         }
       }
