@@ -31,16 +31,17 @@
         
         <view class="order-content">
           <image 
-            :src="item.productImage" 
+            :src="item.productImage || defaultImage" 
             mode="aspectFill" 
             class="product-image"
+            @error="handleImageError"
           />
           <view class="order-info">
             <text class="product-name">{{ item.productName }}</text>
             <text class="company-name">{{ item.companyName }}</text>
             <view class="order-price">
               <text class="price">¥{{ item.totalAmount }}</text>
-              <text class="time">{{ item.createTime }}</text>
+              <text class="time">{{ formatTime(item.createTime) }}</text>
             </view>
           </view>
         </view>
@@ -118,10 +119,12 @@ const handleSearch = () => {
 // 获取状态文本
 const getStatusText = (status) => {
   const statusMap = {
-    1: '待发货',
-    2: '已发货',
-    3: '已完成',
-    4: '已取消'
+    1: '待审批',
+    2: '待发货',
+    3: '审批拒绝',
+    4: '发货中',
+    5: '已完成',
+    6: '已取消'
   }
   return statusMap[status] || '未知状态'
 }
@@ -138,6 +141,12 @@ const handleOrderDetail = (orderId) => {
   uni.navigateTo({
     url: `/pages/merchant/order/detail?id=${orderId}`
   })
+}
+
+// 处理图片加载失败
+const handleImageError = (e) => {
+  const img = e.target
+  img.src = defaultImage
 }
 
 // 下拉刷新
@@ -239,10 +248,12 @@ onShow(() => {
         .order-status {
           font-size: 24rpx;
           
-          &.status-1 { color: #1890ff; }  // 待发货
-          &.status-2 { color: #52c41a; }  // 已发货
-          &.status-3 { color: #52c41a; }  // 已完成
-          &.status-4 { color: #ff4d4f; }  // 已取消
+          &.status-1 { color: #faad14; }  // 待审批
+          &.status-2 { color: #1890ff; }  // 待发货
+          &.status-3 { color: #ff4d4f; }  // 审批拒绝
+          &.status-4 { color: #1890ff; }  // 发货中
+          &.status-5 { color: #52c41a; }  // 已完成
+          &.status-6 { color: #999999; }  // 已取消
         }
       }
 
@@ -255,6 +266,7 @@ onShow(() => {
           height: 160rpx;
           border-radius: 8rpx;
           margin-right: 20rpx;
+          background-color: #f5f5f5;
         }
 
         .order-info {
