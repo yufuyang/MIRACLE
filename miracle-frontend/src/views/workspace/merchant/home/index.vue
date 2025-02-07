@@ -204,7 +204,6 @@ import {
 } from '@ant-design/icons-vue'
 import { getMerchantInfo, updateMerchantInfo } from '@/api/merchant/merchant-base'
 import { getCooperationList } from '@/api/merchant/cooperation'
-import { getMerchantStats } from '@/api/merchant/stats'
 import regionsData from '@/assets/data/regions.json'
 import defaultImage from '@/assets/images/default.jpg'
 
@@ -299,17 +298,7 @@ const fetchCooperationList = async () => {
 }
 
 // 获取统计数据
-const fetchStats = async () => {
-  try {
-    const res = await getMerchantStats()
-    if (res.code === 200) {
-      stats.value = res.data
-    }
-  } catch (error) {
-    console.error('获取统计数据失败:', error)
-    message.error('获取统计数据失败')
-  }
-}
+
 
 // 编辑资料
 const handleEdit = () => {
@@ -350,7 +339,6 @@ const handleAvatarUpload = async (file) => {
 onMounted(() => {
   fetchMerchantInfo()
   fetchCooperationList()
-  // fetchStats()
 })
 </script>
 

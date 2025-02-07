@@ -1,0 +1,29 @@
+// 定义全局变量
+$primary-color: #1890ff;
+$border-color: #dcdfe6;
+$text-color: #333333;
+$background-color: #f5f5f5;
+
+// 全局样式
+page {
+  background-color: $background-color;
+  font-size: 28rpx;
+  color: $text-color;
+}
+
+// 常用类
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+} 
