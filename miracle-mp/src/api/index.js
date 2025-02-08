@@ -46,7 +46,7 @@ export function getHotProducts() {
   })
 }
 
-// 获取轮播图
+// 获取热门活动
 export function getHotActivities() {
   return request({
     url: '/website/home/banners',

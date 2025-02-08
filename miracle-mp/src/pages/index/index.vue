@@ -30,19 +30,37 @@
       </swiper>
     </view>
 
-    <!-- 轮播图 -->
+    <!-- 热门活动 -->
     <view class="section" v-if="activities.length > 0">
+      <view class="header">
+        <text class="title">热门活动</text>
+        <text class="more" @tap="onMoreTap('activity')">查看更多</text>
+      </view>
       <swiper 
-        class="banner-swiper" 
+        class="activity-swiper" 
         :indicator-dots="true"
         :autoplay="true"
-        :interval="4000"
+        :interval="3000"
         :duration="500"
-        :circular="true"
+        circular
       >
-        <swiper-item v-for="item in activities" :key="item.id">
-          <view class="banner-item" @tap="onBannerTap(item)">
-            <image :src="item.imageUrl" mode="aspectFill"></image>
+        <swiper-item 
+          v-for="item in activities" 
+          :key="item.id"
+        >
+          <view class="activity-card" @tap="handleActivityDetail(item.id)">
+            <image :src="item.coverImage || defaultImage" mode="aspectFill" class="cover" />
+            <view class="info">
+              <text class="title">{{ item.title }}</text>
+              <text class="desc">{{ item.description || '暂无描述' }}</text>
+              <view class="footer">
+                <text class="time">{{ formatTime(item.startTime) }} - {{ formatTime(item.endTime) }}</text>
+                <view class="stats">
+                  <text class="stat">浏览 {{ item.viewCount }}</text>
+                  <text class="stat">报名 {{ item.registerCount }}</text>
+                </view>
+              </view>
+            </view>
           </view>
         </swiper-item>
       </swiper>
@@ -136,10 +154,13 @@ export default {
     async getActivities() {
       try {
         const res = await getHotActivities()
-        console.log('轮播图接口返回:', res)
-        return res.data || []
+        console.log('热门活动接口返回:', res)
+        if (res.code === 200) {
+          return res.data || []
+        }
+        return []
       } catch (error) {
-        console.error('获取轮播图失败:', error)
+        console.error('获取热门活动失败:', error)
         return []
       }
     },
@@ -193,6 +214,15 @@ export default {
       uni.navigateTo({
         url: `/pages/company/detail/index?id=${id}`
       })
+    },
+    handleActivityDetail(id) {
+      uni.navigateTo({
+        url: `/pages/activity/detail?id=${id}`
+      })
+    },
+    formatTime(timestamp) {
+      const date = new Date(timestamp)
+      return date.toLocaleDateString()
     }
   }
 }
@@ -330,6 +360,69 @@ export default {
 }
 
 .company-card:active {
+  opacity: 0.8;
+}
+
+/* 活动轮播样式 */
+.activity-swiper {
+  height: 600rpx;
+}
+
+.activity-card {
+  padding: 20rpx;
+}
+
+.activity-card .cover {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 12rpx;
+  background-color: #f5f5f5;
+}
+
+.activity-card .info {
+  padding: 20rpx 0;
+}
+
+.activity-card .title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+  display: block;
+}
+
+.activity-card .desc {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.activity-card .footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.activity-card .time {
+  font-size: 24rpx;
+  color: #1890ff;
+}
+
+.activity-card .stats {
+  display: flex;
+  gap: 20rpx;
+}
+
+.activity-card .stat {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.activity-card:active {
   opacity: 0.8;
 }
 </style>
