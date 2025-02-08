@@ -105,4 +105,31 @@ export function getProductMaterials(productId) {
     method: 'get',
     params: { productId }
   })
+}
+
+// 检查活动报名状态
+export function checkRegistration(activityId) {
+  return request({
+    url: `/merchant/activity/registration/check/${activityId}`,
+    method: 'get'
+  })
+}
+
+// 活动报名
+export function registerActivity(activityId) {
+  return request({
+    url: '/merchant/activity/registration',
+    method: 'post',
+    data: {
+      activityId
+    }
+  })
+}
+
+// 取消报名
+export function cancelRegistration(activityId) {
+  return request({
+    url: `/merchant/activity/registration/${activityId}`,
+    method: 'delete'
+  })
 } 

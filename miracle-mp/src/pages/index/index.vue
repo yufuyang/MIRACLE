@@ -216,8 +216,16 @@ export default {
       })
     },
     handleActivityDetail(id) {
+      console.log('跳转到活动详情，id:', id)
       uni.navigateTo({
-        url: `/pages/activity/detail?id=${id}`
+        url: `/pages/activity/detail?id=${id}`,
+        fail: (err) => {
+          console.error('跳转失败:', err)
+          uni.showToast({
+            title: '跳转失败',
+            icon: 'none'
+          })
+        }
       })
     },
     formatTime(timestamp) {

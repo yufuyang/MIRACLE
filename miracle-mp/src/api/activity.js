@@ -6,4 +6,13 @@ export function getActivityDetail(id) {
     url: `/website/activity/${id}`,
     method: 'get'
   })
+}
+
+// 获取活动列表
+export function getActivityList(params) {
+  return request({
+    url: '/website/activity/page',
+    method: 'post',
+    data: params
+  })
 } 
