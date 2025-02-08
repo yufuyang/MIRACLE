@@ -2,11 +2,12 @@ import request from '../utils/request'
 
 // 获取企业列表
 export function getCompanyList(params) {
+  console.log('企业列表请求参数:', params) // 添加日志
   return request({
     url: '/website/company/page',
     method: 'post',
     data: {
-      companyName: params.name,
+      companyName: params.companyName,
       pageNum: params.pageNum,
       pageSize: params.pageSize
     }

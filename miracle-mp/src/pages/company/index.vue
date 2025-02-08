@@ -1,245 +1,209 @@
 <template>
-  <view class="company">
-    <!-- 搜索栏 -->
-    <view class="search-bar">
+  <view class="company-list">
+    <!-- 搜索框 -->
+    <view class="search-box">
       <input 
         type="text" 
-        v-model="searchForm.name"
+        v-model="searchKey" 
         placeholder="搜索企业名称" 
+        class="search-input"
         @confirm="handleSearch"
       />
-      <button class="search-btn" @tap="handleSearch">搜索</button>
     </view>
-    
+
     <!-- 企业列表 -->
-    <view class="company-list">
+    <view class="company-grid">
       <view 
-        class="company-item" 
+        class="company-card" 
         v-for="item in companies" 
         :key="item.id"
-        @tap="handleCompanyDetail(item)"
+        @tap="handleCompanyDetail(item.id)"
       >
-        <image 
-          :src="item.logoUrl || defaultImage" 
-          mode="aspectFill" 
-          class="logo"
-        />
+        <image :src="item.logoUrl || defaultImage" mode="aspectFill" class="logo" />
         <view class="info">
           <text class="name">{{ item.companyName }}</text>
           <text class="desc">{{ item.description || '暂无描述' }}</text>
           <view class="stats">
-            <view class="stat-item">
-              <text class="label">产品数</text>
-              <text class="value">{{ item.productCount }}</text>
-            </view>
-            <view class="stat-item">
-              <text class="label">意向数</text>
-              <text class="value">{{ item.intentionCount }}</text>
-            </view>
+            <text class="stat">产品数 {{ item.productCount }}</text>
+            <text class="stat">意向数 {{ item.intentionCount }}</text>
           </view>
         </view>
       </view>
     </view>
 
-    <!-- 加载状态 -->
-    <view class="loading-more" v-if="loading">
-      <text>加载中...</text>
-    </view>
-
-    <!-- 无数据提示 -->
-    <view class="empty" v-if="!loading && companies.length === 0">
-      <text>暂无企业数据</text>
-    </view>
+    <!-- 加载更多 -->
+    <view class="load-more" v-if="hasMore">加载中...</view>
+    <view class="no-more" v-else>没有更多了</view>
   </view>
 </template>
 
+<style lang="scss" scoped>
+.company-list {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 20rpx;
+}
+
+.search-box {
+  padding: 20rpx;
+  background: #fff;
+  border-radius: 12rpx;
+  margin-bottom: 20rpx;
+
+  .search-input {
+    width: 100%;
+    height: 72rpx;
+    background: #f5f5f5;
+    border-radius: 36rpx;
+    padding: 0 30rpx;
+    font-size: 28rpx;
+  }
+}
+
+.company-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.company-card {
+  background: #fff;
+  border-radius: 12rpx;
+  overflow: hidden;
+}
+
+.company-card .logo {
+  width: 100%;
+  height: 400rpx;
+  background-color: #f5f5f5;
+}
+
+.company-card .info {
+  padding: 20rpx;
+}
+
+.company-card .name {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10rpx;
+  display: block;
+}
+
+.company-card .desc {
+  font-size: 26rpx;
+  color: #666;
+  margin-bottom: 16rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.company-card .stats {
+  display: flex;
+  gap: 32rpx;
+}
+
+.company-card .stat {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.load-more, .no-more {
+  text-align: center;
+  color: #999;
+  font-size: 24rpx;
+  padding: 30rpx 0;
+}
+
+.company-card:active {
+  opacity: 0.8;
+}
+</style>
+
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getCompanyList } from '../../api/company'
+import { getCompanyList } from '@/api/company'
 
-// 默认图片
-const defaultImage = '/static/images/default-logo.png'
-
-// 数据定义
+const defaultImage = '/static/images/default-company.png'
 const companies = ref([])
-const loading = ref(false)
-const searchForm = ref({
-  name: '',
-  pageNum: 1,
-  pageSize: 10
-})
+const searchKey = ref('')
+const pageNum = ref(1)
+const pageSize = 10
 const hasMore = ref(true)
 
-// 获取企业列表
-const fetchCompanyList = async (isLoadMore = false) => {
-  if (loading.value) return
-  loading.value = true
+// 加载企业列表
+const loadCompanies = async (isRefresh = false) => {
+  console.log('开始加载企业列表', { isRefresh, pageNum: pageNum.value })
   
+  if (isRefresh) {
+    pageNum.value = 1
+    companies.value = []
+  }
+
   try {
     const res = await getCompanyList({
-      name: searchForm.value.name,
-      pageNum: searchForm.value.pageNum,
-      pageSize: searchForm.value.pageSize
+      companyName: searchKey.value,
+      pageNum: pageNum.value,
+      pageSize
     })
-    
-    console.log('企业列表返回:', res)
-    
+
+    console.log('企业列表请求结果:', res)
+
     if (res.code === 200) {
       const list = res.data || []
-      if (isLoadMore) {
-        companies.value.push(...list)
-      } else {
+      console.log('处理后的企业列表:', list)
+      
+      if (isRefresh) {
         companies.value = list
+      } else {
+        companies.value.push(...list)
       }
-      hasMore.value = list.length === searchForm.value.pageSize
+      hasMore.value = list.length === pageSize
+      pageNum.value++
     }
   } catch (error) {
     console.error('获取企业列表失败:', error)
     uni.showToast({
-      title: '获取数据失败',
+      title: '加载失败',
       icon: 'none'
     })
-  } finally {
-    loading.value = false
   }
 }
 
 // 搜索
 const handleSearch = () => {
-  searchForm.value.pageNum = 1
-  fetchCompanyList()
+  loadCompanies(true)
 }
 
-// 查看详情
-const handleCompanyDetail = (company) => {
+// 跳转到详情
+const handleCompanyDetail = (id) => {
   uni.navigateTo({
-    url: `/pages/company/detail/index?id=${company.id}`
+    url: `/pages/company/detail/index?id=${id}`
   })
 }
 
-// 下拉刷新
-const onPullDownRefresh = () => {
-  searchForm.value.pageNum = 1
-  fetchCompanyList().finally(() => {
-    uni.stopPullDownRefresh()
-  })
-}
+// 定义页面生命周期钩子
+defineExpose({
+  onPullDownRefresh() {
+    console.log('触发下拉刷新')
+    loadCompanies(true).then(() => {
+      uni.stopPullDownRefresh()
+    })
+  },
 
-// 上拉加载
-const onReachBottom = () => {
-  if (!hasMore.value || loading.value) return
-  searchForm.value.pageNum++
-  fetchCompanyList(true)
-}
-
-// 初始化
-onMounted(() => {
-  fetchCompanyList()
+  onReachBottom() {
+    console.log('触发上拉加载')
+    if (hasMore.value) {
+      loadCompanies()
+    }
+  }
 })
-</script>
 
-<style lang="scss" scoped>
-@import '../../styles/index.scss';  // 导入全局样式变量
-
-.company {
-  min-height: 100vh;
-  background: #f5f5f5;
-  padding-bottom: 20rpx;
-
-  .search-bar {
-    display: flex;
-    align-items: center;
-    padding: 20rpx;
-    background: #fff;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-
-    input {
-      flex: 1;
-      height: 72rpx;
-      background: #f5f5f5;
-      border-radius: 36rpx;
-      padding: 0 30rpx;
-      font-size: 28rpx;
-    }
-
-    .search-btn {
-      margin-left: 20rpx;
-      height: 72rpx;
-      line-height: 72rpx;
-      padding: 0 30rpx;
-      border-radius: 36rpx;
-      font-size: 28rpx;
-      background: #1890ff;  // 直接使用颜色值替代变量
-      color: #fff;
-    }
-  }
-
-  .company-list {
-    padding: 20rpx;
-
-    .company-item {
-      display: flex;
-      padding: 30rpx;
-      background: #fff;
-      border-radius: 12rpx;
-      margin-bottom: 20rpx;
-
-      .logo {
-        width: 120rpx;
-        height: 120rpx;
-        border-radius: 12rpx;
-        margin-right: 20rpx;
-      }
-
-      .info {
-        flex: 1;
-
-        .name {
-          font-size: 32rpx;
-          font-weight: bold;
-          color: #333;
-          margin-bottom: 12rpx;
-          display: block;
-        }
-
-        .desc {
-          font-size: 28rpx;
-          color: #666;
-          margin-bottom: 16rpx;
-          display: -webkit-box;
-          -webkit-box-orient: vertical;
-          -webkit-line-clamp: 2;
-          overflow: hidden;
-        }
-
-        .stats {
-          display: flex;
-          gap: 30rpx;
-
-          .stat-item {
-            .label {
-              font-size: 24rpx;
-              color: #999;
-              margin-right: 8rpx;
-            }
-
-            .value {
-              font-size: 24rpx;
-              color: #1890ff;  // 直接使用颜色值替代变量
-            }
-          }
-        }
-      }
-    }
-  }
-
-  .loading-more, .empty {
-    text-align: center;
-    padding: 30rpx;
-    color: #999;
-    font-size: 28rpx;
-  }
-}
-</style> 
+// 页面加载
+onMounted(() => {
+  console.log('页面加载完成，开始初始化数据')
+  loadCompanies()
+})
+</script> 
