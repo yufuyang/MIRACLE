@@ -2,13 +2,24 @@
 const request = (options) => {
   const baseURL = 'http://localhost:8080/miracle' // 替换为实际的API地址
   
-  console.log('发起请求:', baseURL + options.url, options)
+  const { url, method, data, params } = options
+  
+  // 处理 GET 请求的参数
+  let finalUrl = url
+  if (method.toLowerCase() === 'get' && params) {
+    const queryString = Object.keys(params)
+      .map(key => `${key}=${params[key]}`)
+      .join('&')
+    finalUrl = `${url}${url.includes('?') ? '&' : '?'}${queryString}`
+  }
+
+  console.log('发起请求:', baseURL + finalUrl, options)
 
   return new Promise((resolve, reject) => {
     uni.request({
-      url: baseURL + options.url,
-      method: options.method || 'GET',
-      data: options.data,
+      url: baseURL + finalUrl,
+      method,
+      data: method.toLowerCase() === 'get' ? undefined : data,
       header: {
         'Content-Type': 'application/json',
         'Authorization': uni.getStorageSync('token') || '',

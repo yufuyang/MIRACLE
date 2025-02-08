@@ -32,7 +32,14 @@
             },
             "ios" : {},
             /* SDK配置 */
-            "sdkConfigs" : {}
+            "sdkConfigs" : {},
+            "compilerVersion": 3,
+            "splashscreen": {
+                "alwaysShowBeforeRender": true,
+                "waiting": true,
+                "autoclose": true,
+                "delay": 0
+            }
         }
     },
     /* SDK配置 */
@@ -40,7 +47,7 @@
     /* 快应用特有相关 */
     "mp-weixin" : {
         /* 小程序特有相关 */
-        "appid" : "",
+        "appid" : "你的小程序appid",
         "setting" : {
             "urlCheck" : false
         },
@@ -61,6 +68,9 @@
     },
     "vueVersion" : "3",
     "h5" : {
-        "title" : "MIRACLE"
+        "title" : "MIRACLE",
+        "router": {
+            "mode": "hash"
+        }
     }
 }

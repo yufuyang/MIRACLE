@@ -5,6 +5,7 @@ import uviewPlus from 'uview-plus'
 
 // 引入全局样式
 import './styles/index.scss';
+import './styles/mixins.scss'
 
 let app;
 let pinia;

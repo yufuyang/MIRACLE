@@ -36,7 +36,8 @@
 		{
 			"path": "pages/company/detail/index",
 			"style": {
-				"navigationBarTitleText": "企业详情"
+				"navigationBarTitleText": "企业详情",
+				"enablePullDownRefresh": false
 			}
 		},
 		{
@@ -82,6 +83,12 @@
 					"path": "profile/edit",
 					"style": {
 						"navigationBarTitleText": "编辑资料"
+					}
+				},
+				{
+					"path": "product/detail",
+					"style": {
+						"navigationBarTitleText": "产品详情"
 					}
 				},
 				{

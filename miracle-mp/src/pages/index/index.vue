@@ -15,7 +15,7 @@
         :circular="true"
       >
         <swiper-item v-for="item in products" :key="item.id">
-          <view class="product-item" @tap="onProductTap(item)">
+          <view class="product-item" @tap="handleProductDetail(item.id)">
             <image :src="item.imageUrl" mode="aspectFill"></image>
             <view class="info">
               <text class="name">{{ item.productName }}</text>
@@ -49,28 +49,36 @@
     </view>
 
     <!-- 推荐企业 -->
-    <view class="section" v-if="companies.length > 0">
+    <view class="section">
       <view class="header">
         <text class="title">推荐企业</text>
         <text class="more" @tap="onMoreTap('company')">查看更多</text>
       </view>
-      <view class="company-list">
-        <view class="company-item" 
+      <swiper 
+        class="company-swiper" 
+        :indicator-dots="true"
+        :autoplay="true"
+        :interval="3000"
+        :duration="500"
+        circular
+      >
+        <swiper-item 
           v-for="item in companies" 
           :key="item.id"
-          @tap="onCompanyTap(item)"
         >
-          <image :src="item.logoUrl" mode="aspectFill" class="logo"></image>
-          <view class="info">
-            <text class="name">{{ item.companyName }}</text>
-            <text class="desc">{{ item.description || '暂无描述' }}</text>
-            <view class="stats">
-              <text class="product">产品 {{ item.productCount }}</text>
-              <text class="intention">意向 {{ item.intentionCount }}</text>
+          <view class="company-card" @tap="handleCompanyDetail(item.id)">
+            <image :src="item.logoUrl || defaultImage" mode="aspectFill" class="logo" />
+            <view class="info">
+              <text class="name">{{ item.companyName }}</text>
+              <text class="desc">{{ item.description || '暂无描述' }}</text>
+              <view class="stats">
+                <text class="stat">浏览 {{ item.viewCount }}</text>
+                <text class="stat">意向 {{ item.intentionCount }}</text>
+              </view>
             </view>
           </view>
-        </view>
-      </view>
+        </swiper-item>
+      </swiper>
     </view>
   </view>
 </template>
@@ -83,7 +91,8 @@ export default {
     return {
       products: [],
       activities: [],
-      companies: []
+      companies: [],
+      defaultImage: 'https://via.placeholder.com/80x80'
     }
   },
   onLoad() {
@@ -144,9 +153,9 @@ export default {
         return []
       }
     },
-    onProductTap(item) {
+    handleProductDetail(id) {
       uni.navigateTo({
-        url: `/pages/product/detail?id=${item.id}`
+        url: `/pages/merchant/product/detail?id=${id}`
       })
     },
     onActivityTap(item) {
@@ -179,12 +188,17 @@ export default {
           url: `/pages/activity/detail?id=${item.targetId}`
         })
       }
+    },
+    handleCompanyDetail(id) {
+      uni.navigateTo({
+        url: `/pages/company/detail/index?id=${id}`
+      })
     }
   }
 }
 </script>
 
-<style>
+<style lang="scss" scoped>
 .index {
   min-height: 100vh;
   background: #f5f5f5;
@@ -203,17 +217,18 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20rpx;
-}
+  padding: 0 20rpx;
 
-.header .title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-}
+  .title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+  }
 
-.header .more {
-  font-size: 24rpx;
-  color: #999;
+  .more {
+    font-size: 24rpx;
+    color: #999;
+  }
 }
 
 /* 产品轮播样式 */
@@ -271,42 +286,50 @@ export default {
 }
 
 /* 企业列表样式 */
-.company-list {
-  display: flex;
-  flex-direction: column;
+.company-swiper {
+  height: 600rpx;
 }
 
-.company-item {
-  display: flex;
+.company-card {
+  padding: 20rpx;
+}
+
+.company-card .logo {
+  width: 100%;
+  height: 400rpx;
+  border-radius: 12rpx;
+  background-color: #f5f5f5;
+}
+
+.company-card .info {
   padding: 20rpx 0;
-  border-bottom: 1rpx solid #eee;
 }
 
-.company-item:last-child {
-  border-bottom: none;
-}
-
-.company-item .logo {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 8rpx;
-  margin-right: 20rpx;
-}
-
-.company-item .info {
-  flex: 1;
-}
-
-.company-item .name {
-  font-size: 28rpx;
+.company-card .name {
+  font-size: 32rpx;
   font-weight: bold;
   margin-bottom: 10rpx;
   display: block;
 }
 
-.company-item .desc {
+.company-card .desc {
   font-size: 24rpx;
   color: #666;
   display: block;
+  margin-bottom: 10rpx;
+}
+
+.company-card .stats {
+  display: flex;
+  font-size: 24rpx;
+  color: #999;
+}
+
+.company-card .stat {
+  margin-right: 20rpx;
+}
+
+.company-card:active {
+  opacity: 0.8;
 }
 </style>

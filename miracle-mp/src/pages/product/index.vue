@@ -15,7 +15,7 @@
       <view class="product-item" 
         v-for="item in products" 
         :key="item.id"
-        @tap="onProductTap(item)"
+        @tap="handleProductDetail(item.id)"
       >
         <image :src="item.imageUrl" mode="aspectFill" class="cover"></image>
         <view class="info">
@@ -103,9 +103,9 @@ export default {
       this.pageNum = 1
       this.loadData()
     },
-    onProductTap(item) {
+    handleProductDetail(id) {
       uni.navigateTo({
-        url: `/pages/product/detail?id=${item.id}`
+        url: `/pages/merchant/product/detail?id=${id}`
       })
     }
   },
