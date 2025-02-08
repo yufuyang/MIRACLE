@@ -31,7 +31,7 @@
         
         <view class="order-content">
           <image 
-            :src="item.productImage || defaultImage" 
+            :src="item.productUrl || defaultImage" 
             mode="aspectFill" 
             class="product-image"
             @error="handleImageError"

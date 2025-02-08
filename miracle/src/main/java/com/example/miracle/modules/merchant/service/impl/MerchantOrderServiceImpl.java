@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.modules.company.entity.CompanyProduct;
 import com.example.miracle.modules.company.entity.ProductMaterial;
 import com.example.miracle.modules.company.mapper.CompanyProductMapper;
 import com.example.miracle.modules.company.mapper.ProductMaterialMapper;
@@ -74,7 +75,11 @@ public class MerchantOrderServiceImpl extends ServiceImpl<MerchantOrderMapper, M
 
             merchantOrderDTO.setMerchantName(merchantMapper.selectById(merchantOrder.getMerchantId()).getMerchantName());
             merchantOrderDTO.setCompanyName(companyMapper.selectById(merchantOrder.getCompanyId()).getCompanyName());
-            merchantOrderDTO.setProductName(companyProductMapper.selectById(merchantOrder.getProductId()).getProductName());
+
+            CompanyProduct companyProduct = companyProductMapper.selectById(merchantOrder.getProductId());
+
+            merchantOrderDTO.setProductName(companyProduct.getProductName());
+            merchantOrderDTO.setProductUrl(companyProduct.getImageUrl());
 
             return merchantOrderDTO;
         }).collect(Collectors.toList());
@@ -96,7 +101,11 @@ public class MerchantOrderServiceImpl extends ServiceImpl<MerchantOrderMapper, M
 
         merchantOrderInfoDTO.setMerchantName(merchantMapper.selectById(merchantOrder.getMerchantId()).getMerchantName());
         merchantOrderInfoDTO.setCompanyName(companyMapper.selectById(merchantOrder.getCompanyId()).getCompanyName());
-        merchantOrderInfoDTO.setProductName(companyProductMapper.selectById(merchantOrder.getProductId()).getProductName());
+
+        CompanyProduct companyProduct = companyProductMapper.selectById(merchantOrder.getProductId());
+
+        merchantOrderInfoDTO.setProductName(companyProduct.getProductName());
+        merchantOrderInfoDTO.setProductUrl(companyProduct.getImageUrl());
 
         List<OrderMaterial> orderMaterialList = orderMaterialMapper.selectList(new LambdaQueryWrapper<OrderMaterial>().eq(OrderMaterial::getOrderId, id));
 

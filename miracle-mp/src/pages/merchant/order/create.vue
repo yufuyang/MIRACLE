@@ -42,6 +42,16 @@
             {{ formData.productName || '请选择产品' }}
           </view>
         </picker>
+        <!-- 简化产品图片展示 -->
+        <view class="product-preview" v-if="formData.productId">
+          <image 
+            :src="selectedProduct?.imageUrl || defaultImage" 
+            mode="aspectFill" 
+            class="product-image"
+            @error="handleImageError"
+            @tap="handlePreviewImage(selectedProduct?.imageUrl)"
+          />
+        </view>
       </view>
     </view>
 
@@ -58,6 +68,7 @@
               :src="item.image" 
               mode="aspectFill" 
               class="material-image"
+              @tap="handlePreviewImage(item.image)"
             />
           </view>
           <view class="right">
@@ -202,6 +213,12 @@ const totalAmount = computed(() => {
   return materialList.value.reduce((total, item) => {
     return total + (item.price * (item.quantity || 0))
   }, 0)
+})
+
+// 当前选中的产品信息
+const selectedProduct = computed(() => {
+  if (!formData.value.productId || !productList.value.length) return null
+  return productList.value.find(item => item.id === formData.value.productId)
 })
 
 // 获取合作企业列表
@@ -425,6 +442,21 @@ const handleSubmit = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 处理图片预览
+const handlePreviewImage = (url) => {
+  if (!url) return
+  uni.previewImage({
+    urls: [url],
+    current: url,
+    fail: () => {
+      uni.showToast({
+        title: '预览图片失败',
+        icon: 'none'
+      })
+    }
+  })
 }
 
 onMounted(() => {
@@ -714,6 +746,29 @@ onMounted(() => {
     font-size: 32rpx;
     font-weight: bold;
     color: #ff4d4f;
+  }
+}
+
+.product-preview {
+  margin-top: 20rpx;
+  padding: 20rpx;
+  background: #f8f8f8;
+  border-radius: 8rpx;
+  display: flex;
+  justify-content: center;
+
+  .product-image {
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 8rpx;
+    background-color: #fff;
+  }
+}
+
+.product-image,
+.material-image {
+  &:active {
+    opacity: 0.8;
   }
 }
 </style> 

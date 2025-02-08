@@ -32,6 +32,9 @@ public class MerchantOrderDTO {
     private Long productId;
 
     private String productName;
+
+
+    private String productUrl;
     /**
      * 总金额
      */

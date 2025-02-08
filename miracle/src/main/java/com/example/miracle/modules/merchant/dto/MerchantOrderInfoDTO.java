@@ -40,6 +40,8 @@ public class MerchantOrderInfoDTO {
      * 产品名称
      */
     private String productName;
+
+    private String productUrl;
     /**
      * 总金额
      */
