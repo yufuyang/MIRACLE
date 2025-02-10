@@ -121,32 +121,32 @@
 			{
 				"pagePath": "pages/index/index",
 				"text": "首页",
-				"iconPath": "static/images/tabbar/home.png",
-				"selectedIconPath": "static/images/tabbar/home-active.png"
+				"iconPath": "static/tabbar/dot.png",
+				"selectedIconPath": "static/tabbar/dot-active.png"
 			},
 			{
 				"pagePath": "pages/product/index",
 				"text": "产品",
-				"iconPath": "static/images/tabbar/product.png",
-				"selectedIconPath": "static/images/tabbar/product-active.png"
+				"iconPath": "static/tabbar/dot.png",
+				"selectedIconPath": "static/tabbar/dot-active.png"
 			},
 			{
 				"pagePath": "pages/activity/index",
 				"text": "活动",
-				"iconPath": "static/images/tabbar/activity.png",
-				"selectedIconPath": "static/images/tabbar/activity-active.png"
+				"iconPath": "static/tabbar/dot.png",
+				"selectedIconPath": "static/tabbar/dot-active.png"
 			},
 			{
 				"pagePath": "pages/company/index",
 				"text": "企业",
-				"iconPath": "static/images/tabbar/company.png",
-				"selectedIconPath": "static/images/tabbar/company-active.png"
+				"iconPath": "static/tabbar/dot.png",
+				"selectedIconPath": "static/tabbar/dot-active.png"
 			},
 			{
 				"pagePath": "pages/user/index",
 				"text": "我的",
-				"iconPath": "static/images/tabbar/user.png",
-				"selectedIconPath": "static/images/tabbar/user-active.png"
+				"iconPath": "static/tabbar/dot.png",
+				"selectedIconPath": "static/tabbar/dot-active.png"
 			}
 		]
 	}
