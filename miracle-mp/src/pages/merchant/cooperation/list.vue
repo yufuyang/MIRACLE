@@ -17,6 +17,7 @@
         class="cooperation-item" 
         v-for="item in cooperationList" 
         :key="item.id"
+        @tap="goToCompanyDetail(item.companyId)"
       >
         <view class="company-info">
           <image :src="item.companyLogo || defaultImage" mode="aspectFill" class="company-logo" />
@@ -219,6 +220,20 @@ const handleReject = async (item) => {
           })
         }
       }
+    }
+  })
+}
+
+// 添加跳转到企业详情的方法
+const goToCompanyDetail = (companyId) => {
+  uni.navigateTo({
+    url: `/pages/company/detail/index?id=${companyId}`,
+    fail: (err) => {
+      console.error('页面跳转失败:', err)
+      uni.showToast({
+        title: '页面跳转失败',
+        icon: 'none'
+      })
     }
   })
 }

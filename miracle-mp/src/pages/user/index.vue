@@ -11,28 +11,25 @@
       </view>
     </view>
 
-    <!-- 功能菜单 -->
-    <view class="menu-section">
-      <view class="menu-title">常用功能</view>
-      <view class="menu-list">
-        <view 
-          class="menu-item" 
-          v-for="item in menuList" 
-          :key="item.key"
-          @tap="handleMenuClick(item)"
-        >
-          <view class="icon">
-            <image :src="item.icon" mode="aspectFit" />
-          </view>
-          <text class="name">{{ item.name }}</text>
-          <text class="arrow">></text>
+    <!-- 功能卡片列表 -->
+    <view class="menu-list">
+      <view 
+        class="menu-card" 
+        v-for="item in menuList" 
+        :key="item.key"
+        @tap="handleMenuClick(item)"
+      >
+        <view class="icon">
+          <image :src="item.icon" mode="aspectFit" />
         </view>
+        <text class="name">{{ item.name }}</text>
+        <text class="desc">{{ item.desc }}</text>
       </view>
     </view>
 
-    <!-- 退出登录按钮 -->
-    <view class="logout-btn" @tap="handleLogout">
-      退出登录
+    <!-- 退出按钮 -->
+    <view class="logout-wrap">
+      <button class="logout-btn" @tap="handleLogout">退出登录</button>
     </view>
   </view>
 </template>
@@ -52,24 +49,28 @@ const menuList = ref([
   {
     key: 'profile',
     name: '商户资料',
+    desc: '查看和编辑商户基本信息',
     icon: '/static/images/icons/profile.png',
     path: '/pages/merchant/profile/index'
   },
   {
     key: 'intention',
     name: '意向管理',
+    desc: '管理产品合作意向',
     icon: '/static/images/icons/intention.png',
     path: '/pages/merchant/intention/list'
   },
   {
     key: 'cooperation',
     name: '合作管理',
+    desc: '查看企业合作情况',
     icon: '/static/images/icons/cooperation.png',
     path: '/pages/merchant/cooperation/list'
   },
   {
     key: 'order',
     name: '订单管理',
+    desc: '管理所有交易订单',
     icon: '/static/images/icons/order.png',
     path: '/pages/merchant/order/list'
   }
@@ -104,7 +105,6 @@ const handleLogout = () => {
 
 // 初始化
 onMounted(() => {
-  // 如果需要重新获取用户信息
   userStore.getUserInfo()
 })
 </script>
@@ -112,100 +112,108 @@ onMounted(() => {
 <style lang="scss" scoped>
 .user-page {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding-bottom: 40rpx;
+  background-color: #f5f5f5;
+  padding: 32rpx;
+}
 
-  .user-card {
-    display: flex;
-    align-items: center;
-    padding: 40rpx;
-    background: #fff;
-    margin-bottom: 20rpx;
+.user-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  display: flex;
+  align-items: center;
+  margin-bottom: 32rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
 
-    .avatar-wrap {
-      margin-right: 30rpx;
-      
-      .avatar {
-        width: 120rpx;
-        height: 120rpx;
-        border-radius: 60rpx;
-      }
-    }
-
-    .info {
-      .name {
-        font-size: 36rpx;
-        font-weight: bold;
-        color: #333;
-        margin-bottom: 12rpx;
-        display: block;
-      }
-
-      .role {
-        font-size: 28rpx;
-        color: #666;
-      }
+  .avatar-wrap {
+    margin-right: 24rpx;
+    
+    .avatar {
+      width: 120rpx;
+      height: 120rpx;
+      border-radius: 60rpx;
     }
   }
 
-  .menu-section {
-    background: #fff;
-    padding: 0 30rpx;
-    margin-bottom: 20rpx;
-
-    .menu-title {
-      font-size: 32rpx;
-      font-weight: bold;
+  .info {
+    .name {
+      font-size: 36rpx;
+      font-weight: 500;
       color: #333;
-      padding: 30rpx 0;
-      border-bottom: 1rpx solid #eee;
+      display: block;
+      margin-bottom: 8rpx;
     }
 
-    .menu-list {
-      .menu-item {
-        display: flex;
-        align-items: center;
-        padding: 30rpx 0;
-        border-bottom: 1rpx solid #eee;
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .icon {
-          width: 48rpx;
-          height: 48rpx;
-          margin-right: 20rpx;
-
-          image {
-            width: 100%;
-            height: 100%;
-          }
-        }
-
-        .name {
-          flex: 1;
-          font-size: 30rpx;
-          color: #333;
-        }
-
-        .arrow {
-          font-size: 30rpx;
-          color: #999;
-        }
-      }
+    .role {
+      font-size: 28rpx;
+      color: #666;
     }
   }
+}
+
+.menu-list {
+  padding: 0 32rpx;
+  
+  .menu-card {
+    background-color: #fff;
+    border-radius: 16rpx;
+    padding: 32rpx;
+    margin-bottom: 24rpx;
+    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    min-height: 200rpx;
+
+    &:active {
+      opacity: 0.7;
+    }
+
+    .icon {
+      width: 64rpx;
+      height: 64rpx;
+      margin-bottom: 16rpx;
+
+      image {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    .name {
+      font-size: 36rpx;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 8rpx;
+    }
+
+    .desc {
+      font-size: 24rpx;
+      color: #999;
+      text-align: center;
+    }
+  }
+}
+
+.logout-wrap {
+  margin-top: 48rpx;
+  padding: 0 32rpx;
 
   .logout-btn {
-    margin: 40rpx 30rpx;
+    width: 100%;
     height: 88rpx;
     line-height: 88rpx;
     text-align: center;
-    background: #fff;
-    border-radius: 8rpx;
-    font-size: 32rpx;
+    background-color: #fff;
     color: #ff4d4f;
+    border-radius: 44rpx;
+    font-size: 32rpx;
+    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+
+    &:active {
+      opacity: 0.7;
+    }
   }
 }
 </style> 

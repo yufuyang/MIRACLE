@@ -17,6 +17,7 @@
         class="intention-item" 
         v-for="item in intentionList" 
         :key="item.id"
+        @tap="goToProductDetail(item.productId)"
       >
         <view class="product-info">
           <image :src="item.productLogo || defaultImage" mode="aspectFill" class="product-image" />
@@ -194,6 +195,20 @@ onReachBottom(() => {
   searchForm.value.pageNum++
   fetchIntentionList(true)
 })
+
+// 跳转到产品详情
+const goToProductDetail = (productId) => {
+  uni.navigateTo({
+    url: `/pages/merchant/product/detail?id=${productId}`,
+    fail: (err) => {
+      console.error('页面跳转失败:', err)
+      uni.showToast({
+        title: '页面跳转失败',
+        icon: 'none'
+      })
+    }
+  })
+}
 
 onMounted(() => {
   fetchIntentionList()
