@@ -22,7 +22,7 @@
         v-for="item in orderList" 
         :key="item.id"
         class="order-item"
-        @tap="handleOrderDetail(item.id)"
+        @tap="goToOrderDetail(item.id)"
       >
         <view class="order-header">
           <text class="order-no">订单号：{{ item.orderNo }}</text>
@@ -136,10 +136,17 @@ const handleCreate = () => {
   })
 }
 
-// 查看订单详情
-const handleOrderDetail = (orderId) => {
+// 修改跳转到订单详情的方法
+const goToOrderDetail = (orderId) => {
   uni.navigateTo({
-    url: `/pages/merchant/order/detail?id=${orderId}`
+    url: '../order/detail?id=' + orderId,  // 使用相对路径
+    fail: (err) => {
+      console.error('页面跳转失败:', err)
+      uni.showToast({
+        title: '页面跳转失败',
+        icon: 'none'
+      })
+    }
   })
 }
 
@@ -251,7 +258,7 @@ onShow(() => {
           &.status-1 { color: #faad14; }  // 待审批
           &.status-2 { color: #1890ff; }  // 待发货
           &.status-3 { color: #ff4d4f; }  // 审批拒绝
-          &.status-4 { color: #1890ff; }  // 发货中
+          &.status-4 { color: #52c41a; }  // 发货中
           &.status-5 { color: #52c41a; }  // 已完成
           &.status-6 { color: #999999; }  // 已取消
         }

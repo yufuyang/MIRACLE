@@ -132,4 +132,28 @@ export function cancelRegistration(activityId) {
     url: `/merchant/activity/registration/${activityId}`,
     method: 'delete'
   })
+}
+
+// 获取订单详情
+export function getOrderDetail(orderId) {
+  return request({
+    url: `/merchant/order/get/${orderId}`,
+    method: 'get'
+  })
+}
+
+// 取消订单
+export function cancelOrder(orderId) {
+  return request({
+    url: `/merchant/order/${orderId}/cancel`,
+    method: 'post'
+  })
+}
+
+// 支付订单
+export function payOrder(orderId) {
+  return request({
+    url: `/merchant/order/${orderId}/pay`,
+    method: 'post'
+  })
 } 
