@@ -50,14 +50,14 @@ public class FileController {
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucket)
-                            .object(fileName)
+                            .object("image/"+fileName)
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build()
             );
 
             // 生成文件访问地址
-            String fileUrl = endpoint + "/" + bucket + "/" + fileName;
+            String fileUrl = endpoint + "/" + bucket + "/image/" + fileName;
 
             return SingleResponse.of(fileUrl);
 
