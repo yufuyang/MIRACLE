@@ -46,7 +46,7 @@
       >
         <template #materialImage="{ text }">
           <a-image
-            :src="text || defaultImage"
+            :src="text"
             alt="物料图片"
             :style="{
               width: '80px',
@@ -92,7 +92,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
 import { getOrderDetail, cancelOrder } from '@/api/merchant/order'
-import defaultImage from '@/assets/images/default-image.jpg'
 
 const route = useRoute()
 const router = useRouter()

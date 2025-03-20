@@ -14,7 +14,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       '/miracle': {
-        target: 'http://localhost:8080',
+        target: 'https://yang.miracleyang.top/',
         changeOrigin: true
       }
     }

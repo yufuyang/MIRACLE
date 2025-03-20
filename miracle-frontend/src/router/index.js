@@ -153,11 +153,6 @@ const routes = [
             path: 'list',
             component: () => import('@/views/workspace/company/inquiry/list.vue'),
             meta: { title: '意向列表' }
-          },
-          {
-            path: 'stats',
-            component: () => import('@/views/workspace/company/inquiry/stats.vue'),
-            meta: { title: '意向统计' }
           }
         ]
       },

@@ -349,7 +349,7 @@ const goToLogin = () => {
   align-items: center;
   min-height: 100vh;
   background: #f0f2f5;
-  background-image: url('@/assets/images/login-bg.jpg');
+  //background-image: url('@/assets/images/login-bg.jpg');
   background-size: cover;
   background-position: center;
 
