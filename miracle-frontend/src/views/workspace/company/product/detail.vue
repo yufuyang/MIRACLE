@@ -332,6 +332,7 @@
           <a-upload
             v-model:fileList="materialModal.form.fileList"
             :beforeUpload="beforeUpload"
+            :custom-request="customUpload"
             :maxCount="1"
             list-type="picture-card"
           >
@@ -346,6 +347,10 @@
         </a-form-item>
         <a-form-item label="规格" name="specification">
           <a-input v-model:value="materialModal.form.specification" placeholder="请输入规格" />
+        </a-form-item>
+
+        <a-form-item label="价格" name="price">
+          <a-input v-model:value="materialModal.form.price" placeholder="请输入价格" />
         </a-form-item>
         <a-form-item label="首次订购推荐量" name="recommendedQuantity">
           <a-input-number
@@ -974,6 +979,10 @@ const materialColumns = [
     dataIndex: 'specification'
   },
   {
+    title: '价格',
+    dataIndex: 'price'
+  },
+  {
     title: '建议数量',
     dataIndex: 'recommendedQuantity'
   },
@@ -992,6 +1001,7 @@ const materialModal = ref({
     name: '',
     unit: '',
     specification: '',
+    price: 0,
     recommendedQuantity: undefined,
     description: '',
     fileList: []
@@ -1001,6 +1011,7 @@ const materialModal = ref({
 const materialRules = {
   name: [{ required: true, message: '请输入物料名称' }],
   unit: [{ required: true, message: '请输入单位' }],
+  price: [{ required: true, message: '请输入价格' }],
   specification: [{ required: true, message: '请输入规格' }],
   recommendedQuantity: [{ required: true, message: '请输入推荐量' }]
 }
@@ -1015,6 +1026,7 @@ const fetchMaterialList = async () => {
       id: item.id,
       name: item.name,
       unit: item.unit,
+      price: item.price,
       specification: item.specification,
       recommendedQuantity: item.recommendedQuantity,
       description: item.description,
@@ -1039,6 +1051,7 @@ const showMaterialModal = () => {
   materialModal.value.form = {
     name: '',
     unit: '',
+    price: 0,
     specification: '',
     recommendedQuantity: undefined,
     description: '',
@@ -1055,6 +1068,7 @@ const handleEditMaterial = (record) => {
     id: record.id,
     name: record.name,
     unit: record.unit,
+    price: record.price,
     specification: record.specification,
     recommendedQuantity: record.recommendedQuantity,
     description: record.description,
@@ -1094,6 +1108,7 @@ const handleSubmitMaterial = async () => {
       productId: productId.value,
       name: materialModal.value.form.name,
       unit: materialModal.value.form.unit,
+      price: materialModal.value.form.price,
       specification: materialModal.value.form.specification,
       recommendedQuantity: materialModal.value.form.recommendedQuantity,
       description: materialModal.value.form.description,
