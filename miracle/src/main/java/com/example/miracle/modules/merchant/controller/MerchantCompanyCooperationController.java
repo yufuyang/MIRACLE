@@ -52,6 +52,57 @@ public class MerchantCompanyCooperationController {
         return SingleResponse.buildSuccess();
     }
 
+    @PostMapping("/accept")
+    public SingleResponse acceptCooperation(@RequestBody CompanyMerchantCooperation cooperation) {
+        // 设置商户ID
+        if (cooperation.getMerchantId() == null) {
+            cooperation.setMerchantId(baseController.getMerchantId());
+        }else if (!cooperation.getMerchantId().equals(baseController.getMerchantId())){
+            return SingleResponse.buildFailure("无权操作");
+        }
+        LambdaQueryWrapper<CompanyMerchantCooperation> query = new LambdaQueryWrapper<>();
+        query.eq(CompanyMerchantCooperation::getMerchantId, cooperation.getMerchantId());
+        query.eq(CompanyMerchantCooperation::getCompanyId, cooperation.getCompanyId());
+
+        CompanyMerchantCooperation companyMerchantCooperation = merchantCompanyCooperationService.getOne(query);
+
+        if (companyMerchantCooperation == null) {
+            return SingleResponse.buildFailure("无权操作");
+        }
+
+        companyMerchantCooperation.setStatus(1);
+
+        merchantCompanyCooperationService.updateById(companyMerchantCooperation);
+        return SingleResponse.buildSuccess();
+    }
+
+
+    @PostMapping("/reject")
+    public SingleResponse rejectCooperation(@RequestBody CompanyMerchantCooperation cooperation) {
+        // 设置商户ID
+        if (cooperation.getMerchantId() == null) {
+            cooperation.setMerchantId(baseController.getMerchantId());
+        }else if (!cooperation.getMerchantId().equals(baseController.getMerchantId())){
+            return SingleResponse.buildFailure("无权操作");
+        }
+        LambdaQueryWrapper<CompanyMerchantCooperation> query = new LambdaQueryWrapper<>();
+        query.eq(CompanyMerchantCooperation::getMerchantId, cooperation.getMerchantId());
+        query.eq(CompanyMerchantCooperation::getCompanyId, cooperation.getCompanyId());
+
+        CompanyMerchantCooperation companyMerchantCooperation = merchantCompanyCooperationService.getOne(query);
+
+        if (companyMerchantCooperation == null) {
+            return SingleResponse.buildFailure("无权操作");
+        }
+
+        companyMerchantCooperation.setStatus(2);
+
+        merchantCompanyCooperationService.updateById(companyMerchantCooperation);
+
+        return SingleResponse.buildSuccess();
+    }
+
+
 
     @PostMapping("/page")
     public MultiResponse<CompanyMerchantCooperationDTO> page(@RequestBody CompanyMerchantCooperationPageQry companyMerchantCooperationPageQry){

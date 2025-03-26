@@ -22,7 +22,7 @@ public class FileController {
     @Value("${spring.minio.bucket-name}")
     private String bucket;
 
-    @Value("${spring.minio.url}")
+    @Value("${spring.minio.review.url}")
     private String endpoint;
 
     /**
