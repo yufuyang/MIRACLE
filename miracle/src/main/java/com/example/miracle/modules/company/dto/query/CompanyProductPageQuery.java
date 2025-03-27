@@ -33,6 +33,8 @@ public class CompanyProductPageQuery extends PageQuery {
      */
     private Long categoryId;
 
+    private String categoryType;
+
     /**
      * 状态
      */

@@ -10,6 +10,25 @@
       />
     </view>
     
+    <!-- 分类选项卡 -->
+    <scroll-view 
+      scroll-x 
+      class="category-scroll"
+      :show-scrollbar="false"
+    >
+      <view class="category-list">
+        <view 
+          class="category-item" 
+          v-for="item in categories" 
+          :key="item.id"
+          :class="{ active: currentCategory === item.id }"
+          @tap="changeCategory(item.id)"
+        >
+          {{ item.name }}
+        </view>
+      </view>
+    </scroll-view>
+    
     <!-- 产品列表 -->
     <view class="product-list">
       <view class="product-item" 
@@ -34,56 +53,101 @@
     </view>
 
     <!-- 加载更多 -->
-    <view class="load-more" v-if="hasMore">
-      <text @tap="loadMore">加载更多</text>
+    <view class="load-more" v-if="loading">
+      <text>加载中...</text>
+    </view>
+
+    <!-- 没有更多数据 -->
+    <view class="no-more" v-if="noMore">
+      <text>没有更多数据了</text>
     </view>
 
     <!-- 空状态 -->
-    <view class="empty" v-if="products.length === 0">
+    <view class="empty" v-if="products.length === 0 && !loading">
       <text>暂无产品</text>
     </view>
   </view>
 </template>
 
 <script>
-import { getProducts } from '../../api/index'
+import { getProducts, getCategories } from '../../api/index'
 
 export default {
   data() {
     return {
       keyword: '',
       products: [],
-      pageNum: 1,
+      categories: [{ id: 'all', name: '全部' }],
+      currentCategory: 'all',
+      page: 1,
       pageSize: 10,
-      hasMore: true,
+      noMore: false,
       loading: false
     }
   },
   onLoad() {
+    this.loadCategories()
     this.loadData()
   },
   methods: {
-    async loadData(append = false) {
-      if (this.loading) return
+    // 加载分类数据
+    async loadCategories() {
+      try {
+        const res = await getCategories()
+        if (res.success && res.data) {
+          this.categories = [
+            { id: 'all', name: '全部' },
+            ...res.data.map(item => ({
+              id: item.id,
+              name: item.name
+            }))
+          ]
+        }
+      } catch (error) {
+        console.error('获取分类失败:', error)
+      }
+    },
+    
+    async loadData(isRefresh = false) {
+      if (this.loading || (this.noMore && !isRefresh)) return
+      
+      if (isRefresh) {
+        this.page = 1
+        this.noMore = false
+        this.products = []
+      }
+      
       this.loading = true
       
       try {
-        const res = await getProducts({
-          pageNum: this.pageNum,
+        const params = {
+          pageNum: this.page,
           pageSize: this.pageSize,
           keyword: this.keyword
-        })
-        console.log('产品列表返回:', res)
-        
-        const list = res.data || []
-        if (append) {
-          this.products = [...this.products, ...list]
-        } else {
-          this.products = list
         }
         
-        // 判断是否还有更多数据
-        this.hasMore = list.length === this.pageSize
+        if (this.currentCategory !== 'all') {
+          params.categoryId = this.currentCategory
+        }
+        
+        const res = await getProducts(params)
+        
+        if (res.success && res.data) {
+          const newProducts = res.data
+          
+          if (isRefresh) {
+            this.products = newProducts
+          } else {
+            this.products = [...this.products, ...newProducts]
+          }
+          
+          if (newProducts.length < this.pageSize) {
+            this.noMore = true
+          }
+          this.page++
+        } else {
+          this.noMore = true
+        }
       } catch (error) {
         console.error('获取产品列表失败:', error)
         uni.showToast({
@@ -94,15 +158,17 @@ export default {
         this.loading = false
       }
     },
-    loadMore() {
-      if (!this.hasMore || this.loading) return
-      this.pageNum++
+    
+    changeCategory(categoryId) {
+      if (this.currentCategory === categoryId) return
+      this.currentCategory = categoryId
       this.loadData(true)
     },
+    
     onSearch() {
-      this.pageNum = 1
-      this.loadData()
+      this.loadData(true)
     },
+    
     handleProductDetail(id) {
       uni.navigateTo({
         url: `/pages/merchant/product/detail?id=${id}`
@@ -111,15 +177,14 @@ export default {
   },
   // 下拉刷新
   onPullDownRefresh() {
-    this.pageNum = 1
-    this.loadData().then(() => {
+    this.loadData(true).then(() => {
       uni.stopPullDownRefresh()
     })
   },
   // 上拉加载
   onReachBottom() {
-    if (this.hasMore && !this.loading) {
-      this.loadMore()
+    if (!this.noMore && !this.loading) {
+      this.loadData()
     }
   }
 }
@@ -146,6 +211,36 @@ export default {
   border-radius: 36rpx;
   padding: 0 30rpx;
   font-size: 28rpx;
+}
+
+.category-scroll {
+  background: #fff;
+  white-space: nowrap;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.category-list {
+  display: flex;
+  padding: 20rpx;
+}
+
+.category-item {
+  padding: 12rpx 30rpx;
+  margin-right: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 26rpx;
+  transition: all 0.3s;
+}
+
+.category-item:last-child {
+  margin-right: 0;
+}
+
+.category-item.active {
+  color: #fff;
+  background: #ff4444;
 }
 
 .product-list {
@@ -217,6 +312,13 @@ export default {
   padding: 20rpx;
   color: #999;
   font-size: 24rpx;
+}
+
+.no-more {
+  text-align: center;
+  padding: 100rpx 0;
+  color: #999;
+  font-size: 28rpx;
 }
 
 .empty {

@@ -54,9 +54,9 @@
               <a-menu-item key="product-list">
                 <router-link to="/workspace/product/list">产品列表</router-link>
               </a-menu-item>
-              <a-menu-item key="product-category">
-                <router-link to="/workspace/product/category">产品分类</router-link>
-              </a-menu-item>
+<!--              <a-menu-item key="product-category">-->
+<!--                <router-link to="/workspace/product/category">产品分类</router-link>-->
+<!--              </a-menu-item>-->
               <a-menu-item key="product-statistics">
                 <router-link to="/workspace/product/statistics">产品统计</router-link>
               </a-menu-item>

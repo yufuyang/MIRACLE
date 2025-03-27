@@ -1,13 +1,19 @@
 package com.example.miracle.modules.merchant.controller;
 
+import cn.binarywang.wx.miniapp.api.WxMaService;
+import cn.binarywang.wx.miniapp.bean.WxMaPhoneNumberInfo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.miracle.common.constant.CommonConstant;
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.modules.merchant.dto.MerchantUserLoginDTO;
+import com.example.miracle.modules.merchant.dto.WxPhoneLoginDTO;
 import com.example.miracle.modules.merchant.dto.cmd.MerchantUserLoginCmd;
 import com.example.miracle.modules.merchant.entity.MerchantUser;
 import com.example.miracle.modules.merchant.service.MerchantUserService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +29,16 @@ public class MerchantUserController {
     private final MerchantUserService merchantUserService;
     private final HttpServletRequest request;
     private final BaseController baseController;
+
+    /**
+     * 微信手机号登录
+     * @param loginDTO 登录参数
+     * @return 登录结果
+     */
+    @PostMapping("/login/phone")
+    public SingleResponse phoneLogin(@RequestBody WxPhoneLoginDTO loginDTO) {
+        return merchantUserService.phoneLogin(loginDTO);
+    }
 
     /**
      * 用户登录

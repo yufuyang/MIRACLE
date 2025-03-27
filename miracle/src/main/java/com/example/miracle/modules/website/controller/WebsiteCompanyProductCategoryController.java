@@ -1,8 +1,10 @@
 package com.example.miracle.modules.website.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.miracle.common.constant.ProductCategory;
 import com.example.miracle.common.controller.BaseController;
 import com.example.miracle.common.dto.MultiResponse;
+import com.example.miracle.common.dto.Selector;
 import com.example.miracle.common.dto.SingleResponse;
 import com.example.miracle.common.exception.BusinessException;
 import com.example.miracle.modules.company.dto.CompanyProductCategoryTreeDTO;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,6 +52,19 @@ public class WebsiteCompanyProductCategoryController {
         return categoryService.list(query);
     }
 
+    @GetMapping("/base/list")
+    public MultiResponse<Selector> list() {
+
+        List<Selector> list =  new ArrayList<>();
+        for (ProductCategory productCategory : ProductCategory.values()) {
+            Selector selector = new Selector();
+            selector.setKey(productCategory.getDesc());
+            selector.setValue(productCategory.getCode());
+            list.add(selector);
+        }
+
+        return MultiResponse.of(list);
+    }
 
 
     /**

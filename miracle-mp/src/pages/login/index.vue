@@ -57,20 +57,24 @@ const handleLogin = async () => {
     return
   }
 
+  console.log('开始登录，表单数据:', loginForm.value)
   loading.value = true
   try {
     const success = await userStore.login(loginForm.value)
     
     if (success) {
+      console.log('登录成功，准备跳转')
       uni.showToast({
         title: '登录成功',
         icon: 'success'
       })
+
       // 跳转到首页
       uni.switchTab({
         url: '/pages/index/index'
       })
     } else {
+      console.log('登录失败')
       uni.showToast({
         title: '登录失败',
         icon: 'error'

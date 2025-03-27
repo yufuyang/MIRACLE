@@ -1,108 +1,115 @@
 <template>
-  <view class="index">
-    <!-- 热门产品轮播 -->
-    <view class="section" v-if="products.length > 0">
-      <view class="header">
-        <text class="title">热门产品</text>
-        <text class="more" @tap="onMoreTap('product')">查看更多</text>
+  <view class="container">
+    <scroll-view 
+      scroll-y 
+      class="scroll-container"
+      @scrolltolower="loadMore"
+      refresher-enabled
+      :refresher-triggered="isRefreshing"
+      @refresherrefresh="onRefresh"
+    >
+      <!-- 搜索框 -->
+      <view class="search-box">
+        <view class="custom-search" @tap="onSearchClick">
+          <text class="placeholder">搜索商品</text>
+        </view>
       </view>
-      <swiper 
-        class="product-swiper" 
-        :indicator-dots="true"
-        :autoplay="true"
-        :interval="3000"
-        :duration="500"
-        :circular="true"
-      >
-        <swiper-item v-for="item in products" :key="item.id">
-          <view class="product-item" @tap="handleProductDetail(item.id)">
-            <image :src="item.imageUrl" mode="aspectFill"></image>
-            <view class="info">
-              <text class="name">{{ item.productName }}</text>
-              <text class="desc">{{ item.description }}</text>
-              <view class="stats">
-                <text class="view">浏览 {{ item.viewCount }}</text>
-                <text class="intention">意向 {{ item.intentionCount }}</text>
-              </view>
-            </view>
-          </view>
-        </swiper-item>
-      </swiper>
-    </view>
 
-    <!-- 热门活动 -->
-    <view class="section" v-if="activities.length > 0">
-      <view class="header">
-        <text class="title">热门活动</text>
-        <text class="more" @tap="onMoreTap('activity')">查看更多</text>
-      </view>
-      <swiper 
-        class="activity-swiper" 
-        :indicator-dots="true"
-        :autoplay="true"
-        :interval="3000"
-        :duration="500"
-        circular
+      <!-- 分类选项卡 -->
+      <scroll-view 
+        scroll-x 
+        class="category-scroll"
+        :show-scrollbar="false"
       >
-        <swiper-item 
-          v-for="item in activities" 
-          :key="item.id"
-        >
-          <view class="activity-card" @tap="handleActivityDetail(item.id)">
-            <image :src="item.coverImage || defaultImage" mode="aspectFill" class="cover" />
-            <view class="info">
-              <text class="title">{{ item.title }}</text>
-              <text class="desc">{{ item.description || '暂无描述' }}</text>
-              <view class="footer">
-                <text class="time">{{ formatTime(item.startTime) }} - {{ formatTime(item.endTime) }}</text>
-                <view class="stats">
-                  <text class="stat">浏览 {{ item.viewCount }}</text>
-                  <text class="stat">报名 {{ item.registerCount }}</text>
+        <view class="category-list">
+          <view 
+            class="category-item" 
+            v-for="item in categories" 
+            :key="item.value"
+            :class="{ active: currentCategory === item.value }"
+            @tap="changeCategory(item.value)"
+          >
+            {{ item.key }}
+          </view>
+        </view>
+      </scroll-view>
+
+      <!-- 瀑布流产品列表 -->
+      <view class="waterfall-wrapper">
+        <view class="waterfall-column">
+          <view 
+            class="product-item" 
+            v-for="item in leftProducts" 
+            :key="item.id"
+            @tap="handleProductDetail(item.id)"
+            hover-class="product-item-hover"
+            hover-stay-time="100"
+          >
+            <view class="image-wrapper">
+              <image :src="item.imageUrl" mode="widthFix" class="product-image"></image>
+              <view class="stats-overlay">
+                <view class="stat-item" data-label="浏览">
+                  <text class="iconfont icon-eye"></text>
+                  <text>{{ item.viewCount }}</text>
+                </view>
+                <view class="stat-item" data-label="意向">
+                  <text class="iconfont icon-heart"></text>
+                  <text>{{ item.intentionCount }}</text>
                 </view>
               </view>
             </view>
-          </view>
-        </swiper-item>
-      </swiper>
-    </view>
-
-    <!-- 推荐企业 -->
-    <view class="section">
-      <view class="header">
-        <text class="title">推荐企业</text>
-        <text class="more" @tap="onMoreTap('company')">查看更多</text>
-      </view>
-      <swiper 
-        class="company-swiper" 
-        :indicator-dots="true"
-        :autoplay="true"
-        :interval="3000"
-        :duration="500"
-        circular
-      >
-        <swiper-item 
-          v-for="item in companies" 
-          :key="item.id"
-        >
-          <view class="company-card" @tap="handleCompanyDetail(item.id)">
-            <image :src="item.logoUrl || defaultImage" mode="aspectFill" class="logo" />
-            <view class="info">
-              <text class="name">{{ item.companyName }}</text>
-              <text class="desc">{{ item.description || '暂无描述' }}</text>
-              <view class="stats">
-                <text class="stat">浏览 {{ item.viewCount }}</text>
-                <text class="stat">意向 {{ item.intentionCount }}</text>
-              </view>
+            <view class="product-info">
+              <text class="product-name">{{ item.productName }}</text>
+              <text class="product-desc">{{ item.description }}</text>
+<!--              <view class="product-price-box">-->
+<!--                <text class="price-symbol">¥</text>-->
+<!--                <text class="product-price">{{ item.price }}</text>-->
+<!--              </view>-->
             </view>
           </view>
-        </swiper-item>
-      </swiper>
-    </view>
+        </view>
+        <view class="waterfall-column">
+          <view 
+            class="product-item" 
+            v-for="item in rightProducts" 
+            :key="item.id"
+            @tap="handleProductDetail(item.id)"
+            hover-class="product-item-hover"
+            hover-stay-time="100"
+          >
+            <view class="image-wrapper">
+              <image :src="item.imageUrl" mode="widthFix" class="product-image"></image>
+              <view class="stats-overlay">
+                <view class="stat-item" data-label="浏览">
+                  <text class="iconfont icon-eye"></text>
+                  <text>{{ item.viewCount }}</text>
+                </view>
+                <view class="stat-item" data-label="意向">
+                  <text class="iconfont icon-heart"></text>
+                  <text>{{ item.intentionCount }}</text>
+                </view>
+              </view>
+            </view>
+            <view class="product-info">
+              <text class="product-name">{{ item.productName }}</text>
+              <text class="product-desc">{{ item.description }}</text>
+<!--              <view class="product-price-box">-->
+<!--                <text class="price-symbol">¥</text>-->
+<!--                <text class="product-price">{{ item.price }}</text>-->
+<!--              </view>-->
+            </view>
+          </view>
+        </view>
+      </view>
+      <!-- 加载更多提示 -->
+      <view class="loading-more" v-if="loading">正在加载更多...</view>
+      <view class="no-more" v-if="noMore">没有更多数据了</view>
+    </scroll-view>
   </view>
 </template>
 
 <script>
-import { getHotProducts, getHotActivities, getRecommendCompanies } from '../../api/index'
+import { getProducts, getHotActivities, getRecommendCompanies, getBaseCategories } from '../../api/index'
 
 export default {
   data() {
@@ -110,45 +117,104 @@ export default {
       products: [],
       activities: [],
       companies: [],
-      defaultImage: 'https://via.placeholder.com/80x80'
+      defaultImage: 'https://via.placeholder.com/80x80',
+      searchValue: '',
+      categories: [{ key: '全部', value: 'all' }],
+      currentCategory: 'all',
+      page: 1,
+      pageSize: 10,
+      loading: false,
+      noMore: false,
+      isRefreshing: false
+    }
+  },
+  computed: {
+    // 左侧列表数据
+    leftProducts() {
+      return this.products.filter((_, index) => index % 2 === 0)
+    },
+    // 右侧列表数据
+    rightProducts() {
+      return this.products.filter((_, index) => index % 2 === 1)
     }
   },
   onLoad() {
-    console.log('页面加载')
+    this.loadCategories()
     this.loadData()
   },
   methods: {
-    async loadData() {
-      console.log('开始加载数据')
+    // 加载分类数据
+    async loadCategories() {
+      console.log('开始加载分类数据')
       try {
-        // 分开加载数据，方便调试
-        const products = await this.getProducts()
-        console.log('产品数据:', products)
-        this.products = products
-
-        const activities = await this.getActivities()
-        console.log('活动数据:', activities)
-        this.activities = activities
-
-        const companies = await this.getCompanies()
-        console.log('企业数据:', companies)
-        this.companies = companies
+        const res = await getBaseCategories()
+        console.log('分类数据:', res)
+        if (res.code === 200) {
+          // 保留"全部"选项，添加后端返回的分类
+          this.categories = [
+            { key: '全部', value: 'all' },
+            ...res.data
+          ]
+        }
       } catch (error) {
-        console.error('加载数据失败:', error)
+        console.error('获取分类失败:', error)
         uni.showToast({
-          title: '加载失败，请重试',
+          title: '获取分类失败',
           icon: 'none'
         })
       }
     },
-    async getProducts() {
+    
+    async loadData(isRefresh = false) {
+      if (isRefresh) {
+        this.page = 1
+        this.noMore = false
+        this.products = []
+      }
+      
+      if (this.loading || this.noMore) return
+      
+      this.loading = true
       try {
-        const res = await getHotProducts()
-        console.log('产品接口返回:', res)
-        return res.data || []
+        const params = {
+          pageNum: this.page,
+          pageSize: this.pageSize
+        }
+        
+        // 修改分类参数的传递方式
+        if (this.currentCategory !== 'all') {
+          params.categoryType = this.currentCategory
+        }
+        
+        // 改用 getProducts 方法
+        const res = await getProducts(params)
+        
+        if (res.success && res.data) {
+          const newProducts = res.data
+          if (isRefresh) {
+            this.products = newProducts
+          } else {
+            this.products = [...this.products, ...newProducts]
+          }
+          
+          if (newProducts.length < this.pageSize) {
+            this.noMore = true
+          }
+          this.page++
+        } else {
+          this.noMore = true
+        }
       } catch (error) {
-        console.error('获取产品失败:', error)
-        return []
+        console.error('加载产品失败:', error)
+        uni.showToast({
+          title: '加载失败，请重试',
+          icon: 'none'
+        })
+      } finally {
+        this.loading = false
+        if (isRefresh) {
+          this.isRefreshing = false
+        }
       }
     },
     async getActivities() {
@@ -231,206 +297,214 @@ export default {
     formatTime(timestamp) {
       const date = new Date(timestamp)
       return date.toLocaleDateString()
+    },
+    onSearchClick() {
+      // 暂时注释掉搜索跳转，直到搜索页面创建完成
+      uni.navigateTo({
+        url: '/pages/search/index'
+      })
+      // uni.showToast({
+      //   title: '搜索功能开发中',
+      //   icon: 'none'
+      // })
+    },
+    changeCategory(value) {
+      if (this.currentCategory === value) return
+      this.currentCategory = value
+      this.loadData(true)
+    },
+    // 加载更多
+    loadMore() {
+      this.loadData()
+    },
+    // 下拉刷新
+    async onRefresh() {
+      this.isRefreshing = true
+      await this.loadData(true)
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.index {
-  min-height: 100vh;
-  background: #f5f5f5;
-  padding: 20rpx;
+.container {
+  height: 100vh;
+  background: #f8f8f8;
 }
 
-.section {
+.scroll-container {
+  height: 100%;
+}
+
+.search-box {
   background: #fff;
-  border-radius: 12rpx;
-  margin-bottom: 20rpx;
+  padding: 20rpx 30rpx;
+}
+
+.custom-search {
+  background: #f5f5f5;
+  height: 72rpx;
+  border-radius: 36rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 30rpx;
+}
+
+.placeholder {
+  color: #999;
+  font-size: 28rpx;
+}
+
+.category-scroll {
+  background: #fff;
+  white-space: nowrap;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.category-list {
+  display: flex;
   padding: 20rpx;
 }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20rpx;
-  padding: 0 20rpx;
-
-  .title {
-    font-size: 32rpx;
-    font-weight: bold;
-    color: #333;
+.category-item {
+  padding: 12rpx 30rpx;
+  margin-right: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+  background: #f5f5f5;
+  border-radius: 26rpx;
+  transition: all 0.3s;
+  
+  &.active {
+    color: #fff;
+    background: #ff4444;
   }
-
-  .more {
-    font-size: 24rpx;
-    color: #999;
+  
+  &:last-child {
+    margin-right: 0;
   }
 }
 
-/* 产品轮播样式 */
-.product-swiper {
-  height: 600rpx;
+.waterfall-wrapper {
+  display: flex;
+  padding: 20rpx;
+  box-sizing: border-box;
+}
+
+.waterfall-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  
+  &:first-child {
+    margin-right: 10rpx;
+  }
+  
+  &:last-child {
+    margin-left: 10rpx;
+  }
 }
 
 .product-item {
-  padding: 20rpx;
-}
-
-.product-item image {
-  width: 100%;
-  height: 400rpx;
+  background: #fff;
   border-radius: 12rpx;
-}
-
-.product-item .info {
-  padding: 20rpx 0;
-}
-
-.product-item .name {
-  font-size: 32rpx;
-  font-weight: bold;
-  margin-bottom: 10rpx;
-  display: block;
-}
-
-.product-item .desc {
-  font-size: 24rpx;
-  color: #666;
-  display: block;
-}
-
-.product-item .stats {
-  display: flex;
-  font-size: 24rpx;
-  color: #999;
-  margin-top: 10rpx;
-}
-
-.product-item .stats .view {
-  margin-right: 20rpx;
-}
-
-/* 轮播图样式 */
-.banner-swiper {
-  height: 300rpx;
-}
-
-.banner-item image {
-  width: 100%;
-  height: 100%;
-  border-radius: 12rpx;
-}
-
-/* 企业列表样式 */
-.company-swiper {
-  height: 600rpx;
-}
-
-.company-card {
-  padding: 20rpx;
-}
-
-.company-card .logo {
-  width: 100%;
-  height: 400rpx;
-  border-radius: 12rpx;
-  background-color: #f5f5f5;
-}
-
-.company-card .info {
-  padding: 20rpx 0;
-}
-
-.company-card .name {
-  font-size: 32rpx;
-  font-weight: bold;
-  margin-bottom: 10rpx;
-  display: block;
-}
-
-.company-card .desc {
-  font-size: 24rpx;
-  color: #666;
-  display: block;
-  margin-bottom: 10rpx;
-}
-
-.company-card .stats {
-  display: flex;
-  font-size: 24rpx;
-  color: #999;
-}
-
-.company-card .stat {
-  margin-right: 20rpx;
-}
-
-.company-card:active {
-  opacity: 0.8;
-}
-
-/* 活动轮播样式 */
-.activity-swiper {
-  height: 600rpx;
-}
-
-.activity-card {
-  padding: 20rpx;
-}
-
-.activity-card .cover {
-  width: 100%;
-  height: 400rpx;
-  border-radius: 12rpx;
-  background-color: #f5f5f5;
-}
-
-.activity-card .info {
-  padding: 20rpx 0;
-}
-
-.activity-card .title {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10rpx;
-  display: block;
-}
-
-.activity-card .desc {
-  font-size: 24rpx;
-  color: #666;
-  margin-bottom: 16rpx;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-bottom: 20rpx;
+  transition: all 0.2s ease;
+  
+  .image-wrapper {
+    position: relative;
+    width: 100%;
+    
+    .product-image {
+      width: 100%;
+      height: auto;
+      background: #f5f5f5;
+    }
+    
+    .stats-overlay {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: absolute;
+      left: 12rpx;
+      top: 0;
+      bottom: 12rpx;
+      padding-top: 12rpx;
+      
+      .stat-item {
+        display: flex;
+        align-items: center;
+        color: #fff;
+        font-size: 24rpx;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 4rpx 12rpx;
+        border-radius: 20rpx;
+        
+        .iconfont {
+          font-size: 28rpx;
+          margin-right: 4rpx;
+        }
+        
+        &::before {
+          content: attr(data-label);
+          margin-right: 4rpx;
+        }
+        
+        text:last-child {
+          font-weight: 500;
+        }
+      }
+    }
+  }
+  
+  .product-info {
+    padding: 16rpx;
+    
+    .product-name {
+      font-size: 28rpx;
+      color: #333;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 8rpx;
+    }
+    
+    .product-desc {
+      font-size: 24rpx;
+      color: #999;
+      display: block;
+      margin-bottom: 12rpx;
+    }
+    
+    .product-price-box {
+      display: flex;
+      align-items: baseline;
+      
+      .price-symbol {
+        font-size: 24rpx;
+        color: #ff4444;
+        margin-right: 2rpx;
+      }
+      
+      .product-price {
+        font-size: 32rpx;
+        color: #ff4444;
+        font-weight: bold;
+      }
+    }
+  }
 }
 
-.activity-card .footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+// 悬浮效果
+.product-item-hover {
+  transform: translateY(-3rpx);
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.1);
 }
 
-.activity-card .time {
-  font-size: 24rpx;
-  color: #1890ff;
-}
-
-.activity-card .stats {
-  display: flex;
-  gap: 20rpx;
-}
-
-.activity-card .stat {
-  font-size: 24rpx;
+.loading-more, .no-more {
+  text-align: center;
+  padding: 30rpx;
   color: #999;
-}
-
-.activity-card:active {
-  opacity: 0.8;
+  font-size: 24rpx;
 }
 </style>

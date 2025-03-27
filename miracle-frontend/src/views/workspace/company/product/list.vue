@@ -17,19 +17,20 @@
           <a-input v-model:value="searchForm.productName" placeholder="请输入产品名称" allow-clear style="width: 200px" />
         </a-form-item>
         <a-form-item label="分类">
-          <a-tree-select
-            v-model:value="searchForm.categoryId"
-            :tree-data="categoryTree"
-            :field-names="{
-              children: 'children',
-              label: 'categoryName',
-              value: 'id'
-            }"
+          <a-select
+            v-model:value="searchForm.category"
             placeholder="请选择分类"
             allow-clear
-            tree-default-expand-all
             style="width: 200px"
-          />
+          >
+            <a-select-option 
+              v-for="item in categories" 
+              :key="item.value" 
+              :value="item.value"
+            >
+              {{ item.key }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit">
@@ -114,20 +115,21 @@
         <a-form-item label="产品编号" name="productCode">
           <a-input v-model:value="formData.productCode" placeholder="请输入产品编号" />
         </a-form-item>
-        <a-form-item label="产品分类" name="categoryId">
-          <a-tree-select
-            v-model:value="formData.categoryId"
-            :tree-data="categoryTree"
-            :field-names="{
-              children: 'children',
-              label: 'categoryName',
-              value: 'id'
-            }"
+        <a-form-item label="产品分类" name="categoryType">
+          <a-select
+            v-model:value="formData.categoryType"
             placeholder="请选择分类"
             allow-clear
-            tree-default-expand-all
             style="width: 100%"
-          />
+          >
+            <a-select-option 
+              v-for="item in categories" 
+              :key="item.value" 
+              :value="item.value"
+            >
+              {{ item.key }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="产品主图" name="imageUrl">
           <a-upload
@@ -195,19 +197,12 @@ const columns = [
   },
   {
     title: '分类',
-    dataIndex: 'categoryId',
-    key: 'categoryId',
-    width: 180,
+    dataIndex: 'categoryType',
+    key: 'categoryType',
+    width: 120,
     customRender: ({ record }) => {
-      const findCategory = (id) => categories.value.find(c => c.id === id)
-      const category = findCategory(record.categoryId)
-      if (!category) return '-'
-      
-      if (category.parentId) {
-        const parentCategory = findCategory(category.parentId)
-        return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
-      }
-      return category.categoryName
+      const category = categories.value.find(c => c.value === record.categoryType)
+      return category ? category.key : '-'
     }
   },
   {
@@ -236,7 +231,7 @@ const columns = [
 // 搜索表单
 const searchForm = ref({
   productName: '',
-  categoryId: undefined
+  categoryType: undefined
 })
 
 // 分页配置
@@ -320,7 +315,7 @@ const handleSearch = () => {
 const handleReset = () => {
   searchForm.value = {
     productName: '',
-    categoryId: undefined
+    category: undefined
   }
   pagination.value.current = 1
   fetchProducts()
@@ -334,7 +329,7 @@ const formRef = ref(null)
 const formData = ref({
   productName: '',
   productCode: '',
-  categoryId: undefined,
+  categoryType: undefined,
   imageUrl: '',
   description: ''
 })
@@ -344,7 +339,7 @@ const fileList = ref([])
 const formRules = {
   productName: [{ required: true, message: '请输入产品名称' }],
   productCode: [{ required: true, message: '请输入产品编号' }],
-  categoryId: [{ required: true, message: '请选择产品分类' }],
+  categoryType: [{ required: true, message: '请选择产品分类' }],
   imageUrl: [{ required: true, message: '请上传产品主图' }],
   description: [{ required: true, message: '请输入产品描述' }]
 }
@@ -356,7 +351,7 @@ const handleAdd = () => {
   formData.value = {
     productName: '',
     productCode: '',
-    categoryId: undefined,
+    categoryType: undefined,
     imageUrl: '',
     description: '',
     status: null
@@ -407,7 +402,7 @@ const fetchCategories = async () => {
     if (res.code === 200) {
       categories.value = res.data || []
       // 构建树形数据
-      categoryTree.value = buildCategoryTree(res.data)
+     // categoryTree.value = buildCategoryTree(res.data)
     }
   } catch (error) {
     console.error('获取分类失败:', error)

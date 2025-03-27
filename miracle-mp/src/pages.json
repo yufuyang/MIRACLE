@@ -51,6 +51,12 @@
 			"style": {
 				"navigationBarTitleText": "活动详情"
 			}
+		},
+		{
+			"path": "pages/search/index",
+			"style": {
+				"navigationBarTitleText": "搜索"
+			}
 		}
 	],
 	"subPackages": [

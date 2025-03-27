@@ -99,9 +99,8 @@ export function toggleProductStatus(id) {
 // 获取产品分类列表
 export function getProductCategories() {
   return request({
-    url: '/company/product/category/list',
-    method: 'post',
-    data: {}
+    url: '/company/product/category/base/list',
+    method: 'get'
   })
 }
 

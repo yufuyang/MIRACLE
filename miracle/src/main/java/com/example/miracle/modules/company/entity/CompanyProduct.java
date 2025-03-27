@@ -35,6 +35,8 @@ public class CompanyProduct extends BaseEntity {
      */
     private Long categoryId;
 
+    private String categoryType;
+
     /**
      * 产品图片
      */

@@ -38,13 +38,24 @@ const mockData = {
   ]
 }
 
-// 获取热门产品
-export function getHotProducts() {
+// 获取分类列表
+export function getCategories() {
   return request({
-    url: '/website/home/hot-products',
+    url: '/product/categories',
     method: 'get'
   })
 }
+
+// 获取热门产品
+export function getHotProducts(params) {
+  return request({
+    url: '/product/hot',
+    method: 'get',
+    params
+  })
+}
+
+
 
 // 获取热门活动
 export function getHotActivities() {
@@ -163,5 +174,14 @@ export function getFavorites(params) {
     url: '/website/user/favorites',
     method: 'get',
     data: params
+  })
+}
+
+// 获取基础分类列表
+export function getBaseCategories() {
+  console.log('调用获取分类API')
+  return request({
+    url: '/website/product/category/base/list',
+    method: 'get'
   })
 } 

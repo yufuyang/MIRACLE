@@ -29,7 +29,7 @@
         <a-descriptions :column="2">
           <a-descriptions-item label="产品名称">{{ product?.productName }}</a-descriptions-item>
           <a-descriptions-item label="产品编号">{{ product?.productCode }}</a-descriptions-item>
-          <a-descriptions-item label="产品分类">{{ getCategoryName(product?.categoryId) }}</a-descriptions-item>
+          <a-descriptions-item label="产品分类">{{ getCategoryName(product?.categoryType) }}</a-descriptions-item>
           <a-descriptions-item label="创建时间">{{ product?.createTime }}</a-descriptions-item>
           <a-descriptions-item label="更新时间">{{ product?.updateTime }}</a-descriptions-item>
           <a-descriptions-item label="状态">
@@ -237,20 +237,21 @@
         <a-form-item label="产品编号" name="productCode">
           <a-input v-model:value="formData.productCode" placeholder="请输入产品编号" />
         </a-form-item>
-        <a-form-item label="产品分类" name="categoryId">
-          <a-tree-select
-            v-model:value="formData.categoryId"
-            :tree-data="categoryTree"
-            :field-names="{
-              children: 'children',
-              label: 'categoryName',
-              value: 'id'
-            }"
-            placeholder="请选择分类"
-            allow-clear
-            tree-default-expand-all
-            style="width: 100%"
-          />
+        <a-form-item label="产品分类" name="categoryType">
+          <a-select
+              v-model:value="formData.categoryType"
+              placeholder="请选择分类"
+              allow-clear
+              style="width: 100%"
+          >
+            <a-select-option
+                v-for="item in categories"
+                :key="item.value"
+                :value="item.value"
+            >
+              {{ item.key }}
+            </a-select-option>
+          </a-select>
         </a-form-item>
         <a-form-item label="产品主图" name="imageUrl">
           <a-upload
@@ -541,7 +542,7 @@ const fetchCategories = async () => {
     const res = await getProductCategories()
     if (res.code === 200) {
       categories.value = res.data || []
-      categoryTree.value = buildCategoryTree(res.data)
+     // categoryTree.value = buildCategoryTree(res.data)
     }
   } catch (error) {
     console.error('获取分类失败:', error)
@@ -837,15 +838,15 @@ const fetchProductSteps = async () => {
 }
 
 // 获取分类名称
-const getCategoryName = (categoryId) => {
-  if (!categoryId) return '-'
-  const category = categories.value.find(c => c.id === categoryId)
-  if (!category) return '-'
+const getCategoryName = (categoryType) => {
+  if (!categoryType) return '-'
+  const category = categories.value.find(c => c.value === categoryType)
+  return category ? category.key : '-'
 
-  if (category.parentId) {
-    const parentCategory = categories.value.find(c => c.id === category.parentId)
-    return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
-  }
+  // if (category.parentId) {
+  //   const parentCategory = categories.value.find(c => c.id === category.parentId)
+  //   return parentCategory ? `${parentCategory.categoryName} / ${category.categoryName}` : category.categoryName
+  // }
   return category.categoryName
 }
 
@@ -1363,7 +1364,7 @@ onMounted(() => {
         }
         
         .media-content {
-          max-width: 100%;
+          max-width: 40%;
           
           img, video {
             max-width: 100%;
