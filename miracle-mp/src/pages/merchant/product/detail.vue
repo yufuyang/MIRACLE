@@ -45,10 +45,10 @@
         <text class="label">产品分类：</text>
         <text class="value">{{ categoryInfo.categoryName || '暂无分类' }}</text>
       </view>
-      <view class="info-item">
-        <text class="label">所属企业：</text>
-        <text class="value">{{ productInfo.companyName }}</text>
-      </view>
+<!--      <view class="info-item">-->
+<!--        <text class="label">所属企业：</text>-->
+<!--        <text class="value">{{ productInfo.companyName }}</text>-->
+<!--      </view>-->
       <view class="info-item">
         <text class="label">发布时间：</text>
         <text class="value">{{ formatTime(productInfo.createTime) }}</text>

@@ -137,12 +137,6 @@
 				"selectedIconPath": "static/tabbar/dot-active.png"
 			},
 			{
-				"pagePath": "pages/product/index",
-				"text": "产品",
-				"iconPath": "static/tabbar/dot.png",
-				"selectedIconPath": "static/tabbar/dot-active.png"
-			},
-			{
 				"pagePath": "pages/activity/index",
 				"text": "活动",
 				"iconPath": "static/tabbar/dot.png",
