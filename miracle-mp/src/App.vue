@@ -2,8 +2,16 @@
 export default {
   onLaunch: function () {
     console.log('App Launch')
-    // 检查登录状态
-    this.checkLogin()
+    // 获取当前页面路径
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const currentPath = currentPage ? currentPage.route : ''
+    
+    // 如果当前不在登录页，才检查登录状态
+    if (currentPath !== 'pages/login/index') {
+      this.checkLogin()
+    }
+
     // 添加请求拦截器
     const oldRequest = uni.request
     uni.request = function(options) {
@@ -21,49 +29,34 @@ export default {
     checkLogin() {
       const token = uni.getStorageSync('token')
       console.log('App启动时的token:', token)
-      if (!token) {
-        console.log('无token，跳转到登录页')
-        // 无token，跳转登录页
-        uni.reLaunch({
-          url: '/pages/login/index'
-        })
-        return
-      }
-
-      console.log('开始验证token')
-      // 有token，验证token是否有效
-      uni.request({
-        url: baseURL + '/merchant/user',  // 添加baseURL
-        method: 'GET',
-        header: {
-          'Authorization': `Bearer ${token}`
-        },
-        success: (res) => {
-          console.log('验证token响应:', res)
-          if (res.statusCode === 200) {
-            // token有效，更新用户信息
-            const userInfo = res.data.data
-            uni.setStorageSync('userInfo', JSON.stringify(userInfo))  // 确保存储字符串
-            console.log('token验证成功，更新用户信息:', userInfo)
-          } else {
-            console.log('token无效，清除存储')
+      if (token) {
+        // 有token，验证token是否有效
+        uni.request({
+          url: '/merchant/user',
+          method: 'GET',
+          header: {
+            'Authorization': `Bearer ${token}`
+          },
+          success: (res) => {
+            if (res.statusCode === 200) {
+              // token有效，更新用户信息
+              const userInfo = res.data.data
+              uni.setStorageSync('userInfo', JSON.stringify(userInfo))
+            } else {
+              // token无效，清除存储
+              console.log('token无效，清除存储')
+              uni.removeStorageSync('token')
+              uni.removeStorageSync('userInfo')
+            }
+          },
+          fail: () => {
+            // 请求失败，清除存储
+            console.log('验证token请求失败')
             uni.removeStorageSync('token')
             uni.removeStorageSync('userInfo')
-            uni.reLaunch({
-              url: '/pages/login/index'
-            })
           }
-        },
-        fail: (err) => {
-          console.log('验证token请求失败:', err)
-          // 请求失败，清除存储并跳转登录页
-          uni.removeStorageSync('token')
-          uni.removeStorageSync('userInfo')
-          uni.reLaunch({
-            url: '/pages/login/index'
-          })
-        }
-      })
+        })
+      }
     }
   }
 }
@@ -71,6 +64,22 @@ export default {
 
 <style>
 /* 每个页面公共css */
+@font-face {
+  font-family: "iconfont";
+  src: url('static/iconfont/iconfont.ttf') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-back:before {
+  content: "\e679";  /* 这里的编码需要和你的图标字体文件对应 */
+}
+
 page {
   background-color: #f5f5f5;
 }

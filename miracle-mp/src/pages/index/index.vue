@@ -321,6 +321,33 @@ export default {
     async onRefresh() {
       this.isRefreshing = true
       await this.loadData(true)
+    },
+    // 处理意向点击
+    handleIntention(productId) {
+      // 阻止事件冒泡
+      event.stopPropagation()
+      const token = uni.getStorageSync('token')
+      if (!token) {
+        uni.showModal({
+          title: '提示',
+          content: '登录后才能添加意向',
+          confirmText: '去登录',
+          success: (res) => {
+            if (res.confirm) {
+              uni.navigateTo({
+                url: '/pages/login/index'
+              })
+            }
+          }
+        })
+        return
+      }
+      // 原有的意向处理逻辑
+      // TODO: 添加意向的API调用
+      uni.showToast({
+        title: '添加意向成功',
+        icon: 'success'
+      })
     }
   }
 }

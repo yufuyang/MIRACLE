@@ -12,7 +12,6 @@
         @tap="handleIntention"
       >{{ hasIntention ? '取消意向' : '添加意向' }}</button>
     </view>
-
     <!-- 产品图片轮播 -->
     <swiper 
       class="image-swiper" 
@@ -236,6 +235,24 @@ const handleIntention = async () => {
     })
   } else {
     // 添加意向
+    const token = uni.getStorageSync('token')
+    if (!token) {
+      uni.showModal({
+        title: '提示',
+        content: '登录后才能添加意向',
+        confirmText: '去登录',
+        success: (res) => {
+          if (res.confirm) {
+            uni.navigateTo({
+              url: '/pages/login/index'
+            })
+          }
+        }
+      })
+      return
+    }
+    
+    loading.value = true
     try {
       const res = await addProductIntention({
         productId: productInfo.value.id,
@@ -247,13 +264,22 @@ const handleIntention = async () => {
           title: '已添加意向',
           icon: 'success'
         })
+        // 刷新产品详情，更新意向数
+        loadProductDetail(productInfo.value.id)
+      } else {
+        uni.showToast({
+          title: res.message || '添加失败',
+          icon: 'none'
+        })
       }
     } catch (error) {
       console.error('添加意向失败:', error)
       uni.showToast({
-        title: '添加失败',
+        title: '添加意向失败',
         icon: 'none'
       })
+    } finally {
+      loading.value = false
     }
   }
 }

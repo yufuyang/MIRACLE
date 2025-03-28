@@ -1,36 +1,36 @@
 <template>
   <view class="user-page">
-    <!-- 用户信息卡片 -->
-    <view class="user-card">
-      <view class="avatar-wrap">
-        <image :src="userInfo?.avatar || defaultAvatar" class="avatar" mode="aspectFill" />
+    <template v-if="userStore.token">
+      <!-- 已登录状态的用户信息展示 -->
+      <view class="user-info">
+        <text class="username">{{ userStore.userInfo?.username }}</text>
+        <!-- 其他用户信息 -->
       </view>
-      <view class="info">
-        <text class="name">{{ userInfo?.username || '未登录' }}</text>
-        <text class="role">{{ userInfo?.role === 'MERCHANT' ? '商户' : '企业' }}</text>
-      </view>
-    </view>
-
-    <!-- 功能卡片列表 -->
-    <view class="menu-list">
-      <view 
-        class="menu-card" 
-        v-for="item in menuList" 
-        :key="item.key"
-        @tap="handleMenuClick(item)"
-      >
-        <view class="icon">
-          <image :src="item.icon" mode="aspectFit" />
+      <!-- 功能菜单 -->
+      <view class="menu-list">
+        <view 
+          class="menu-card" 
+          v-for="item in menuList" 
+          :key="item.key"
+          @tap="handleMenuClick(item)"
+        >
+          <view class="icon">
+            <image :src="item.icon" mode="aspectFit" />
+          </view>
+          <text class="name">{{ item.name }}</text>
+          <text class="desc">{{ item.desc }}</text>
         </view>
-        <text class="name">{{ item.name }}</text>
-        <text class="desc">{{ item.desc }}</text>
       </view>
-    </view>
-
-    <!-- 退出按钮 -->
-    <view class="logout-wrap">
-      <button class="logout-btn" @tap="handleLogout">退出登录</button>
-    </view>
+    </template>
+    <template v-else>
+      <view class="login-container">
+        <text class="login-tip">登录后可以查看更多信息</text>
+        <view class="btn-group">
+          <button class="btn login-btn" @tap="goToLogin">登录</button>
+          <button class="btn register-btn" @tap="goToRegister">注册</button>
+        </view>
+      </view>
+    </template>
   </view>
 </template>
 
@@ -100,6 +100,18 @@ const handleLogout = () => {
         userStore.logout()
       }
     }
+  })
+}
+
+const goToLogin = () => {
+  uni.navigateTo({
+    url: '/pages/login/index'
+  })
+}
+
+const goToRegister = () => {
+  uni.navigateTo({
+    url: '/pages/register/index'
   })
 }
 
@@ -214,6 +226,45 @@ onMounted(() => {
     &:active {
       opacity: 0.7;
     }
+  }
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40vh; // 从顶部偏移 60% 的视窗高度
+  
+  .login-tip {
+    font-size: 28rpx;
+    color: #999;
+    margin-bottom: 40rpx;
+  }
+  
+  .btn-group {
+    display: flex;
+    gap: 30rpx;
+  }
+}
+
+.btn {
+  width: 240rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  text-align: center;
+  border-radius: 40rpx;
+  font-size: 28rpx;
+  
+  &.login-btn {
+    background: #1890ff;
+    color: #fff;
+  }
+  
+  &.register-btn {
+    background: #fff;
+    color: #1890ff;
+    border: 1px solid #1890ff;
   }
 }
 </style> 

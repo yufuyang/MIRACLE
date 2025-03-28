@@ -30,6 +30,11 @@
         >
           登录
         </button>
+        
+        <view class="register-link">
+          <text>还没有账号？</text>
+          <text class="link" @tap="goToRegister">立即注册</text>
+        </view>
       </view>
     </view>
   </view>
@@ -90,6 +95,12 @@ const handleLogin = async () => {
     loading.value = false
   }
 }
+
+const goToRegister = () => {
+  uni.navigateTo({
+    url: '/pages/register/index'
+  })
+}
 </script>
 
 <style lang="scss" scoped>
@@ -99,10 +110,12 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  padding-top: 100rpx;
   
   .login-box {
     width: 100%;
     padding: 0 60rpx;
+    margin-top: -100rpx;
     
     .login-header {
       text-align: center;
@@ -160,6 +173,17 @@ const handleLogin = async () => {
         }
       }
     }
+  }
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 30rpx;
+  font-size: 28rpx;
+  
+  .link {
+    color: #1890ff;
+    margin-left: 10rpx;
   }
 }
 </style> 

@@ -34,10 +34,45 @@ export function getCompanyInfo() {
   })
 }
 
+// 登录
+export function login(data) {
+  return request({
+    url: '/merchant/login',
+    method: 'post',
+    data
+  })
+}
+
+// 获取用户信息
+export function getUserInfo() {
+  return request({
+    url: '/merchant/user',
+    method: 'get'
+  })
+}
+
+// 注册
+export function register(data) {
+  return request({
+    url: '/merchant/register',
+    method: 'post',
+    data
+  })
+}
+
+// 商户用户注册
+export function merchantRegister(data) {
+  return request({
+    url: '/website/merchant/register',
+    method: 'post',
+    data
+  })
+}
+
 // 退出登录
 export function logout() {
   return request({
-    url: '/auth/logout',
-    method: 'POST'
+    url: '/merchant/logout',
+    method: 'post'
   })
 } 
