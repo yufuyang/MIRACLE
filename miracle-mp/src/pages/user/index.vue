@@ -54,20 +54,6 @@ const menuList = ref([
     path: '/pages/merchant/profile/index'
   },
   {
-    key: 'intention',
-    name: '意向管理',
-    desc: '管理产品合作意向',
-    icon: '/static/images/icons/intention.png',
-    path: '/pages/merchant/intention/list'
-  },
-  {
-    key: 'cooperation',
-    name: '合作管理',
-    desc: '查看企业合作情况',
-    icon: '/static/images/icons/cooperation.png',
-    path: '/pages/merchant/cooperation/list'
-  },
-  {
     key: 'order',
     name: '订单管理',
     desc: '管理所有交易订单',

@@ -25,6 +25,11 @@ export default {
   onHide: function () {
     console.log('App Hide')
   },
+  onTabItemTap(item) {
+    console.log('点击tab', item)
+    // 触发自定义事件
+    uni.$emit('tabChange', item)
+  },
   methods: {
     checkLogin() {
       const token = uni.getStorageSync('token')
