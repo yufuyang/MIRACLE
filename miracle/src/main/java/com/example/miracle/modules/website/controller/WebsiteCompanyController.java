@@ -1,13 +1,19 @@
 package com.example.miracle.modules.website.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.miracle.common.dto.MultiResponse;
 import com.example.miracle.common.dto.SingleResponse;
+import com.example.miracle.modules.company.entity.CompanyProduct;
+import com.example.miracle.modules.company.entity.CompanyProductStats;
 import com.example.miracle.modules.company.entity.CompanyUser;
+import com.example.miracle.modules.company.service.CompanyProductService;
+import com.example.miracle.modules.company.service.CompanyProductStatsService;
 import com.example.miracle.modules.company.service.CompanyUserService;
 import com.example.miracle.modules.platform.dto.query.CompanyPageQuery;
 import com.example.miracle.modules.platform.entity.Company;
 import com.example.miracle.modules.platform.service.CompanyService;
 import com.example.miracle.modules.website.dto.CompanyDTO;
+import com.example.miracle.modules.website.dto.CompanyInfo;
 import com.example.miracle.modules.website.dto.cmd.CompanyRegisterCmd;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -25,13 +31,34 @@ public class WebsiteCompanyController {
 
     private final CompanyUserService companyUserService;
 
+    private final CompanyProductService companyProductService;
+
+    private final CompanyProductStatsService companyProductStatsService;
+
 
     /**
      * 获取公司详情
      */
     @GetMapping("/{id}")
-    public SingleResponse<Company> getById(@PathVariable Long id) {
-        return SingleResponse.of(companyService.getById(id));
+    public SingleResponse<CompanyInfo> getById(@PathVariable Long id) {
+
+        CompanyInfo companyDTO = new CompanyInfo();
+
+        Company company = companyService.getById(id);
+        BeanUtils.copyProperties(company, companyDTO);
+
+        LambdaQueryWrapper<CompanyProduct> companyProductLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        companyProductLambdaQueryWrapper.eq(CompanyProduct::getCompanyId, id);
+        long productCount = companyProductService.count(companyProductLambdaQueryWrapper);
+
+
+        Integer intentionCount = companyProductStatsService.getCompanyProductStatsCount(id).getData();
+
+        companyDTO.setProductCount((int) productCount);
+
+        companyDTO.setIntentionCount(intentionCount);
+
+        return SingleResponse.of(companyDTO);
     }
 
     /**

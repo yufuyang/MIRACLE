@@ -252,4 +252,9 @@ public class CompanyProductStatsServiceImpl extends ServiceImpl<CompanyProductSt
         }
     }
 
+    @Override
+    public SingleResponse<Integer> getCompanyProductStatsCount(Long companyId) {
+        return SingleResponse.of(this.baseMapper.getCompanyProductStatsCount(companyId));
+    }
+
 }

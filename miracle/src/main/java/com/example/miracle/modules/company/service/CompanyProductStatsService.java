@@ -72,4 +72,7 @@ public interface CompanyProductStatsService extends IService<CompanyProductStats
      */
     void decrementIntentCount(Long productId);
 
+
+    SingleResponse<Integer> getCompanyProductStatsCount(Long companyId);
+
 }

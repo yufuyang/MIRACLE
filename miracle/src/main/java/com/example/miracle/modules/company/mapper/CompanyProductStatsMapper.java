@@ -157,4 +157,8 @@ public interface CompanyProductStatsMapper extends BaseMapper<CompanyProductStat
             "FROM company_product_stats " +
             "WHERE product_id = #{productId}")
     CompanyProductStats selectByProductId(@Param("productId") Long productId);
+
+
+    @Select("SELECT SUM(intention_count) FROM company_product_stats WHERE company_id = #{companyId}")
+    Integer getCompanyProductStatsCount(@Param("companyId") Long companyId);
 }
