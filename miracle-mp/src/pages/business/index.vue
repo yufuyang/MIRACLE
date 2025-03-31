@@ -53,9 +53,9 @@
             <text class="time">开始时间：{{ formatTime(item.createTime) }}</text>
           </view>
         </view>
-        <view class="action-btns">
-          <button class="btn detail" @tap.stop="handleCooperationDetail(item)">查看详情</button>
-        </view>
+<!--        <view class="action-btns">-->
+<!--          <button class="btn detail" @tap.stop="handleCooperationDetail(item)">查看详情</button>-->
+<!--        </view>-->
       </view>
     </view>
     

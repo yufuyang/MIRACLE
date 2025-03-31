@@ -1,25 +1,65 @@
 <template>
   <view class="user-page">
     <template v-if="userStore.token">
-      <!-- 已登录状态的用户信息展示 -->
-      <view class="user-info">
-        <text class="username">{{ userStore.userInfo?.username }}</text>
-        <!-- 其他用户信息 -->
-      </view>
-      <!-- 功能菜单 -->
-      <view class="menu-list">
-        <view 
-          class="menu-card" 
-          v-for="item in menuList" 
-          :key="item.key"
-          @tap="handleMenuClick(item)"
-        >
-          <view class="icon">
-            <image :src="item.icon" mode="aspectFit" />
-          </view>
-          <text class="name">{{ item.name }}</text>
-          <text class="desc">{{ item.desc }}</text>
+      <!-- 用户信息卡片 -->
+      <view class="user-card">
+        <view class="avatar-wrap">
+          <image 
+            src="/static/images/img.png" 
+            mode="aspectFill" 
+            class="avatar"
+          />
         </view>
+        <view class="info">
+          <text class="name">{{ userStore.userInfo?.username }}</text>
+        </view>
+      </view>
+      
+      <!-- 页面标题 -->
+      <view class="page-title">商户资料</view>
+      
+      <!-- 基本信息 -->
+      <view class="section">
+        <view class="section-title">基本信息</view>
+        <view class="info-item">
+          <text class="label">商户名称</text>
+          <text class="value">{{ merchantInfo.merchantName }}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">联系人</text>
+          <text class="value">{{ merchantInfo.contactName }}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">联系电话</text>
+          <text class="value">{{ merchantInfo.contactPhone }}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">营业执照号</text>
+          <text class="value">{{ merchantInfo.licenseNo || '-' }}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">商户简介</text>
+          <text class="value">{{ merchantInfo.merchantDesc || '-' }}</text>
+        </view>
+      </view>
+      
+      <!-- 地址信息 -->
+      <view class="section">
+        <view class="section-title">地址信息</view>
+        <view class="info-item">
+          <text class="label">所在地区</text>
+          <text class="value">{{ merchantInfo.province }} {{ merchantInfo.city }}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">详细地址</text>
+          <text class="value">{{ merchantInfo.address }}</text>
+        </view>
+      </view>
+      
+      <!-- 底部按钮组 -->
+      <view class="footer-btns">
+        <button class="btn edit-btn" @tap="handleEdit">编辑资料</button>
+        <button class="btn logout-btn" @tap="handleLogout">退出登录</button>
       </view>
     </template>
     <template v-else>
@@ -35,44 +75,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onShow, watch } from 'vue'
 import { useUserStore } from '../../store/user'
+import { getMerchantBase } from '../../api/merchant'
 
 const userStore = useUserStore()
-const defaultAvatar = '/static/images/default-avatar.png'
+const merchantInfo = ref({})
 
-// 获取用户信息
-const userInfo = ref(userStore.userInfo)
-
-// 菜单配置
-const menuList = ref([
-  {
-    key: 'profile',
-    name: '商户资料',
-    desc: '查看和编辑商户基本信息',
-    icon: '/static/images/icons/profile.png',
-    path: '/pages/merchant/profile/index'
-  },
-  {
-    key: 'order',
-    name: '订单管理',
-    desc: '管理所有交易订单',
-    icon: '/static/images/icons/order.png',
-    path: '/pages/merchant/order/list'
-  }
-])
-
-// 处理菜单点击
-const handleMenuClick = (item) => {
-  uni.navigateTo({
-    url: item.path,
-    fail: (err) => {
-      console.error('页面跳转失败:', err)
-      uni.showToast({
-        title: '页面跳转失败',
-        icon: 'none'
-      })
+// 获取商户基本信息
+const fetchMerchantInfo = async () => {
+  console.log('开始获取商户信息')
+  try {
+    const res = await getMerchantBase()
+    console.log('获取商户信息结果:', res)
+    if (res.code === 200) {
+      merchantInfo.value = res.data
     }
+  } catch (error) {
+    console.error('获取商户信息失败:', error)
+    uni.showToast({
+      title: '获取商户信息失败',
+      icon: 'none'
+    })
+  }
+}
+
+// 编辑资料
+const handleEdit = () => {
+  uni.navigateTo({
+    url: '/pages/merchant/profile/edit?id=' + merchantInfo.value.id
+  })
+}
+
+const goToLogin = () => {
+  uni.navigateTo({
+    url: '/pages/login/index'
+  })
+}
+
+const goToRegister = () => {
+  uni.navigateTo({
+    url: '/pages/register/index'
   })
 }
 
@@ -89,21 +132,27 @@ const handleLogout = () => {
   })
 }
 
-const goToLogin = () => {
-  uni.navigateTo({
-    url: '/pages/login/index'
-  })
-}
+// 监听 token 变化
+watch(() => userStore.token, (newToken) => {
+  console.log('token changed:', newToken)
+  if (newToken) {
+    fetchMerchantInfo()
+  }
+})
 
-const goToRegister = () => {
-  uni.navigateTo({
-    url: '/pages/register/index'
-  })
-}
+// 每次显示页面时获取最新数据
+onShow(() => {
+  if (userStore.token) {
+    fetchMerchantInfo()
+  }
+})
 
 // 初始化
 onMounted(() => {
-  userStore.getUserInfo()
+  console.log('页面加载，token:', userStore.token)
+  if (userStore.token) {
+    fetchMerchantInfo()
+  }
 })
 </script>
 
@@ -111,17 +160,14 @@ onMounted(() => {
 .user-page {
   min-height: 100vh;
   background-color: #f5f5f5;
-  padding: 32rpx;
 }
 
 .user-card {
   background-color: #fff;
-  border-radius: 16rpx;
   padding: 32rpx;
   display: flex;
   align-items: center;
-  margin-bottom: 32rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+  margin-bottom: 20rpx;
 
   .avatar-wrap {
     margin-right: 24rpx;
@@ -134,83 +180,87 @@ onMounted(() => {
   }
 
   .info {
+    flex: 1;
+
     .name {
       font-size: 36rpx;
       font-weight: 500;
       color: #333;
       display: block;
-      margin-bottom: 8rpx;
+    }
+  }
+}
+
+.page-title {
+  padding: 32rpx;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.section {
+  background-color: #fff;
+  padding: 32rpx;
+  margin-bottom: 32rpx;
+  
+  .section-title {
+    font-size: 32rpx;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 24rpx;
+  }
+
+  .info-item {
+    display: flex;
+    align-items: center;
+    padding: 16rpx 0;
+    border-bottom: 1px solid #f5f5f5;
+
+    &:last-child {
+      border-bottom: none;
     }
 
-    .role {
+    .label {
+      width: 160rpx;
       font-size: 28rpx;
       color: #666;
     }
-  }
-}
 
-.menu-list {
-  padding: 0 32rpx;
-  
-  .menu-card {
-    background-color: #fff;
-    border-radius: 16rpx;
-    padding: 32rpx;
-    margin-bottom: 24rpx;
-    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    position: relative;
-    min-height: 200rpx;
-
-    &:active {
-      opacity: 0.7;
-    }
-
-    .icon {
-      width: 64rpx;
-      height: 64rpx;
-      margin-bottom: 16rpx;
-
-      image {
-        width: 100%;
-        height: 100%;
-      }
-    }
-
-    .name {
-      font-size: 36rpx;
-      font-weight: 500;
+    .value {
+      flex: 1;
+      font-size: 28rpx;
       color: #333;
-      margin-bottom: 8rpx;
-    }
-
-    .desc {
-      font-size: 24rpx;
-      color: #999;
-      text-align: center;
     }
   }
 }
 
-.logout-wrap {
-  margin-top: 48rpx;
-  padding: 0 32rpx;
+.footer-btns {
+  padding: 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
 
-  .logout-btn {
+  .btn {
     width: 100%;
     height: 88rpx;
     line-height: 88rpx;
     text-align: center;
-    background-color: #fff;
-    color: #ff4d4f;
     border-radius: 44rpx;
     font-size: 32rpx;
-    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+
+    &.edit-btn {
+      background: #1890ff;
+      color: #fff;
+    }
+
+    &.logout-btn {
+      background: #fff;
+      color: #ff4d4f;
+      border: 1px solid #ff4d4f;
+    }
 
     &:active {
-      opacity: 0.7;
+      opacity: 0.8;
     }
   }
 }
@@ -220,7 +270,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  margin-top: 40vh; // 从顶部偏移 60% 的视窗高度
+  margin-top: 40vh;
   
   .login-tip {
     font-size: 28rpx;
