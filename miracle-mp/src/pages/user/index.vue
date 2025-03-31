@@ -140,12 +140,12 @@ watch(() => userStore.token, (newToken) => {
   }
 })
 
-// 每次显示页面时获取最新数据
-onShow(() => {
-  if (userStore.token) {
-    fetchMerchantInfo()
-  }
-})
+// // 每次显示页面时获取最新数据
+// onShow(() => {
+//   if (userStore.token) {
+//     fetchMerchantInfo()
+//   }
+// })
 
 // 初始化
 onMounted(() => {
