@@ -75,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onShow, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from '../../store/user'
 import { getMerchantBase } from '../../api/merchant'
 
