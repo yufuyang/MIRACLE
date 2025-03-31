@@ -1,8 +1,8 @@
 // 封装请求方法
 const request = (options) => {
-  // const baseURL = 'https://yang.miracleyang.top/miracle' // 替换为实际的API地址
+  const baseURL = 'https://yang.miracleyang.top/miracle' // 替换为实际的API地址
 
-  const baseURL = 'http://127.0.0.1:8080/miracle'
+  // const baseURL = 'http://127.0.0.1:8080/miracle'
 
   const { url, method, data, params } = options
   

@@ -58,7 +58,7 @@ const fetchMerchantInfo = async () => {
     }
   } catch (error) {
     console.error('获取商户信息失败:', error)
-    uni.showToast({
+    await uni.showToast({
       title: '获取信息失败',
       icon: 'none'
     })

@@ -85,7 +85,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { getMerchantBase, updateMerchantBase } from '../../../api/merchant'
+import { getMerchantBase, updateMerchantBase } from '../../api/merchant'
 
 const loading = ref(false)
 const formData = ref({
@@ -108,7 +108,7 @@ const fetchMerchantInfo = async () => {
     }
   } catch (error) {
     console.error('获取商户信息失败:', error)
-    uni.showToast({
+    await uni.showToast({
       title: '获取信息失败',
       icon: 'none'
     })
@@ -184,7 +184,7 @@ const handleSubmit = async () => {
   try {
     const res = await updateMerchantBase(formData.value)
     if (res.code === 200) {
-      uni.showToast({
+      await uni.showToast({
         title: '保存成功',
         icon: 'success'
       })
@@ -198,14 +198,14 @@ const handleSubmit = async () => {
         }
       })
     } else {
-      uni.showToast({
+      await uni.showToast({
         title: res.errMessage || '保存失败',
         icon: 'none'
       })
     }
   } catch (error) {
     console.error('保存失败:', error)
-    uni.showToast({
+    await uni.showToast({
       title: '保存失败',
       icon: 'none'
     })
