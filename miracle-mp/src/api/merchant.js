@@ -35,7 +35,7 @@ export function getMerchantCooperationList(params) {
   })
 }
 
-// 获取订单列表
+// 获取商户订单列表
 export function getMerchantOrderList(params) {
   return request({
     url: '/merchant/order/list',

@@ -66,7 +66,20 @@ export default {
     }
   },
   onLoad() {
+    console.log('=== onLoad ===')
     this.loadData()
+  },
+  onShow() {
+    console.log('=== onShow ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  },
+  onTabItemTap() {
+    console.log('=== onTabItemTap ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
   },
   methods: {
     async loadData(append = false) {
@@ -134,6 +147,12 @@ export default {
         2: '已结束'
       }
       return statusMap[status] || '未知'
+    },
+    refreshData() {
+      console.log('=== refreshData ===')
+      this.pageNum = 1
+      this.activities = []
+      this.loadData()
     }
   },
   // 下拉刷新

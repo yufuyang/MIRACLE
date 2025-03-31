@@ -139,8 +139,21 @@ export default {
     }
   },
   onLoad() {
+    console.log('=== onLoad ===')
     this.loadCategories()
     this.loadData()
+  },
+  onShow() {
+    console.log('=== onShow ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  },
+  onTabItemTap() {
+    console.log('=== onTabItemTap ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
   },
   methods: {
     // 加载分类数据
@@ -348,6 +361,13 @@ export default {
         title: '添加意向成功',
         icon: 'success'
       })
+    },
+    refreshData() {
+      console.log('=== refreshData ===')
+      this.page = 1
+      this.noMore = false
+      this.products = []
+      this.loadData()
     }
   }
 }

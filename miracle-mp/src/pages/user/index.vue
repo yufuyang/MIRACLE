@@ -74,8 +74,28 @@
   </view>
 </template>
 
+<script>
+export default {
+  onLoad() {
+    console.log('=== onLoad ===')
+  },
+  onShow() {
+    console.log('=== onShow ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  },
+  onTabItemTap() {
+    console.log('=== onTabItemTap ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  }
+}
+</script>
+
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '../../store/user'
 import { getMerchantBase } from '../../api/merchant'
 
@@ -99,6 +119,13 @@ const fetchMerchantInfo = async () => {
     })
   }
 }
+
+// 初始化
+onMounted(() => {
+  if (userStore.token) {
+    fetchMerchantInfo()
+  }
+})
 
 // 编辑资料
 const handleEdit = () => {
@@ -132,27 +159,17 @@ const handleLogout = () => {
   })
 }
 
-// 监听 token 变化
-watch(() => userStore.token, (newToken) => {
-  console.log('token changed:', newToken)
-  if (newToken) {
-    fetchMerchantInfo()
-  }
-})
-
-// // 每次显示页面时获取最新数据
-// onShow(() => {
-//   if (userStore.token) {
-//     fetchMerchantInfo()
-//   }
-// })
-
-// 初始化
-onMounted(() => {
-  console.log('页面加载，token:', userStore.token)
+// 提供给页面生命周期调用的刷新方法
+const refreshData = () => {
+  console.log('=== refreshData ===')
   if (userStore.token) {
     fetchMerchantInfo()
   }
+}
+
+// 暴露方法给页面实例
+defineExpose({
+  refreshData
 })
 </script>
 

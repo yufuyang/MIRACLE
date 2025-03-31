@@ -55,7 +55,25 @@
   </view>
 </template>
 
-
+<script>
+export default {
+  onLoad() {
+    console.log('=== onLoad ===')
+  },
+  onShow() {
+    console.log('=== onShow ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  },
+  onTabItemTap() {
+    console.log('=== onTabItemTap ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  }
+}
+</script>
 
 <script setup>
 import { ref, onMounted } from 'vue'
@@ -75,9 +93,14 @@ const searchForm = ref({
   pageSize: 10
 })
 
+// 初始化加载数据
+onMounted(() => {
+  refreshData()
+})
+
 // 刷新数据
 const refreshData = () => {
-  console.log('初始化数据')
+  console.log('=== refreshData ===')
   searchForm.value.pageNum = 1
   orderList.value = []
   hasMore.value = true
@@ -91,7 +114,16 @@ const fetchOrderList = async (isLoadMore = false) => {
   loading.value = true
   
   try {
-    const res = await getMerchantOrderList(searchForm.value)
+    const params = {
+      pageNum: searchForm.value.pageNum,
+      pageSize: searchForm.value.pageSize
+    }
+    if (searchForm.value.orderNo) {
+      params.orderNo = searchForm.value.orderNo
+    }
+
+    const res = await getMerchantOrderList(params)
+    console.log('订单列表返回:', res)
     if (res.code === 200) {
       const list = res.data || []
       const total = res.total || 0
@@ -181,6 +213,11 @@ onReachBottom(() => {
   if (!hasMore.value || loading.value) return
   searchForm.value.pageNum++
   fetchOrderList(true)
+})
+
+// 暴露方法给页面实例
+defineExpose({
+  refreshData
 })
 </script>
 

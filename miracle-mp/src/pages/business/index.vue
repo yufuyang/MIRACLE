@@ -66,6 +66,26 @@
   </view>
 </template>
 
+<script>
+export default {
+  onLoad() {
+    console.log('=== onLoad ===')
+  },
+  onShow() {
+    console.log('=== onShow ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  },
+  onTabItemTap() {
+    console.log('=== onTabItemTap ===')
+    const pages = getCurrentPages()
+    const page = pages[pages.length - 1]
+    page.$vm.refreshData()
+  }
+}
+</script>
+
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { formatTime } from '@/utils/date'
@@ -76,10 +96,28 @@ import {
   acceptCooperation,
   rejectCooperation
 } from '@/api/business'
+import { useTabRefresh } from '../../hooks/useTabRefresh'
+
+// 提供给页面生命周期调用的刷新方法
+const refreshData = () => {
+  console.log('=== refreshData ===')
+  pageNum.value = 1
+  if (currentTab.value === 'intention') {
+    intentionList.value = []
+  } else {
+    cooperationList.value = []
+  }
+  loadData()
+}
+
+// 暴露方法给页面实例
+defineExpose({
+  refreshData
+})
 
 const init = () => {
-  console.log('初始化数据')
-  currentTab.value = 'intention'
+  console.log('=== init ===')
+  console.log('当前 tab:', currentTab.value)
   pageNum.value = 1
   intentionList.value = []
   cooperationList.value = []
@@ -289,6 +327,10 @@ const handleCompanyDetail = (item) => {
     url: `/pages/company/detail/index?id=${item.companyId}`
   })
 }
+
+useTabRefresh(() => {
+  fetchData()  // 或其他刷新数据的方法
+})
 </script>
 
 <style lang="scss" scoped>
